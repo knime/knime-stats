@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./independent_test.png" type="Manipulator">
+	<name>Kruskal-Wallis Test</name>
+
+	<shortDescription>
+		Performs the Kurskal-Wallis-Test independent group
+		test on multiple groups.
+	</shortDescription>
+
+	<fullDescription>
+		<intro>The non-paramatric independent Kruskal-Wallis-Test tests if
+			several groups with ordinal attributes are statistically different
+			of
+			each other. For details see:
+			https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance.
+		</intro>
+		<tab name="Options">
+			<option name="Group Column">Column containing group information.</option>
+			<option name="Test Column">Column containing the test-data</option>
+			<option name="Missing Value Strategy">
+				Determine a strategy how missing values and
+				Double.NaN values are
+				treated.
+				<ul>
+					<li>Fixed: Missing values will be replaced with Double.NaN.</li>
+					<li>Failed: Exception is thrown and node will not finish execution.
+					</li>
+					<li>Maximal: Missing values are considered to be maximal in the
+						ranking.
+					</li>
+					<li>Minimal: Missing values are considered to be minimal in the
+						ranking.
+					</li>
+				</ul>
+			</option>
+		</tab>
+	</fullDescription>
+
+	<ports>
+		<inPort index="0" name="Data Table">The Input</inPort>
+		<outPort index="0" name="Kruskal-Wallis Test">Statistics of Kruskal-Wallis Test
+		</outPort>
+	</ports>
+</knimeNode>

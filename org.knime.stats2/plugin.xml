@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension point="org.knime.workbench.repository.nodes">
+     <node
+            category-path="/labs/statistics"
+            factory-class="org.knime.stats.correlation.cronbach.CronbachNodeFactory"
+            id="org.knime.stats.correlation.cronbach.CronbachNodeFactory">
+      </node>
+      <node
+            category-path="/labs/statistics"
+            factory-class="org.knime.stats.correlation.standcronbach.StandCronbachNodeFactory"
+            id="org.knime.stats.correlation.standcronbach.StandCronbachNodeFactory">
+      </node>  
+      <node
+            category-path="/labs/statistics"
+            factory-class="org.knime.stats.correlation.CorrelationComputeNodeFactory"
+            id="org.knime.stats.correlation.CorrelationComputeNodeFactory">
+      </node>
+      <node
+            category-path="/labs/statistics"
+            expert-flag="false"
+            factory-class="org.knime.stats.testing.wilcoxon.WilcoxonMannWhitneyNodeFactory"
+            id="org.knime.stats.testing.independent.WilcoxonMannWhitneyStatisticNodeFactory">
+      </node>
+      <node
+            category-path="/labs/statistics"
+            expert-flag="false"
+            factory-class="org.knime.stats.testing.kruskal.KruskalWallisNodeFactory"
+            id="org.knime.stats.testing.kruskal.KruskalWallisNodeFactory">
+      </node>
+      <node
+            category-path="/labs/statistics"
+            factory-class="org.knime.stats.repeatedmeasures.wilcoxon.signedrank.WilcoxonSignedRankNodeFactory"
+            id="org.knime.stats.repeatedmeasures.wilcoxon.signedrank.WilcoxonSignedRankNodeFactory">
+      </node>
+      <node
+      		category-path="/labs/statistics" 
+            factory-class="org.knime.stats.contingencytable.ContingencyTableNodeFactory" 
+            id="org.knime.node.stats.ContingencyTableNodeFactory"/>      
+      <node 
+      		category-path="/labs/statistics" 
+            factory-class="org.knime.stats.lda.LDANodeFactory" 
+            id="org.knime.stats.lda.LDANodeFactory"/>
+      
+   </extension>
+   <extension point="org.knime.workbench.repository.categories">
+      <category
+            icon="icons/category_statistics.png"
+            level-id="statistics"
+            name="Statistics"
+            path="/labs/"/>
+   </extension>
+
+</plugin>

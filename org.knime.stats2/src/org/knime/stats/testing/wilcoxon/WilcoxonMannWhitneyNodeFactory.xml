@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./independent_test.png" type="Manipulator">
+	<name>Wilcoxon Mann Whitney Test</name>
+
+	<shortDescription>
+		Performs the Wilcoxon-Mann-Whitney idependent group
+		test.
+	</shortDescription>
+
+	<fullDescription>
+		<intro>The non-parametric Wilcoxon-Mann-Whitney tests tests for two
+			samples with ordinal attributes if they are different from each
+			other. For details see: https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test.</intro>
+		<tab name="Options">
+			<option name="Group Column">Column containing group information.</option>
+			<option name="Group One">Name of first group.</option>
+			<option name="Group Two">Name of second group.</option>
+			<option name="Test Column">Column containing the test-data</option>
+			<option name="Missing Value Strategy">
+				Determine a strategy how missing values and
+				Double.NaN values are
+				treated.
+				<ul>
+					<li>Fixed: Missing values will be replaced with Double.NaN.</li>
+					<li>Failed: Exception is thrown and node will not finish execution.
+					</li>
+					<li>Maximal: Missing values are considered to be maximal in the
+						ranking.
+					</li>
+					<li>Minimal: Missing values are considered to be minimal in the
+						ranking.
+					</li>
+				</ul>
+			</option>
+		</tab>
+	</fullDescription>
+
+	<ports>
+		<inPort index="0" name="Data Table">The Input</inPort>
+		<outPort index="0" name="Wilcoxon Mean Whitney U Test">
+			Statistics for the Wilcoxon-Mann-
+			Whitney U Test
+		</outPort>
+	</ports>
+</knimeNode>
