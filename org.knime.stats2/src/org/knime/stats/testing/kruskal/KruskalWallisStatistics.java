@@ -24,7 +24,12 @@ public class KruskalWallisStatistics {
 
         final int[] groupCount = new int[numGroups];
 
-        final double[] ranks = ranking.rank(data);
+        final double[] ranks;
+        try {
+            ranks = ranking.rank(data);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failing because of missing value(s) in value column!");
+        }
 
         final DescriptiveStatistics[] stats = new DescriptiveStatistics[numGroups];
 
@@ -70,9 +75,11 @@ public class KruskalWallisStatistics {
      */
     protected static class KruskalWallisStatisticsResult {
 
+        @SuppressWarnings("javadoc")
         // H value
         protected double H;
 
+        @SuppressWarnings("javadoc")
         // statistics for the invididual groups
         protected DescriptiveStatistics[] stats;
     }

@@ -128,6 +128,7 @@ public class WilcoxonMannWhitneyNodeDialog extends DefaultNodeSettingsPane {
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("hiding")
     @Override
     public void loadAdditionalSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs)
         throws NotConfigurableException {
@@ -139,6 +140,7 @@ public class WilcoxonMannWhitneyNodeDialog extends DefaultNodeSettingsPane {
      * @param specs
      * @throws NotConfigurableException
      */
+    @SuppressWarnings("hiding")
     private void updateGroupSelection(final DataTableSpec[] specs) throws NotConfigurableException {
         final int groupColIdx = specs[0].findColumnIndex(m_groupColumn.getStringValue());
         if (groupColIdx != -1) {
