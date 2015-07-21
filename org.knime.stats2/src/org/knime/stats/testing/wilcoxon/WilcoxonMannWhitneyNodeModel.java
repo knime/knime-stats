@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.stat.ranking.NaturalRanking;
-import org.apache.commons.math3.util.Pair;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
@@ -76,6 +75,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.stats.testing.MissingValueHandler;
+import org.knime.stats.testing.wilcoxon.WilcoxonMannWhitneyStatistics.MannWhitneyUTestResult;
 
 /**
  * NodeModel for Wilcoxon-Mann-Whitney-U-Test
@@ -100,6 +100,26 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
      * Columnname of P-Value
      */
     static final String P_VALUE = "p-value";
+
+    /**
+     * Columnname of mean of group A
+     */
+    static final String MEAN_A = "Mean Rank Group (A)";
+
+    /**
+     * Columnname of mean of group B
+     */
+    static final String MEAN_B = "Mean Rank Group (B)";
+
+    /**
+     * Columnname of median of group A
+     */
+    static final String MEDIAN_A = "Median Rank Group (A)";
+
+    /**
+     * Columnname of median of group B
+     */
+    static final String MEDIAN_B = "Median Rank Group (B)";
 
     /*
      * SettingsModel create methods
@@ -174,7 +194,8 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
      * @return the outspec of this node
      */
     private DataTableSpec[] createOutSpec() {
-        return new DataTableSpec[]{new DataTableSpec(new String[]{U_MIN_VALUE, U_MAX_VALUE, P_VALUE}, new DataType[]{
+        return new DataTableSpec[]{new DataTableSpec(new String[]{U_MIN_VALUE, U_MAX_VALUE, P_VALUE, MEAN_A, MEAN_B,
+            MEDIAN_A, MEDIAN_B}, new DataType[]{DoubleCell.TYPE, DoubleCell.TYPE, DoubleCell.TYPE, DoubleCell.TYPE,
             DoubleCell.TYPE, DoubleCell.TYPE, DoubleCell.TYPE})};
     }
 
@@ -205,6 +226,10 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
         final String groupA = m_groupAModel.getStringValue();
         final String groupB = m_groupBModel.getStringValue();
 
+        if (inData[0].getRowCount() == 0) {
+            throw new InvalidSettingsException("Input table is empty!");
+        }
+
         // collect groups
         for (final DataRow row : inData[0]) {
 
@@ -234,11 +259,11 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
 
         final BufferedDataContainer container = exec.createDataContainer(createOutSpec()[0]);
         if (a.size() == 0 || b.size() == 0) {
-            LOGGER.warn("Number of observations is zero for one or both groups. Empty table will be returned!");
+            throw new IllegalStateException("Number of observations is zero for one or both of the selected groups!");
         } else {
             if ((a.size() + b.size()) < 20) {
                 LOGGER
-                    .warn("Number of observations is small. Approximating U values using standard normal distribution, which is only suitable for n>20. ");
+                    .warn("Number of observations is small. Approximating U values using standard normal distribution, which is only suitable for n > 20. ");
             }
 
             exec.setMessage("Calculating U values...");
@@ -246,7 +271,7 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
 
             // Statistics (which required copying the data into another format.
             // FIXME Implement more KNIMEish Rank function etc
-            final Pair<Double, Double> mannWhitneyU =
+            final MannWhitneyUTestResult mannWhitneyU =
                 WilcoxonMannWhitneyStatistics.mannWhitneyU(a, b, new NaturalRanking(MissingValueHandler
                     .getHandlerByName(m_missingValueHandlerModel.getStringValue()).getStrategy()));
 
@@ -254,13 +279,15 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
             exec.setProgress(0.6);
 
             final double p =
-                WilcoxonMannWhitneyStatistics.calculateAsymptoticPValue(mannWhitneyU.getFirst(), a.size(), b.size());
+                WilcoxonMannWhitneyStatistics.calculateAsymptoticPValue(mannWhitneyU.uMin, a.size(), b.size());
 
             exec.setMessage("Writing Output...");
             exec.setProgress(0.9);
 
-            container.addRowToTable(new DefaultRow(RowKey.createRowKey(0), new DoubleCell(mannWhitneyU.getFirst()),
-                new DoubleCell(mannWhitneyU.getSecond()), new DoubleCell(p)));
+            container.addRowToTable(new DefaultRow(RowKey.createRowKey(0), new DoubleCell(mannWhitneyU.uMin),
+                new DoubleCell(mannWhitneyU.uMax), new DoubleCell(p), new DoubleCell(mannWhitneyU.meanA),
+                new DoubleCell(mannWhitneyU.meanB), new DoubleCell(mannWhitneyU.medianA), new DoubleCell(
+                    mannWhitneyU.medianB)));
 
         }
         // Create Output

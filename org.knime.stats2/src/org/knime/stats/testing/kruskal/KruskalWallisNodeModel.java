@@ -51,12 +51,16 @@ package org.knime.stats.testing.kruskal;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.knime.core.data.DataCell;
+import org.knime.core.data.DataColumnDomain;
+import org.knime.core.data.DataColumnSpec;
+import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
@@ -74,6 +78,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.stats.testing.MissingValueHandler;
+import org.knime.stats.testing.kruskal.KruskalWallisStatistics.KruskalWallisStatisticsResult;
 
 /**
  * NodeModel for Wilcoxon-Mann-Whitney-U-Test
@@ -93,6 +98,16 @@ public class KruskalWallisNodeModel extends NodeModel {
      * Columnname of P-Value
      */
     static final String P_VALUE = "p-value";
+
+    /**
+     * Columnname of Mean-Prefix
+     */
+    static final String MEAN_PREFIX = "Mean Rank of Group ";
+
+    /**
+     * Columnname of Median-Prefix
+     */
+    static final String MEDIAN_PREFIX = "Median Rank of Group ";
 
     /*
      * SettingsModel create methods
@@ -140,15 +155,50 @@ public class KruskalWallisNodeModel extends NodeModel {
             throw new InvalidSettingsException("Please define a grouping column.");
         }
 
-        return createOutSpec();
+        return createOutSpec(inSpecs[0], extractAndSortGroups(inSpecs[0]));
     }
 
     /**
+     * @param dataTableSpec
+     * @return
+     */
+    private List<String> extractAndSortGroups(final DataTableSpec inSpec) {
+        final DataColumnDomain domain =
+            inSpec.getColumnSpec(inSpec.findColumnIndex(m_groupColumnModel.getStringValue())).getDomain();
+
+        final Set<DataCell> domainValues = domain.getValues();
+
+        // we have to sort the set to make sure that the ordering is the same as in the execute
+        final List<String> values = new ArrayList<String>();
+        for (final DataCell value : domainValues) {
+            values.add(((StringValue)value).getStringValue());
+        }
+
+        Collections.sort(values);
+
+        return values;
+    }
+
+    /**
+     * @param inSpecs
+     * @param groups - ascending sorted list of the groups
      * @return the outspec of this node
      */
-    private DataTableSpec[] createOutSpec() {
-        return new DataTableSpec[]{new DataTableSpec(new String[]{H_VALUE, P_VALUE}, new DataType[]{DoubleCell.TYPE,
-            DoubleCell.TYPE})};
+    private DataTableSpec[] createOutSpec(final DataTableSpec inSpec, final List<String> groups) {
+
+        // Create spec
+        final DataColumnSpec[] colOutSpecs = new DataColumnSpec[2 + (2 * groups.size())];
+
+        colOutSpecs[0] = new DataColumnSpecCreator(H_VALUE, DoubleCell.TYPE).createSpec();
+        colOutSpecs[1] = new DataColumnSpecCreator(P_VALUE, DoubleCell.TYPE).createSpec();
+
+        int i = 2;
+        for (final String value : groups) {
+            colOutSpecs[i++] = new DataColumnSpecCreator(MEAN_PREFIX + value, DoubleCell.TYPE).createSpec();
+            colOutSpecs[i++] = new DataColumnSpecCreator(MEDIAN_PREFIX + value, DoubleCell.TYPE).createSpec();
+        }
+
+        return new DataTableSpec[]{new DataTableSpec(colOutSpecs)};
     }
 
     /**
@@ -174,13 +224,13 @@ public class KruskalWallisNodeModel extends NodeModel {
         final double[] data = new double[inData[0].getRowCount()];
         final int[] groupIndices = new int[inData[0].getRowCount()];
 
-        final BufferedDataContainer container = exec.createDataContainer(createOutSpec()[0]);
+        final List<String> groups = extractAndSortGroups(inData[0].getDataTableSpec());
+
+        final BufferedDataContainer container =
+            exec.createDataContainer(createOutSpec(inData[0].getDataTableSpec(), groups)[0]);
         if (inData[0].getRowCount() == 0) {
             LOGGER.warn("Number of observations is zero. Empty table will be returned!");
         } else {
-
-            // we check if every group has an entry
-            final List<String> groups = new ArrayList<>();
 
             // collect groups
             int i = 0;
@@ -225,19 +275,28 @@ public class KruskalWallisNodeModel extends NodeModel {
             exec.setProgress(0.3);
 
             // FIXME Implement more KNIMEish Rank function etc
-            final double h =
+            final KruskalWallisStatisticsResult res =
                 KruskalWallisStatistics.calculateHValue(data, groupIndices, groups.size(), MissingValueHandler
                     .getHandlerByName(m_missingValueHandlerModel.getStringValue()).getStrategy());
 
             exec.setMessage("Calculating p-value...");
             exec.setProgress(0.6);
 
-            final double p = KruskalWallisStatistics.calculatePValue(h, groups.size());
+            final double p = KruskalWallisStatistics.calculatePValue(res.H, groups.size());
 
             exec.setMessage("Writing Output...");
             exec.setProgress(0.9);
 
-            container.addRowToTable(new DefaultRow(RowKey.createRowKey(0), new DoubleCell(h), new DoubleCell(p)));
+            final List<DataCell> resCells = new ArrayList<DataCell>();
+            resCells.add(new DoubleCell(res.H));
+            resCells.add(new DoubleCell(p));
+
+            for (int g = 0; g < groups.size(); g++) {
+                resCells.add(new DoubleCell(res.stats[g].getMean()));
+                resCells.add(new DoubleCell(res.stats[g].getPercentile(50)));
+            }
+
+            container.addRowToTable(new DefaultRow(RowKey.createRowKey(0), resCells));
         }
         // Create Output
         exec.setProgress(1.0);

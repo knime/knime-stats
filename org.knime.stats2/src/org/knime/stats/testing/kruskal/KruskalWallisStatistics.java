@@ -1,6 +1,7 @@
 package org.knime.stats.testing.kruskal;
 
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.ranking.NaNStrategy;
 import org.apache.commons.math3.stat.ranking.NaturalRanking;
 
@@ -16,28 +17,39 @@ public class KruskalWallisStatistics {
      *
      * @return the H value of Kruskal Wallis Test
      */
-    static double calculateHValue(final double[] data, final int[] assignedGroups, final int numGroups,
-        final NaNStrategy strategy) {
+    static KruskalWallisStatisticsResult calculateHValue(final double[] data, final int[] assignedGroups,
+        final int numGroups, final NaNStrategy strategy) {
 
         final NaturalRanking ranking = new NaturalRanking(strategy);
 
         final int[] groupCount = new int[numGroups];
 
         final double[] ranks = ranking.rank(data);
-        final double[] rankSums = new double[numGroups];
+
+        final DescriptiveStatistics[] stats = new DescriptiveStatistics[numGroups];
+
+        // init
+        for (int i = 0; i < stats.length; ++i) {
+            stats[i] = new DescriptiveStatistics();
+        }
 
         for (int i = 0; i < data.length; i++) {
-            rankSums[assignedGroups[i]] += ranks[i];
+            stats[assignedGroups[i]].addValue(ranks[i]);
             groupCount[assignedGroups[i]]++;
         }
 
-        double H = 0.0;
+        double Htmp = 0.0;
         for (int i = 0; i < numGroups; i++) {
-            H += Math.pow(rankSums[i], 2.0) / groupCount[assignedGroups[i]];
+            Htmp += Math.pow(stats[i].getSum(), 2.0) / groupCount[assignedGroups[i]];
         }
 
+        final KruskalWallisStatisticsResult res = new KruskalWallisStatisticsResult();
+
         int N = data.length;
-        return 12.0 / (N * (N + 1)) * H - 3.0 * (N + 1);
+        res.H = 12.0 / (N * (N + 1)) * Htmp - 3.0 * (N + 1);
+        res.stats = stats;
+
+        return res;
     }
 
     /**
@@ -49,6 +61,20 @@ public class KruskalWallisStatistics {
      */
     static double calculatePValue(final double hValue, final int numGroups) {
         return 1.0 - new ChiSquaredDistribution(numGroups - 1).cumulativeProbability(hValue);
+    }
+
+    /**
+     * Second most beautiful helper class
+     *
+     * @author Christian Dietz, University of Konstanz
+     */
+    protected static class KruskalWallisStatisticsResult {
+
+        // H value
+        protected double H;
+
+        // statistics for the invididual groups
+        protected DescriptiveStatistics[] stats;
     }
 
 }

@@ -54,10 +54,10 @@ import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.exception.NoDataException;
 import org.apache.commons.math3.exception.NullArgumentException;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.apache.commons.math3.stat.ranking.NaturalRanking;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
 import org.knime.core.data.DoubleValue;
 
 /**
@@ -94,14 +94,14 @@ class WilcoxonMannWhitneyStatistics {
 
         // No try-catch or advertised exception because args are valid
         // pass a null rng to avoid unneeded overhead as we will not sample from this distribution
-        final NormalDistribution standardNormal = new NormalDistribution(null, 0, 1,
-                                                    NormalDistribution.DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
+        final NormalDistribution standardNormal =
+            new NormalDistribution(null, 0, 1, NormalDistribution.DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
 
         return 2 * standardNormal.cumulativeProbability(z);
     }
 
     /**
-     * NB: This is a modified copy of {@link MannWhitneyUTest}#mannWhitneyU(double[], double[]).
+     * NB: This is a modified copy of {@link MannWhitneyUTest}#mannWhitneyU(double[], double[]) of ApacheMathCommons.
      *
      * Computes the <a href="http://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U"> Mann-Whitney U statistic</a>
      * comparing mean for two independent samples possibly of different length.
@@ -121,54 +121,78 @@ class WilcoxonMannWhitneyStatistics {
      * </ul>
      * </p>
      *
-     * @param x the first sample
-     * @param y the second sample
+     * @param groupAValues the first sample
+     * @param groupBValues the second sample
      * @return Mann-Whitney U statistic (maximum of U<sup>x</sup> and U<sup>y</sup>)
      * @throws NullArgumentException if {@code x} or {@code y} are {@code null}.
      * @throws NoDataException if {@code x} or {@code y} are zero-length.
      */
-    static Pair<Double, Double> mannWhitneyU(final List<DoubleValue> x, final List<DoubleValue> y,
-        final NaturalRanking ranking) throws NullArgumentException, NoDataException {
+    static MannWhitneyUTestResult mannWhitneyU(final List<DoubleValue> groupAValues,
+        final List<DoubleValue> groupBValues, final NaturalRanking ranking) throws NullArgumentException,
+        NoDataException, IllegalStateException {
 
-        final int xSize = x.size();
-        final int ySize = y.size();
+        final int xSize = groupAValues.size();
+        final int ySize = groupBValues.size();
 
         double[] z = new double[xSize + ySize];
         for (int i = 0; i < xSize; i++) {
-            z[i] = x.get(i).getDoubleValue();
+            z[i] = groupAValues.get(i).getDoubleValue();
         }
 
         for (int i = 0; i < ySize; i++) {
-            z[i + xSize] = y.get(i).getDoubleValue();
+            z[i + xSize] = groupBValues.get(i).getDoubleValue();
         }
 
-        final double[] ranks = ranking.rank(z);
-
-        double sumRankX = 0;
-
+        final double[] ranks;
+        try {
+            ranks = ranking.rank(z);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failing because of missing value(s) in value column!");
+        }
         /*
          * The ranks for x is in the first x.length entries in ranks because x
          * is in the first x.length entries in z
          */
+        final DescriptiveStatistics statsX = new DescriptiveStatistics();
         for (int i = 0; i < xSize; ++i) {
-            sumRankX += ranks[i];
+            statsX.addValue(ranks[i]);
+        }
+
+        final DescriptiveStatistics statsY = new DescriptiveStatistics();
+        for (int i = xSize; i < z.length; ++i) {
+            statsY.addValue(ranks[i]);
         }
 
         /*
          * U1 = R1 - (n1 * (n1 + 1)) / 2 where R1 is sum of ranks for sample 1,
          * e.g. x, n1 is the number of observations in sample 1.
          */
-        final double U1 = sumRankX - ((long)xSize * (xSize + 1)) / 2;
+        final double U1 = statsX.getSum() - ((long)xSize * (xSize + 1)) / 2;
 
         /*
          * It can be shown that U1 + U2 = n1 * n2
          */
         final double U2 = (long)xSize * ySize - U1;
 
+        final MannWhitneyUTestResult res = new MannWhitneyUTestResult();
         if (U1 > U2) {
-            return new Pair<Double, Double>(U2, U1);
+            res.uMin = U2;
+            res.uMax = U1;
         } else {
-            return new Pair<Double, Double>(U1, U2);
+            res.uMin = U1;
+            res.uMax = U2;
         }
+
+        res.meanA = statsX.getMean();
+        res.meanB = statsY.getMean();
+        res.medianA = statsX.getPercentile(50);
+        res.medianB = statsY.getPercentile(50);
+
+        return res;
+    }
+
+    // most beautiful implementation of a helper class.
+    static class MannWhitneyUTestResult {
+        protected double uMin, uMax, meanA, meanB, medianA, medianB;
     }
 }
