@@ -206,6 +206,10 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
     protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
         throws Exception {
 
+        if (inData[0].getRowCount() == 0) {
+            throw new InvalidSettingsException("Input table is empty!");
+        }
+
         final DataTableSpec spec = inData[0].getDataTableSpec();
         int groupingIndex = spec.findColumnIndex(m_groupColumnModel.getStringValue());
         if (groupingIndex == -1) {
@@ -225,10 +229,6 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
         // TODO: Can we generalize this to DataCell? How to select values of DataCell in Dialog?
         final String groupA = m_groupAModel.getStringValue();
         final String groupB = m_groupBModel.getStringValue();
-
-        if (inData[0].getRowCount() == 0) {
-            throw new InvalidSettingsException("Input table is empty!");
-        }
 
         // collect groups
         for (final DataRow row : inData[0]) {
