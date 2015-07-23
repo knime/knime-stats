@@ -168,13 +168,15 @@ public class KruskalWallisNodeModel extends NodeModel {
 
         final Set<DataCell> domainValues = domain.getValues();
 
-        // we have to sort the set to make sure that the ordering is the same as in the execute
         final List<String> values = new ArrayList<String>();
-        for (final DataCell value : domainValues) {
-            values.add(((StringValue)value).getStringValue());
-        }
+        if (domainValues != null) {
+            // we have to sort the set to make sure that the ordering is the same as in the execute
+            for (final DataCell value : domainValues) {
+                values.add(((StringValue)value).getStringValue());
+            }
 
-        Collections.sort(values);
+            Collections.sort(values);
+        }
 
         return values;
     }
