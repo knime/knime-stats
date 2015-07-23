@@ -180,7 +180,7 @@ public class LDANodeModel extends NodeModel {
         DataTableSpec inSpec = (DataTableSpec)inSpecs[0];
 
         DataColumnSpec classSpec = inSpec.getColumnSpec(m_classColumn.getColumnName());
-        if (classSpec.getDomain().getValues() != null) {
+        if (classSpec != null && classSpec.getDomain().getValues() != null) {
             int num = classSpec.getDomain().getValues().size() - 1;
             if (m_k.getIntValue() > num) {
                 throw new InvalidSettingsException("The number of dimensions to project to "
