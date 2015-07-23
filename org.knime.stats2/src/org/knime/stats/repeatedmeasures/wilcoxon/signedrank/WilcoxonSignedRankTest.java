@@ -93,6 +93,9 @@ public class WilcoxonSignedRankTest {
      * Executes this test, calculating the test results based on the samples that were added.
      */
     public void execute() {
+        if (m_samples.isEmpty()) {
+            throw new IllegalStateException("No valid samples provided");
+        }
         Collections.sort(m_samples, new Comparator<WilcoxonSignedRankSample>() {
             /**
              * {@inheritDoc}
