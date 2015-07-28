@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.knime.features.stats2"
-      label="Statistics Nodes (Labs)"
+      label="KNIME Statistics Nodes (Labs)"
       version="2.12.0.qualifier"
       provider-name="KNIME GmbH, Konstanz, Germany"
       plugin="org.knime.stats2">
 
    <description>
       This plugin contains the Labs Statistics Nodes
+
+Contained algorithms:
+Chi-square
+Spearman correlation
+Mann-Whitney-Wilcoxon
+...
    </description>
 
    <copyright url="http://www.example.com/copyright">
