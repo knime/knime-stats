@@ -8,7 +8,9 @@
     
     <fullDescription>
         <intro>
-        <p>This node calculates the Maximum Likelihood Estimate (MLE) Odds Ratio (OR) and the Maximum Likelihood Estimate (MLE) Risk Ratio (RR), i.e., "Wald" OR and RR, from the values in a contingency table.
+        <p>This node calculates the Maximum Likelihood Estimate (MLE) Odds Ratio (OR) and the Maximum Likelihood Estimate (MLE) Risk Ratio (RR), i.e., "Wald" OR and RR, 
+        from two selected categorical columns. For each column a value is selected to be considered the value under observation. All other values in non-binary categorical 
+        columns are considered as the "not" case.
         </p> 
         <table>
         	<tr><th></th><th align="center">X</th><th align="center">&#172; X</th></tr>
@@ -50,6 +52,10 @@
         </p>
    		
          </intro>
+         <option name="Column X">The column to choose for the X variable.</option>
+         <option name="Column Y">The column to choose for the Y variable.</option>
+         <option name="Value from Column X">The value from the X variable to choose as the value to be examined.</option>
+         <option name="Value from Column Y">The value from the Y variable to choose as the value to be examined.</option>
          <option name="Confidence Interval">The confidence interval to be calculated.</option>
         <option name="Laplace Correction">The amount of Laplace correction to use, if one of the values ({a,b,c,d}) is 0. This value is applied to all four entries in the contingency table.</option>
      </fullDescription>  
