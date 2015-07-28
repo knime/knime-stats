@@ -184,11 +184,16 @@ public class LDANodeModel extends NodeModel {
             int num = classSpec.getDomain().getValues().size() - 1;
             if (m_k.getIntValue() > num) {
                 throw new InvalidSettingsException("The number of dimensions to project to "
-                        + "cannot be larger than the number of input columns.");
+                        + "must be smaller than the number of classes.");
             }
         }
 
         FilterResult res = m_usedCols.applyTo(inSpec);
+        if (m_k.getIntValue() > res.getIncludes().length) {
+            throw new InvalidSettingsException("The number of dimensions to project to "
+                    + "cannot be larger than the number of input columns.");
+        }
+
         return new PortObjectSpec[]{createSpec(inSpec), new PCAModelPortObjectSpec(res.getIncludes())};
     }
 
