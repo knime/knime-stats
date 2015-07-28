@@ -10,37 +10,44 @@
       </node>
       <node
             category-path="/labs/statistics"
+            after="org.knime.stats.correlation.cronbach.CronbachNodeFactory"
             factory-class="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
             id="org.knime.stats.correlation.standcronbach.StandCronbachNodeFactory">
       </node>  
       <node
             category-path="/labs/statistics"
+            after="org.knime.stats.correlation.standcronbach.StandCronbachNodeFactory"
             factory-class="org.knime.base.node.stats.correlation.CorrelationComputeNodeFactory"
             id="org.knime.stats.correlation.CorrelationComputeNodeFactory">
       </node>
       <node
-            category-path="/labs/statistics"
-            expert-flag="false"
-            factory-class="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
-            id="org.knime.stats.testing.independent.WilcoxonMannWhitneyStatisticNodeFactory">
-      </node>
+      		category-path="/labs/statistics" 
+      		after="org.knime.stats.correlation.CorrelationComputeNodeFactory"
+            factory-class="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory" 
+            id="org.knime.node.stats.ContingencyTableNodeFactory"/>
       <node
             category-path="/labs/statistics"
             expert-flag="false"
+            after="org.knime.node.stats.ContingencyTableNodeFactory"
             factory-class="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory"
             id="org.knime.stats.testing.kruskal.KruskalWallisNodeFactory">
       </node>
       <node
             category-path="/labs/statistics"
+            expert-flag="false"
+            after="org.knime.stats.testing.kruskal.KruskalWallisNodeFactory"
+            factory-class="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
+            id="org.knime.stats.testing.independent.WilcoxonMannWhitneyStatisticNodeFactory">
+      </node>
+      <node
+            category-path="/labs/statistics"
+            after="org.knime.stats.testing.independent.WilcoxonMannWhitneyStatisticNodeFactory"
             factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
             id="org.knime.stats.repeatedmeasures.wilcoxon.signedrank.WilcoxonSignedRankNodeFactory">
       </node>
-      <node
-      		category-path="/labs/statistics" 
-            factory-class="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory" 
-            id="org.knime.node.stats.ContingencyTableNodeFactory"/>      
       <node 
       		category-path="/labs/statistics" 
+      		after="org.knime.stats.repeatedmeasures.wilcoxon.signedrank.WilcoxonSignedRankNodeFactory"
             factory-class="org.knime.base.node.stats.lda.LDANodeFactory" 
             id="org.knime.stats.lda.LDANodeFactory"/>
       
