@@ -19,10 +19,10 @@
 			.
 		</intro>
 		<tab name="Options">
+			<option name="Test Column">Column containing the test-data.</option>
 			<option name="Group Column">Column containing group information.</option>
 			<option name="Group One">Name of first group.</option>
 			<option name="Group Two">Name of second group.</option>
-			<option name="Test Column">Column containing the test-data</option>
 			<option name="Missing Value Strategy">
 				Determine a strategy how missing values and
 				Double.NaN values are
