@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.knime.base.node.preproc.correlation.compute.CorrelationComputer;
 import org.knime.base.util.HalfDoubleMatrix;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
