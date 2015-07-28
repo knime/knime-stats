@@ -96,13 +96,13 @@ public class ContingencyTableNodeModel extends NodeModel {
      * the settings key which is used to retrieve and store the settings (from the dialog or from a settings file)
      * (package visibility to be usable from the dialog).
      */
-    protected static final String CFGKEY_COLUMN_X = "ColumnX";
+    private static final String CFGKEY_COLUMN_X = "ColumnX";
 
-    protected static final String CFGKEY_COLUMN_Y = "ColumnY";
+    private static final String CFGKEY_COLUMN_Y = "ColumnY";
 
-    protected static final String CFGKEY_VALUE_X = "ValueX";
+    private static final String CFGKEY_VALUE_X = "ValueX";
 
-    protected static final String CFGKEY_VALUE_Y = "ValueY";
+    private static final String CFGKEY_VALUE_Y = "ValueY";
 
     private static final String CFGKEY_CONFIDENCE_LEVEL = "ConfidenceLevel";
 
