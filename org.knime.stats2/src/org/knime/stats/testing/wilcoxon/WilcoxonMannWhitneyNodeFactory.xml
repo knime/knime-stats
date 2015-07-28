@@ -4,14 +4,20 @@
 	<name>Wilcoxon Mann Whitney Test</name>
 
 	<shortDescription>
-		Performs the Wilcoxon-Mann-Whitney idependent group
+		Performs the Wilcoxon-Mann-Whitney independent group
 		test.
 	</shortDescription>
 
 	<fullDescription>
-		<intro>The non-parametric Wilcoxon-Mann-Whitney tests tests for two
-			samples with ordinal attributes if they are different from each
-			other. For details see: https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test.</intro>
+		<intro>
+			The non-parametric Wilcoxon-Mann-Whitney tests tests for two
+			samples
+			with ordinal attributes if they are different from each
+			other. For
+			details see:
+			<a href="https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test.">https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test</a>
+			.
+		</intro>
 		<tab name="Options">
 			<option name="Group Column">Column containing group information.</option>
 			<option name="Group One">Name of first group.</option>
@@ -40,7 +46,7 @@
 		<inPort index="0" name="Data Table">The Input</inPort>
 		<outPort index="0" name="Wilcoxon Mean Whitney U Test">
 			Statistics for the Wilcoxon-Mann-
-			Whitney U Test
+			Whitney U Test.
 		</outPort>
 	</ports>
 </knimeNode>

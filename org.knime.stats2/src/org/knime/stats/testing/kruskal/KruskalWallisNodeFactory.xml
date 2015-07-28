@@ -9,11 +9,16 @@
 	</shortDescription>
 
 	<fullDescription>
-		<intro>The non-paramatric independent Kruskal-Wallis-Test tests if
-			several groups with ordinal attributes are statistically different
+		<intro>
+			The non-paramatric independent Kruskal-Wallis-Test tests if
+			several
+			groups with ordinal attributes are statistically different
 			of
-			each other. For details see:
-			https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance.
+			each
+			other. For details see:
+			<a
+				href="https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance">https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance</a>
+			.
 		</intro>
 		<tab name="Options">
 			<option name="Group Column">Column containing group information.</option>
