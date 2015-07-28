@@ -189,6 +189,9 @@ public class LDANodeModel extends NodeModel {
         }
 
         FilterResult res = m_usedCols.applyTo(inSpec);
+        if (res.getIncludes().length == 0) {
+            throw new InvalidSettingsException("No input columns selected");
+        }
         if (m_k.getIntValue() > res.getIncludes().length) {
             throw new InvalidSettingsException("The number of dimensions to project to "
                     + "cannot be larger than the number of input columns.");
