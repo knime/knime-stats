@@ -191,6 +191,10 @@ public class ContingencyTableNodeModel extends NodeModel {
             throw new InvalidSettingsException("The two columns must be different.");
         }
 
+        if (dataTable.getRowCount() == 0) {
+            throw new InvalidSettingsException("ERROR: Input table is empty.");
+        }
+
         int a = 0;
         if (counts.get(valX).containsKey(valY)) {
             a = counts.get(valX).get(valY);
@@ -345,8 +349,10 @@ public class ContingencyTableNodeModel extends NodeModel {
 
         m_valueMap.clear();
 
+        int count = 0;
         for (DataColumnSpec dcSpec : dtSpec) {
             if (dcSpec.getType().isCompatible(StringValue.class)) {
+                count++;
                 Set<DataCell> vals = dcSpec.getDomain().getValues();
                 if (vals == null) {
                     throw new InvalidSettingsException("The domain for column " + dcSpec.getName() + " is not set.");
@@ -358,6 +364,10 @@ public class ContingencyTableNodeModel extends NodeModel {
                 Collections.sort(lVal);
                 m_valueMap.put(dcSpec.getName(), lVal);
             }
+        }
+
+        if (count < 2) {
+            throw new InvalidSettingsException("There must be at least two String columns in the input table.");
         }
 
         return new DataTableSpec[]{createResultsTableSpec(), createContingencyTableSpec()};
@@ -576,12 +586,17 @@ public class ContingencyTableNodeModel extends NodeModel {
         }
 
         public double getYatesCorrected() {
-            double a = getYatesCorrectedNumerator(getA(), getExpectedA()) / getExpectedA();
-            double b = getYatesCorrectedNumerator(getB(), getExpectedB()) / getExpectedB();
-            double c = getYatesCorrectedNumerator(getC(), getExpectedC()) / getExpectedC();
-            double d = getYatesCorrectedNumerator(getD(), getExpectedD()) / getExpectedD();
 
-            return a + b + c + d;
+            // Keep for next iteration.
+            //            double a = getYatesCorrectedNumerator(getA(), getExpectedA()) / getExpectedA();
+            //            double b = getYatesCorrectedNumerator(getB(), getExpectedB()) / getExpectedB();
+            //            double c = getYatesCorrectedNumerator(getC(), getExpectedC()) / getExpectedC();
+            //            double d = getYatesCorrectedNumerator(getD(), getExpectedD()) / getExpectedD();
+            //
+            //            return a + b + c + d;
+
+            return getN() * Math.pow(Math.max(0, Math.abs(getA() * getD() - getB() * getC()) - getN() / 2.0), 2)
+                / ((getA() + getC()) * (getB() + getD()) * (getA() + getB()) * (getC() + getD()));
         }
 
         public void count(final String aName, final String bName) {
