@@ -61,7 +61,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.knime.core.data.DoubleValue;
 
 /**
- * Helper for Wilcoxon Mann Whitney Statistics
+ * Helper for Wilcoxon Mann Whitney Statistics.
  *
  * @author Christian Dietz, University of Konstanz
  */

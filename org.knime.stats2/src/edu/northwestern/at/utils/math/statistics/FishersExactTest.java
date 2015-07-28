@@ -1,5 +1,7 @@
 package edu.northwestern.at.utils.math.statistics;
 
+import org.apache.commons.math3.util.CombinatoricsUtils;
+
 /*
  * Copyright 2004-2011 Northwestern University.
  *
@@ -20,7 +22,6 @@ package edu.northwestern.at.utils.math.statistics;
  * Boston, MA 02111-1307 USA.
  */
 
-import org.knime.stats.contingencytable.CombinatoricsUtils;
 
 /**
  * Calculate Fisher's exact test for a 2x2 frequency table.

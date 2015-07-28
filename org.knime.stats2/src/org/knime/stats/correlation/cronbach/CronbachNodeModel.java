@@ -48,6 +48,8 @@ package org.knime.stats.correlation.cronbach;
 import java.io.File;
 import java.io.IOException;
 
+import org.knime.base.data.statistics.StatisticCalculator;
+import org.knime.base.data.statistics.calculation.Variance;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
@@ -102,13 +104,11 @@ final class CronbachNodeModel extends NodeModel {
         final DataTableSpec filteredTableSpec = filteredTable.getDataTableSpec();
 
         // step1 get variance for all columns
-        // TODO Readd the statistics framework for final 2.12. release.
-//        Variance my = new Variance(filteredTableSpec.getColumnNames());
-//        StatisticCalculator sc = new StatisticCalculator(filteredTableSpec, my);
-//        sc.evaluate(filteredTable, exec.createSubExecutionContext(0.5));
+        Variance my = new Variance(filteredTableSpec.getColumnNames());
+        StatisticCalculator sc = new StatisticCalculator(filteredTableSpec, my);
+        sc.evaluate(filteredTable, exec.createSubExecutionContext(0.5));
 
         double[] sum = new double[filteredTable.getRowCount()];
-        double[][] values = new double[filteredTable.getDataTableSpec().getNumColumns()][filteredTable.getRowCount()];
 
         // step2 get variance for the overall sum
         ExecutionContext exec2 = exec.createSubExecutionContext(0.5);
@@ -118,36 +118,25 @@ final class CronbachNodeModel extends NodeModel {
             sum[i] = 0;
             exec2.checkCanceled();
             exec2.setProgress(i * 1.0 / rowCount, "Statisics calculation row " + i + " of " + rowCount);
-            int j = 0;
             for (DataCell cell : row) {
                 if (!cell.isMissing()) {
-                    // TODO Readd the statistics framework for final 2.12. release.
                     double value = ((DoubleValue)cell).getDoubleValue();
-                    values[j][i] = value;
                     sum[i] += value;
                 } else {
                     throw new InvalidSettingsException("Missing Values are not supported. "
                             + "Please resolve them with the Missing Value node.");
                 }
-                j++;
             }
             i++;
         }
 
         exec.setMessage("Caluating Crombach over all Columns");
         double cronbach = 0;
-        // TODO Readd the statistics framework for final 2.12. release.
-//        for (String s : filteredTableSpec.getColumnNames()) {
-//            cronbach += my.getResult(s);
-//            exec.checkCanceled();
-//        }
-
-        org.apache.commons.math3.stat.descriptive.moment.Variance v2 =
-            new org.apache.commons.math3.stat.descriptive.moment.Variance();
-
-        for (int z = 0; z < values.length; z++) {
-            cronbach += v2.evaluate(values[z]);
+        for (String s : filteredTableSpec.getColumnNames()) {
+            cronbach += my.getResult(s);
+            exec.checkCanceled();
         }
+
         org.apache.commons.math3.stat.descriptive.moment.Variance v =
             new org.apache.commons.math3.stat.descriptive.moment.Variance();
         cronbach /= v.evaluate(sum);
