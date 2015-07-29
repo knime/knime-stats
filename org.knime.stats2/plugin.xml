@@ -17,12 +17,12 @@
       <node
             category-path="/labs/statistics"
             after="org.knime.stats.correlation.standcronbach.StandCronbachNodeFactory"
-            factory-class="org.knime.base.node.stats.correlation.CorrelationComputeNodeFactory"
-            id="org.knime.stats.correlation.CorrelationComputeNodeFactory">
+            factory-class="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
+            id="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory">
       </node>
       <node
       		category-path="/labs/statistics" 
-      		after="org.knime.stats.correlation.CorrelationComputeNodeFactory"
+      		after="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
             factory-class="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory" 
             id="org.knime.node.stats.ContingencyTableNodeFactory"/>
       <node
