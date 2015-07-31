@@ -42,7 +42,7 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  */
-package org.knime.base.node.stats.correlation;
+package org.knime.base.node.stats.correlation.rank;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -100,7 +100,7 @@ import org.knime.core.node.tableview.TableView;
  *
  * @author Bernd Wiswedel, University of Konstanz
  */
-public class CorrelationComputeNodeView extends NodeView<CorrelationComputeNodeModel> {
+final class RankCorrelationComputeNodeView extends NodeView<RankCorrelationComputeNodeModel> {
 
     private final TableView m_tableView;
     private String m_currentRendererID = ColorRender.DESCRIPTION;
@@ -108,7 +108,7 @@ public class CorrelationComputeNodeView extends NodeView<CorrelationComputeNodeM
     /** Inits GUI.
      * @param model The underlying model.
      */
-    public CorrelationComputeNodeView(final CorrelationComputeNodeModel model) {
+    public RankCorrelationComputeNodeView(final RankCorrelationComputeNodeModel model) {
         super(model);
         m_tableView = new TableView(new MyTableContentView());
         m_tableView.setColumnHeaderResizingAllowed(true);

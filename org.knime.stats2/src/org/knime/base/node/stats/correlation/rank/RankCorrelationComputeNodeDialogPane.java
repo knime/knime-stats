@@ -42,7 +42,7 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * -------------------------------------------------------------------
  */
-package org.knime.base.node.stats.correlation;
+package org.knime.base.node.stats.correlation.rank;
 
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnFilter2;
@@ -53,14 +53,14 @@ import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
  * @author Bernd Wiswedel, University of Konstanz
  * @author Iris Adae, University of Konstanz
  */
-public class CorrelationComputeNodeDialogPane extends DefaultNodeSettingsPane {
+final class RankCorrelationComputeNodeDialogPane extends DefaultNodeSettingsPane {
 
     /** Inits dialog, adds only a column filter. */
-    public CorrelationComputeNodeDialogPane() {
-        addDialogComponent(new DialogComponentStringSelection(CorrelationComputeNodeModel.createTypeModel(),
-            "Correlation Type:", CorrelationComputeNodeModel.getCorrelationTypes()));
+    public RankCorrelationComputeNodeDialogPane() {
+        addDialogComponent(new DialogComponentStringSelection(RankCorrelationComputeNodeModel.createTypeModel(),
+            "Correlation Type:", RankCorrelationComputeNodeModel.getCorrelationTypes()));
 
         addDialogComponent(new DialogComponentColumnFilter2(
-            CorrelationComputeNodeModel.createColumnFilterModel(), 0));
+            RankCorrelationComputeNodeModel.createColumnFilterModel(), 0));
     }
 }

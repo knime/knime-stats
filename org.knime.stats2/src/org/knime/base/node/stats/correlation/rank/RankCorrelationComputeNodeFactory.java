@@ -42,7 +42,7 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * -------------------------------------------------------------------
  */
-package org.knime.base.node.stats.correlation;
+package org.knime.base.node.stats.correlation.rank;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
@@ -52,31 +52,31 @@ import org.knime.core.node.NodeView;
  *
  * @author Bernd Wiswedel, University of Konstanz
  */
-public class CorrelationComputeNodeFactory extends NodeFactory<CorrelationComputeNodeModel> {
+public final class RankCorrelationComputeNodeFactory extends NodeFactory<RankCorrelationComputeNodeModel> {
 
     /**
      * {@inheritDoc}
      */
     @Override
     protected NodeDialogPane createNodeDialogPane() {
-        return new CorrelationComputeNodeDialogPane();
+        return new RankCorrelationComputeNodeDialogPane();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public CorrelationComputeNodeModel createNodeModel() {
-        return new CorrelationComputeNodeModel();
+    public RankCorrelationComputeNodeModel createNodeModel() {
+        return new RankCorrelationComputeNodeModel();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public NodeView<CorrelationComputeNodeModel> createNodeView(
-            final int viewIndex, final CorrelationComputeNodeModel nodeModel) {
-        return new CorrelationComputeNodeView(nodeModel);
+    public NodeView<RankCorrelationComputeNodeModel> createNodeView(
+            final int viewIndex, final RankCorrelationComputeNodeModel nodeModel) {
+        return new RankCorrelationComputeNodeView(nodeModel);
     }
 
     /**

@@ -42,7 +42,7 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * -------------------------------------------------------------------
  */
-package org.knime.base.node.stats.correlation;
+package org.knime.base.node.stats.correlation.rank;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,7 +77,7 @@ import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
  *
  * @author wiswedel, University of Konstanz
  */
-final class CorrelationComputeNodeModel extends NodeModel implements BufferedDataTableHolder {
+final class RankCorrelationComputeNodeModel extends NodeModel implements BufferedDataTableHolder {
 
 //    private static final NodeLogger LOGGER = NodeLogger.getLogger(CorrelationComputeNodeModel.class);
 
@@ -97,7 +97,7 @@ final class CorrelationComputeNodeModel extends NodeModel implements BufferedDat
 
     /** One input, one output.
      */
-    CorrelationComputeNodeModel() {
+    RankCorrelationComputeNodeModel() {
         super(new PortType[]{BufferedDataTable.TYPE},
                 new PortType[]{BufferedDataTable.TYPE, PMCCPortObjectAndSpec.TYPE, BufferedDataTable.TYPE});
     }

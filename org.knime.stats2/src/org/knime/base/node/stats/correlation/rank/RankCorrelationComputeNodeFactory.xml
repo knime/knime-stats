@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
-<knimeNode type="Other" icon="correlation.png">
+<knimeNode type="Other" icon="rankcorrelation.png">
     <name>Rank Correlation</name>
     <shortDescription>
         Computes correlation coefficients for pairs of columns, based on the sorting of its values only.

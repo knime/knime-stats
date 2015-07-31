@@ -42,7 +42,7 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ------------------------------------------------------------------------
  */
-package org.knime.base.node.stats.correlation;
+package org.knime.base.node.stats.correlation.rank;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -365,7 +365,7 @@ final class SortedCorrelationComputer {
         // the calculation of the matrix will be much more time intensive, so we only assign 5%
         // of the execution time to the final calculation of
 
-        if (corrType.equals(CorrelationComputeNodeModel.CFG_KENDALLA)) {
+        if (corrType.equals(RankCorrelationComputeNodeModel.CFG_KENDALLA)) {
             double nrOfRows = m_rank.getRowCount();
             // kendalls Tau a
             double divisor = (nrOfRows * (nrOfRows - 1.0)) * 0.5;
@@ -376,7 +376,7 @@ final class SortedCorrelationComputer {
                 exec.setProgress(0.05 * i / coCount, "Calculating correlations");
             }
 
-        } else if (corrType.equals(CorrelationComputeNodeModel.CFG_KENDALLB)) {
+        } else if (corrType.equals(RankCorrelationComputeNodeModel.CFG_KENDALLB)) {
             double n0 = rowCount * (rowCount - 1) * 0.5;
 
             // kendalls Tau b
@@ -391,7 +391,7 @@ final class SortedCorrelationComputer {
                 exec.setProgress(0.05 * i / coCount, "Calculating correlations");
             }
 
-        } else if (corrType.equals(CorrelationComputeNodeModel.CFG_KRUSKALAL)) {
+        } else if (corrType.equals(RankCorrelationComputeNodeModel.CFG_KRUSKALAL)) {
             // Kruskals Gamma
             for (int i = 0; i < coCount; i++) {
                 for (int j = i + 1; j < coCount; j++) {
@@ -473,7 +473,7 @@ final class SortedCorrelationComputer {
         // the calculation of the matrix will be much more time intensive, so we only assign 5%
         // of the execution time to the final calculation of
 
-        if (corrType.equals(CorrelationComputeNodeModel.CFG_KENDALLA)) {
+        if (corrType.equals(RankCorrelationComputeNodeModel.CFG_KENDALLA)) {
             double nrOfRows = m_rank.getRowCount();
             // kendalls Tau a
             double divisor = (nrOfRows * (nrOfRows - 1.0)) * 0.5;
@@ -484,7 +484,7 @@ final class SortedCorrelationComputer {
                 exec.setProgress(0.05 * i / coCount, "Calculating correlations");
             }
 
-        } else if (corrType.equals(CorrelationComputeNodeModel.CFG_KENDALLB)) {
+        } else if (corrType.equals(RankCorrelationComputeNodeModel.CFG_KENDALLB)) {
 
             // kendalls Tau b
             for (int i = 0; i < coCount; i++) {
@@ -496,7 +496,7 @@ final class SortedCorrelationComputer {
                 exec.setProgress(0.05 * i / coCount, "Calculating correlations");
             }
 
-        } else if (corrType.equals(CorrelationComputeNodeModel.CFG_KRUSKALAL)) {
+        } else if (corrType.equals(RankCorrelationComputeNodeModel.CFG_KRUSKALAL)) {
             // Kruskals Gamma
             for (int i = 0; i < coCount; i++) {
                 for (int j = i + 1; j < coCount; j++) {
