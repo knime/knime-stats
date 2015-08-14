@@ -27,14 +27,12 @@
             id="org.knime.node.stats.ContingencyTableNodeFactory"/>
       <node
             category-path="/labs/statistics"
-            expert-flag="false"
             after="org.knime.node.stats.ContingencyTableNodeFactory"
             factory-class="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory"
             id="org.knime.stats.testing.kruskal.KruskalWallisNodeFactory">
       </node>
       <node
             category-path="/labs/statistics"
-            expert-flag="false"
             after="org.knime.stats.testing.kruskal.KruskalWallisNodeFactory"
             factory-class="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
             id="org.knime.stats.testing.independent.WilcoxonMannWhitneyStatisticNodeFactory">
