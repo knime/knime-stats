@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.knime.base.node.viz.crosstable.CrosstabStatisticsCalculator;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -78,8 +79,6 @@ import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
-
-import edu.northwestern.at.utils.math.statistics.FishersExactTest;
 
 /**
  * This is the model implementation of OddsRatio.
@@ -145,13 +144,7 @@ public class ContingencyTableNodeModel extends NodeModel {
      */
     public static final double CONFIDENCE_LEVEL_STEPSIZE = 0.01;
 
-    private static final int FISHERS_TWO_SIDED = 0;
-
-    private static final int FISHERS_LEFT_TAIL = 1;
-
-    private static final int FISHERS_RIGHT_TAIL = 2;
-
-    private Map<String, List<String>> m_valueMap = new HashMap<String, List<String>>();
+    private Map<String, List<String>> m_valueMap = new HashMap<>();
 
     private SettingsModelString m_columnX = createSettingsModelColumnSelectorX();
 
@@ -231,9 +224,9 @@ public class ContingencyTableNodeModel extends NodeModel {
         resultsContainer.addRowToTable(getPushDoubleRow("RR Lower CI", orr.getRiskRatioLowerCI()));
         resultsContainer.addRowToTable(getPushDoubleRow("RR Upper CI", orr.getRiskRatioUpperCI()));
         double[] fisher = orr.getFishersExact();
-        resultsContainer.addRowToTable(getPushDoubleRow("Fishers Two Sided", fisher[FISHERS_TWO_SIDED]));
-        resultsContainer.addRowToTable(getPushDoubleRow("Fishers Left Tail", fisher[FISHERS_LEFT_TAIL]));
-        resultsContainer.addRowToTable(getPushDoubleRow("Fishers Right Tail", fisher[FISHERS_RIGHT_TAIL]));
+        resultsContainer.addRowToTable(getPushDoubleRow("Fishers Two Sided", fisher[CrosstabStatisticsCalculator.FISHERS_TWO_TAILED]));
+        resultsContainer.addRowToTable(getPushDoubleRow("Fishers Left Tail", fisher[CrosstabStatisticsCalculator.FISHERS_LEFT_TAILED]));
+        resultsContainer.addRowToTable(getPushDoubleRow("Fishers Right Tail", fisher[CrosstabStatisticsCalculator.FISHERS_RIGHT_TAILED]));
         resultsContainer.addRowToTable(getPushDoubleRow("ChiSq", orr.getChiSquared()));
         resultsContainer.addRowToTable(getPushDoubleRow("Yates Corrected", orr.getYatesCorrected()));
         resultsContainer.addRowToTable(getPushDoubleRow("Pearsons", orr.getPearsons()));
@@ -431,8 +424,6 @@ public class ContingencyTableNodeModel extends NodeModel {
 
         private int m_d = 0;
 
-        private Map<String, Map<String, Integer>> m_counts;
-
         private double m_zScore;
 
         private double m_correction = 0;
@@ -454,6 +445,11 @@ public class ContingencyTableNodeModel extends NodeModel {
             m_b = b;
             m_c = c;
             m_d = d;
+
+            if (m_a == 0 || m_b == 0 || m_c == 0 || m_d == 0) {
+                m_correction = m_lpCorr;
+            }
+
         }
 
         public double getA() {
@@ -505,7 +501,13 @@ public class ContingencyTableNodeModel extends NodeModel {
         }
 
         public double[] getFishersExact() {
-            return FishersExactTest.fishersExactTest(m_a, m_b, m_c, m_d);
+            int[][] crosstab = new int[2][2];
+            crosstab[0][0] = getUncorrectedA();
+            crosstab[0][1] = getUncorrectedB();
+            crosstab[1][0] = getUncorrectedC();
+            crosstab[1][1] = getUncorrectedD();
+
+            return CrosstabStatisticsCalculator.exactPValue(crosstab);
         }
 
         public double getOddsRatio() {
@@ -581,62 +583,11 @@ public class ContingencyTableNodeModel extends NodeModel {
 
         }
 
-        private double getYatesCorrectedNumerator(final double observed, final double expected) {
-            return Math.pow(Math.abs(observed - expected) - YATES_CORRECTION, 2);
-        }
-
         public double getYatesCorrected() {
-
-            // Keep for next iteration.
-            //            double a = getYatesCorrectedNumerator(getA(), getExpectedA()) / getExpectedA();
-            //            double b = getYatesCorrectedNumerator(getB(), getExpectedB()) / getExpectedB();
-            //            double c = getYatesCorrectedNumerator(getC(), getExpectedC()) / getExpectedC();
-            //            double d = getYatesCorrectedNumerator(getD(), getExpectedD()) / getExpectedD();
-            //
-            //            return a + b + c + d;
-
             return getN() * Math.pow(Math.max(0, Math.abs(getA() * getD() - getB() * getC()) - getN() / 2.0), 2)
                 / ((getA() + getC()) * (getB() + getD()) * (getA() + getB()) * (getC() + getD()));
         }
 
-        public void count(final String aName, final String bName) {
-
-            m_correction = 0;
-            m_a = m_counts.get(aName).get(bName);
-            m_b = 0;
-            m_c = 0;
-            m_d = 0;
-            for (String a : m_counts.keySet()) {
-                for (String b : m_counts.get(aName).keySet()) {
-                    if (a.equals(aName) && !b.equals(bName)) {
-                        m_b += m_counts.get(a).get(b);
-                    }
-                    if (!a.equals(aName) && !b.equals(bName)) {
-                        m_d += m_counts.get(a).get(b);
-                    }
-                    if (!a.equals(aName) && b.equals(bName)) {
-                        m_c += m_counts.get(a).get(b);
-                    }
-                }
-            }
-            if (m_a == 0 || m_b == 0 || m_c == 0 || m_d == 0) {
-                m_correction = m_lpCorr;
-            }
-        }
-
-        private double getPvalue(final double ratio, final double stdErr) {
-            double z = Math.abs(Math.log(ratio) / stdErr);
-            return Math.exp(-0.717 * z - 0.416 * Math.pow(z, 2));
-
-        }
-
-        public double getOddsRatioPvalue() {
-            return getPvalue(getOddsRatio(), getOddsRatioStdErr());
-        }
-
-        public double getRiskRatioPvalue() {
-            return getPvalue(getRiskRatio(), getRiskRatioStdErr());
-        }
     }
 
 }
