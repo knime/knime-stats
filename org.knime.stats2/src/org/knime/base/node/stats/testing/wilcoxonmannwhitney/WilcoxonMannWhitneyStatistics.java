@@ -75,7 +75,7 @@ class WilcoxonMannWhitneyStatistics {
      * @param n1 number of subjects in first sample
      * @param n2 number of subjects in second sample
      * @return two-sided asymptotic p-value
-     * @throws ConvergenceException if the p-value can not be computed due to a convergence error
+     * @throws ConvergenceException if the p-value cannot be computed due to a convergence error
      * @throws MaxCountExceededException if the maximum number of iterations is exceeded
      */
     static double calculateAsymptoticPValue(final double Umin, final int n1, final int n2) throws ConvergenceException,
