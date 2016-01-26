@@ -32,13 +32,11 @@
 			<option name="Measurement 2 column">
 				Column containing the values of the second measurement method.
 			</option>
-			<!--
 			<option name="Scale data with logarithm">
 				First scale the values with a logarithm (base 2) to compensate for
 				proportional bias (difference of two values is higher for higher
 				mean values).
 			</option>
-			-->
 		</tab>
 		<tab name="View Controls">
 			<option name="Enable panning">
