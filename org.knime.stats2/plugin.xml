@@ -48,6 +48,10 @@
       		after="org.knime.stats.repeatedmeasures.wilcoxon.signedrank.WilcoxonSignedRankNodeFactory"
             factory-class="org.knime.base.node.stats.lda.LDANodeFactory" 
             id="org.knime.stats.lda.LDANodeFactory"/>
+      <node 
+      		category-path="/labs/statistics" 
+            factory-class="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory" 
+            id="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory"/>
       
    </extension>
    <extension point="org.knime.workbench.repository.categories">
@@ -56,6 +60,38 @@
             level-id="statistics"
             name="Statistics"
             path="/labs/"/>
+   </extension>
+   <extension
+         point="org.knime.js.core.webResources">
+      <webResourceBundle
+            debug="true"
+            name="Bland-Altman Plot"
+            version="1.0.0"
+            webResourceBundleID="org.knime.base.node.stats.agreement.blandaltmanplot.bundle">
+         <webResource
+               relativePathSource="js-src/org/knime/base/node/stats/agreement/blandaltmanplot/"
+               relativePathTarget="org/knime/base/node/stats/agreement/blandaltmanplot/">
+         </webResource>
+         <webDependency
+               webResourceBundleID="jsFreeChart_0.5">
+         </webDependency>
+         <importResource
+               relativePath="org/knime/base/node/stats/agreement/blandaltmanplot/knime-bland-altman-plot.js"
+               type="JAVASCRIPT">
+         </importResource>
+      </webResourceBundle>
+   </extension>
+   <extension
+         point="org.knime.js.core.javascriptComponents">
+      <javascriptComponent
+            getComponentValue-method-name="getComponentValue"
+            implementationBundleID="org.knime.base.node.stats.agreement.blandaltmanplot.bundle"
+            init-method-name="init"
+            javascriptComponentID="org_knime_base_node_stats_agreement_blandaltmanplot"
+            name="Bland-Altman Plot"
+            namespace="knime_bland_altman_plot"
+            validate-method-name="validate">
+      </javascriptComponent>
    </extension>
 
 </plugin>

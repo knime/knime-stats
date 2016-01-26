@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<knimeNode icon="./blandaltmanplot.png" type="Visualizer"
+	xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+	<name>Bland-Altman Plot</name>
+
+	<shortDescription>
+		Creates a Bland-Altman plot (also known as Tukey mean-difference plot) used to analyze the agreement of two different measurement methods.
+	</shortDescription>
+
+	<fullDescription>
+		<intro>
+			Creates a Bland-Altman plot (also known as Tukey mean-difference plot) used to analyze the agreement of two
+			different measurement methods.
+			<br /><br />
+			The plot shows the relationship
+			between the mean of two measurements and their difference. The bias
+			of the first method is shown which states how much higher or lower the
+			measurements on average are compared to the measurements of the
+			second method. It also shows the limit of agreement which state how
+			much of a difference can be expected when using one method instead of
+			the other.
+			<br />
+			<br />
+			More information can be found in the original publication
+			<a href="https://dx.doi.org/10.2307%2F2987937">"Measurement in Medicine: The Analysis of Method Comparison Studies"</a>.
+		</intro>
+		<tab name="Options">
+			<option name="Measurement 1 column">
+				Column containing the values of the first measurement method.
+			</option>
+			<option name="Measurement 2 column">
+				Column containing the values of the second measurement method.
+			</option>
+			<!--
+			<option name="Scale data with logarithm">
+				First scale the values with a logarithm (base 2) to compensate for
+				proportional bias (difference of two values is higher for higher
+				mean values).
+			</option>
+			-->
+		</tab>
+		<tab name="View Controls">
+			<option name="Enable panning">
+				Enable panning on the plot. To start panning click and drag the mouse.
+				Note if panning and drag zooming is enabled, panning can be achieved
+				by holding the Ctrl key and dragging the mouse.
+			</option>
+			<option name="Enable mouse wheel zooming">
+				Enable zooming on the plot using the mouse wheel.
+			</option>
+			<option name="Enable drag zooming">
+				Enable zooming on the plot by dragging the mouse and drawing a zoom
+				rectangle. Dragging from the top-left down will create a zoom
+				rectangle, dragging from the bottom right up will reset the zoom to
+				fit the extends of the plot. Note if panning and drag zooming is
+				enabled, panning can be achieved by holding the Ctrl key and
+				dragging the mouse.
+			</option>
+			<option name="Show zoom reset button">
+				Renders a button to resize the plot to it's extends.
+			</option>
+		</tab>
+		<tab name="Image options">
+			<option name="Width of image (in px)">
+				The width of the generated SVG image.
+			</option>
+			<option name="Height of image (in px)">
+				The height of the generated SVG image.
+			</option>
+		</tab>
+	</fullDescription>
+
+	<interactiveView name="Bland-Altman Plot">
+		Displays a Bland-Altman plot
+		visualization of the selected to measurements.
+	</interactiveView>
+	<ports>
+		<inPort index="0" name="Measurement data">Data table containing the two
+			measurements.</inPort>
+		<outPort name="Bland-Altman Plot" index="0">The Bland-Altman Plot.
+		</outPort>
+		<outPort name="Measurements" index="1">The two selected
+			measurements together with the calculated mean (x in the plot) and
+			difference (y in the plot).</outPort>
+		<outPort name="Bias and limits of agreement" index="2">The bias
+			(mean of the difference) and the limits of agreement (95% of the
+			points are within the limits of agreement).</outPort>
+	</ports>
+</knimeNode>

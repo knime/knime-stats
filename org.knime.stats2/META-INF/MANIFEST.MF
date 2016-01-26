@@ -7,6 +7,12 @@ Bundle-ClassPath: .
 Bundle-Vendor: KNIME GmbH, Konstanz, Germany
 Export-Package: org.knime.base.node.stats.contingencytable
 Require-Bundle: org.knime.base;bundle-version="[3.0.0,4.0.0)",
- org.apache.commons.math3;bundle-version="[3.2.0,4.0.0)"
+ org.apache.commons.math3;bundle-version="[3.2.0,4.0.0)",
+ org.knime.js.core;bundle-version="3.1.0",
+ org.apache.commons.lang3;bundle-version="3.2.1",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.5.2",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.5.2",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.5.2",
+ org.knime.ext.svg
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
