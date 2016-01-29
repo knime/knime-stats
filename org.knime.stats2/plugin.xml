@@ -52,6 +52,12 @@
       		category-path="/labs/statistics" 
             factory-class="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory" 
             id="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory"/>
+      <node
+            category-path="/labs/statistics"
+            deprecated="false"
+            factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory"
+            id="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory">
+      </node>
       
    </extension>
    <extension point="org.knime.workbench.repository.categories">
