@@ -423,6 +423,9 @@ final class BlandAltmanPlotNodeModel
             container2.addRowToTable(new DefaultRow("Row0",
                 new DataCell[]{new DoubleCell(bias), new DoubleCell(upperLimit), new DoubleCell(lowerLimit)}));
             container2.close();
+            pushFlowVariableDouble("Bias", bias);
+            pushFlowVariableDouble("Upper limit of agreement", upperLimit);
+            pushFlowVariableDouble("Lower limit of agreement", lowerLimit);
             minY = Math.min(minY, lowerLimit);
             maxY = Math.max(maxY, upperLimit);
             JSONKeyedValues2DDataset dataset = new JSONKeyedValues2DDataset(new String[]{"Mean", "Difference"},
