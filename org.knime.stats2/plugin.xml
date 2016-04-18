@@ -6,17 +6,17 @@
      <node
             category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.correlation.cronbach.CronbachNodeFactory"
-            id="org.knime.stats.correlation.cronbach.CronbachNodeFactory">
+            id="org.knime.base.node.stats.correlation.cronbach.CronbachNodeFactory">
       </node>
       <node
             category-path="/labs/statistics"
-            after="org.knime.stats.correlation.cronbach.CronbachNodeFactory"
+            after="org.knime.base.node.stats.correlation.cronbach.CronbachNodeFactory"
             factory-class="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
-            id="org.knime.stats.correlation.standcronbach.StandCronbachNodeFactory">
+            id="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory">
       </node>  
       <node
             category-path="/labs/statistics"
-            after="org.knime.stats.correlation.standcronbach.StandCronbachNodeFactory"
+            after="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
             factory-class="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
             id="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory">
       </node>
@@ -24,28 +24,28 @@
       		category-path="/labs/statistics" 
       		after="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
             factory-class="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory" 
-            id="org.knime.node.stats.ContingencyTableNodeFactory"/>
+            id="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory"/>
       <node
             category-path="/labs/statistics"
-            after="org.knime.node.stats.ContingencyTableNodeFactory"
+            after="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory"
             factory-class="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory"
-            id="org.knime.stats.testing.kruskal.KruskalWallisNodeFactory">
+            id="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory">
       </node>
       <node
             category-path="/labs/statistics"
-            after="org.knime.stats.testing.kruskal.KruskalWallisNodeFactory"
+            after="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory"
             factory-class="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
-            id="org.knime.stats.testing.independent.WilcoxonMannWhitneyStatisticNodeFactory">
+            id="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory">
       </node>
       <node
             category-path="/labs/statistics"
-            after="org.knime.stats.testing.independent.WilcoxonMannWhitneyStatisticNodeFactory"
+            after="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
             factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
-            id="org.knime.stats.repeatedmeasures.wilcoxon.signedrank.WilcoxonSignedRankNodeFactory">
+            id="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory">
       </node>
       <node 
       		category-path="/labs/statistics" 
-      		after="org.knime.stats.repeatedmeasures.wilcoxon.signedrank.WilcoxonSignedRankNodeFactory"
+      		after="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
             factory-class="org.knime.base.node.stats.lda.LDANodeFactory" 
             id="org.knime.stats.lda.LDANodeFactory"/>
       <node 
