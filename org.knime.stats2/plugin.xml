@@ -6,57 +6,57 @@
      <node
             category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.correlation.cronbach.CronbachNodeFactory"
-            id="org.knime.base.node.stats.correlation.cronbach.CronbachNodeFactory">
+            >
       </node>
       <node
             category-path="/labs/statistics"
             after="org.knime.base.node.stats.correlation.cronbach.CronbachNodeFactory"
             factory-class="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
-            id="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory">
+            >
       </node>  
       <node
             category-path="/labs/statistics"
             after="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
             factory-class="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
-            id="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory">
+            >
       </node>
       <node
       		category-path="/labs/statistics" 
       		after="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
             factory-class="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory" 
-            id="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory"/>
+            />
       <node
             category-path="/labs/statistics"
             after="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory"
             factory-class="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory"
-            id="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory">
+            >
       </node>
       <node
             category-path="/labs/statistics"
             after="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory"
             factory-class="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
-            id="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory">
+            >
       </node>
       <node
             category-path="/labs/statistics"
             after="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
             factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
-            id="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory">
+            >
       </node>
       <node 
       		category-path="/labs/statistics" 
       		after="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
             factory-class="org.knime.base.node.stats.lda.LDANodeFactory" 
-            id="org.knime.stats.lda.LDANodeFactory"/>
+            />
       <node 
       		category-path="/labs/statistics" 
             factory-class="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory" 
-            id="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory"/>
+            />
       <node
             category-path="/labs/statistics"
             deprecated="false"
             factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory"
-            id="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory">
+            >
       </node>
       
    </extension>
@@ -99,5 +99,4 @@
             validate-method-name="validate">
       </javascriptComponent>
    </extension>
-
 </plugin>
