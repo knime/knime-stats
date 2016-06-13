@@ -108,6 +108,27 @@ public class KaplanMeierNodeModel extends NodeModel {
 
         BufferedDataTable inTable = (BufferedDataTable)inData[0];
 
+
+        int timeCol = inTable.getSpec().findColumnIndex(m_timeColumn.getStringValue());
+        int eventCol = inTable.getSpec().findColumnIndex(m_eventColumn.getStringValue());
+        int groupCol = inTable.getSpec().findColumnIndex(m_groupColumn.getStringValue());
+
+        // We have to check manually because later we only use groupby and sorters
+        for (DataRow row : inTable) {
+            if (row.getCell(timeCol).isMissing()) {
+                throw new InvalidSettingsException("Column " + m_timeColumn.getStringValue()
+                                                    + " contains missing values.");
+            }
+            if (row.getCell(eventCol).isMissing()) {
+                throw new InvalidSettingsException("Column " + m_eventColumn.getStringValue()
+                                                    + " contains missing values.");
+            }
+            if (groupCol >= 0 && row.getCell(groupCol).isMissing()) {
+                throw new InvalidSettingsException("Column " + m_groupColumn.getStringValue()
+                                                    + " contains missing values.");
+            }
+        }
+
         KaplanMeierCalculator calc = new KaplanMeierCalculator(m_timeColumn.getStringValue(),
             m_eventColumn.getStringValue(), m_groupColumn.getStringValue());
         BufferedDataTable transformed = calc.calculate(exec.createSubExecutionContext(0.7), inTable);
