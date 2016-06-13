@@ -136,12 +136,17 @@ public class KaplanMeierNodeModel extends NodeModel {
         return new PortObject[]{result};
     }
 
-    private ColumnRearranger createColumnRearranger(final DataTableSpec spec, final Map<String, Integer> groupCounts) {
+    private ColumnRearranger createColumnRearranger(final DataTableSpec spec, final Map<String, Integer> groupCounts)
+            throws InvalidSettingsException {
 
         //final int timeIndex = spec.findColumnIndex(m_timeColumn.getStringValue());
         final int groupIndex = spec.findColumnIndex(m_groupColumn.getStringValue());
         final int eventHappenedIndex = spec.findColumnIndex("#True(" + m_eventColumn.getStringValue() + ")");
         final int censoringHappendedIndex = spec.findColumnIndex("#False(" + m_eventColumn.getStringValue() + ")");
+
+        if (eventHappenedIndex == -1) {
+            throw new InvalidSettingsException("No suitable event type column (boolean) found.");
+        }
 
         CellFactory cf = new CellFactory() {
             private Map<String, List<Double>> m_values = new HashMap<>();
@@ -226,9 +231,14 @@ public class KaplanMeierNodeModel extends NodeModel {
     protected void reset() {
     }
 
-    private DataTableSpec createIntermediateSpec(final DataTableSpec spec) {
+    private DataTableSpec createIntermediateSpec(final DataTableSpec spec) throws InvalidSettingsException {
         final int timeIndex = spec.findColumnIndex(m_timeColumn.getStringValue());
         final int groupIndex = spec.findColumnIndex(m_groupColumn.getStringValue());
+
+        if (timeIndex == -1) {
+            throw new InvalidSettingsException("No suitable time column (integer) found.");
+        }
+
         DataColumnSpec trueCol = new DataColumnSpecCreator("#True(" + m_eventColumn.getStringValue() + ")",
                                                             IntCell.TYPE).createSpec();
         DataColumnSpec falseCol = new DataColumnSpecCreator("#False(" + m_eventColumn.getStringValue() + ")",
