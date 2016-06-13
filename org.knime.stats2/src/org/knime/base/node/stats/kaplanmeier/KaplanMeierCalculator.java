@@ -117,7 +117,6 @@ public class KaplanMeierCalculator {
 
         // Execute the group by
         ExecutionContext groupExec = exec.createSubExecutionContext(0.5);
-        // TODO: Changed ctor visiblity as discussed with Tobias Koetter via Skype. Make sure to check that in.
         MemoryGroupByTable gbTable = new MemoryGroupByTable(groupExec, inTable, groupByColumns, aggregators,
                                             GlobalSettings.DEFAULT, false,
                                             ColumnNamePolicy.AGGREGATION_METHOD_COLUMN_NAME, false);
