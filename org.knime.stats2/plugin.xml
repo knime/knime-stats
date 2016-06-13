@@ -58,6 +58,11 @@
             factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory"
             >
       </node>
+      <node
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory"
+            >
+      </node>
       
    </extension>
    <extension point="org.knime.workbench.repository.categories">
