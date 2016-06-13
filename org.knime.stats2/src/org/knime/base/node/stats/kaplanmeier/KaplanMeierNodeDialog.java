@@ -1,5 +1,6 @@
 package org.knime.base.node.stats.kaplanmeier;
 
+import org.knime.core.data.DataValue;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
 
@@ -23,7 +24,7 @@ public class KaplanMeierNodeDialog extends DefaultNodeSettingsPane {
     protected KaplanMeierNodeDialog() {
         DialogComponentColumnNameSelection timeCol = new DialogComponentColumnNameSelection(
                         KaplanMeierNodeModel.createTimeColSettingsModel(),
-                      "Time column", 0, org.knime.core.data.IntValue.class);
+                      "Time column", 0, DataValue.class);
 
         DialogComponentColumnNameSelection eventCol = new DialogComponentColumnNameSelection(
             KaplanMeierNodeModel.createEventColSettingsModel(),
