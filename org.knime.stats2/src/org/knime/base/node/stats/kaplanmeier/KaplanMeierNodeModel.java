@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.knime.core.data.BooleanValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -14,11 +15,13 @@ import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataTableSpecCreator;
 import org.knime.core.data.DataType;
+import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.CellFactory;
 import org.knime.core.data.container.ColumnRearranger;
+import org.knime.core.data.date.DateAndTimeValue;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.data.def.IntCell;
 import org.knime.core.node.BufferedDataTable;
@@ -254,11 +257,18 @@ public class KaplanMeierNodeModel extends NodeModel {
         final int groupIndex = spec.findColumnIndex(m_groupColumn.getStringValue());
 
         if (timeIndex == -1) {
-            throw new InvalidSettingsException("No suitable time column (integer) found.");
+            throw new InvalidSettingsException("No time column selected.");
         }
-
+        DataColumnSpec timeSpec = spec.getColumnSpec(timeIndex);
+        if (!timeSpec.getType().isCompatible(DateAndTimeValue.class)
+                && !timeSpec.getType().isCompatible(DoubleValue.class)) {
+            throw new InvalidSettingsException("Time column has the wrong "
+                                            + "data type (only double, int and datetime are allowed).");
+        }
         if (spec.findColumnIndex(m_eventColumn.getStringValue()) == -1) {
-            throw new InvalidSettingsException("No suitable event type column (boolean) found.");
+            throw new InvalidSettingsException("No suitable event type column (boolean) selected.");
+        } else if (!spec.getColumnSpec(m_eventColumn.getStringValue()).getType().isCompatible(BooleanValue.class)) {
+            throw new InvalidSettingsException("Event column is not of type boolean.");
         }
 
         DataColumnSpec trueCol = new DataColumnSpecCreator("#True(" + m_eventColumn.getStringValue() + ")",
@@ -267,7 +277,7 @@ public class KaplanMeierNodeModel extends NodeModel {
                                                             IntCell.TYPE).createSpec();
 
         DataTableSpecCreator creator = new DataTableSpecCreator();
-        creator.addColumns(spec.getColumnSpec(timeIndex));
+        creator.addColumns(timeSpec);
         if (groupIndex >= 0) {
             creator.addColumns(spec.getColumnSpec(groupIndex));
         }
