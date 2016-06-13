@@ -28,6 +28,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
@@ -41,6 +42,12 @@ import org.knime.core.node.port.PortType;
  */
 public class ShapiroWilkNodeModel extends NodeModel {
 
+    private static final double SHAPIRO_FRANCIA_KURTOSIS = 3;
+
+    private static final double MIN_ROWS = 3;
+
+    private static final double MAX_ROWS = 5000;
+
     // constants for the p-value calculation
     private static final double[] C3 = {0.544, -0.39978, 0.025054, -6.714e-4},
             C4 = {1.3822, -0.77857, 0.062767, -0.0020322}, C5 = {-1.5861, -0.31082, -0.083751, 0.0038915},
@@ -52,6 +59,11 @@ public class ShapiroWilkNodeModel extends NodeModel {
      * The configuration key for the class column.
      */
     static final String TEST_COL_CFG = "testCols";
+
+    /**
+     * The configuration key for the setting that controls if shapiro francia is used for leptokurtic samples.
+     */
+    static final String SHAPIRO_FRANCIA_CFG = "shapFrancia";
 
     /**
      * Constructor for the node model.
@@ -72,6 +84,17 @@ public class ShapiroWilkNodeModel extends NodeModel {
     private SettingsModelString m_testColumn = createTestColSettingsModel();
 
     /**
+     * Creates a settings model for shapiro-francia.
+     *
+     * @return the settings model
+     */
+    public static SettingsModelBoolean createShapiroFranciaSettingsModel() {
+        return new SettingsModelBoolean(SHAPIRO_FRANCIA_CFG, true);
+    }
+
+    private SettingsModelBoolean m_shapiroFrancia = createShapiroFranciaSettingsModel();
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -84,7 +107,7 @@ public class ShapiroWilkNodeModel extends NodeModel {
 
         if (inTable.size() > Integer.MAX_VALUE) {
             throw new InvalidSettingsException("Too many data points to calculate the statistic.");
-        } else if (inTable.size() > 5000) {
+        } else if (inTable.size() > MAX_ROWS) {
             setWarningMessage("The test might be inaccurate for data sets with more than 5000 data points.");
         }
 
@@ -110,7 +133,7 @@ public class ShapiroWilkNodeModel extends NodeModel {
         double kurtosis = kurtosisStat.getResult(col);
 
         final int n = (int)inTable.size() - missingStat.getNumberMissingValues(col);
-        if (n < 3) {
+        if (n < MIN_ROWS) {
             throw new InvalidSettingsException("Not enough data points to calculate the statistic.");
         }
 
@@ -124,7 +147,8 @@ public class ShapiroWilkNodeModel extends NodeModel {
 
         String warning = null;
 
-        if (kurtosis > 3) { // Shapiro-Francia test is better for leptokurtic samples
+        // Shapiro-Francia test is better for leptokurtic samples
+        if (kurtosis > SHAPIRO_FRANCIA_KURTOSIS && m_shapiroFrancia.getBooleanValue()) {
             double weightedSum = 0;
             int counter = 0;
             double sum4Var = 0;
@@ -148,7 +172,12 @@ public class ShapiroWilkNodeModel extends NodeModel {
             double[] p1 = new double[]{-2.706056, 4.434685, -2.071190, -0.147981, 0.221157, cn};
             double[] p2 = new double[]{-3.582633, 5.682633, -1.752461, -0.293762, 0.042981, cn1};
 
-            double wn = polyval(p1, u), w1 = -wn, wn1 = Double.NaN, w2 = Double.NaN, phi;
+            double wn = polyval(p1, u);
+            double w1 = -wn;
+            double wn1 = Double.NaN;
+            double w2 = Double.NaN;
+            double phi;
+
             int ct = 2;
 
             if (n == 3) {
@@ -201,9 +230,14 @@ public class ShapiroWilkNodeModel extends NodeModel {
             w = Math.pow(weightedSum, 2) / sum4Var;
         }
 
+        double pVal = shapiroWilkPalue(w, n);
+
+        pushFlowVariableDouble("shapiro-p-value", pVal);
+        pushFlowVariableDouble("shapiro-statistic", w);
+
         DataContainer dc = exec.createDataContainer(createSpec());
         dc.addRowToTable(
-            new DefaultRow(new RowKey("Value"), new DoubleCell(w), new DoubleCell(shapiroWilkPalue(w, n))));
+            new DefaultRow(new RowKey("Value"), new DoubleCell(w), new DoubleCell(pVal)));
         dc.close();
 
         return new PortObject[]{(BufferedDataTable)dc.getTable()};
@@ -217,10 +251,10 @@ public class ShapiroWilkNodeModel extends NodeModel {
      */
     private final double shapiroWilkPalue(final double w, final int n) {
 
-        if (n < 3) {
+        if (n < MIN_ROWS) {
             return 1;
         }
-        if (n == 3) {
+        if (n == MIN_ROWS) {
             return Math.max(0, 1.90985931710274 * (Math.asin(Math.sqrt(w)) - 1.04719755119660));
         }
 
@@ -338,6 +372,7 @@ public class ShapiroWilkNodeModel extends NodeModel {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         m_testColumn.saveSettingsTo(settings);
+        m_shapiroFrancia.saveSettingsTo(settings);
     }
 
     /**
@@ -346,6 +381,7 @@ public class ShapiroWilkNodeModel extends NodeModel {
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_testColumn.loadSettingsFrom(settings);
+        m_shapiroFrancia.loadSettingsFrom(settings);
     }
 
     /**
@@ -354,6 +390,7 @@ public class ShapiroWilkNodeModel extends NodeModel {
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_testColumn.validateSettings(settings);
+        m_shapiroFrancia.validateSettings(settings);
     }
 
     /**

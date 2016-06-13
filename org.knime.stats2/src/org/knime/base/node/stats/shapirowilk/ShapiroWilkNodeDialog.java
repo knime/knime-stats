@@ -1,6 +1,7 @@
 package org.knime.base.node.stats.shapirowilk;
 
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
+import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
 
 /**
@@ -24,8 +25,11 @@ public class ShapiroWilkNodeDialog extends DefaultNodeSettingsPane {
         DialogComponentColumnNameSelection testCol = new DialogComponentColumnNameSelection(
                         ShapiroWilkNodeModel.createTestColSettingsModel(),
                       "Test column", 0, org.knime.core.data.DoubleValue.class);
+        DialogComponentBoolean shapFrancia = new DialogComponentBoolean(
+            ShapiroWilkNodeModel.createShapiroFranciaSettingsModel(),
+            "Use Shapiro-Francia for leptokurtic samples");
         addDialogComponent(testCol);
-
+        addDialogComponent(shapFrancia);
     }
 }
 
