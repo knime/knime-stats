@@ -3,65 +3,43 @@
 <plugin>
 
    <extension point="org.knime.workbench.repository.nodes">
-     <node
+      <node
+            after="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory"
             category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.correlation.cronbach.CronbachNodeFactory"
-            >
+            factory-class="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory"/>
+      <node
+            after="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory"
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory">
       </node>
       <node
-            category-path="/labs/statistics"
-            after="org.knime.base.node.stats.correlation.cronbach.CronbachNodeFactory"
-            factory-class="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
-            >
-      </node>  
-      <node
-            category-path="/labs/statistics"
-            after="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
-            factory-class="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
-            >
-      </node>
-      <node
-      		category-path="/labs/statistics" 
-      		after="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
-            factory-class="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory" 
-            />
-      <node
-            category-path="/labs/statistics"
-            after="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory"
-            factory-class="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory"
-            >
-      </node>
-      <node
-            category-path="/labs/statistics"
             after="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory"
-            factory-class="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
-            >
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory">
       </node>
       <node
-            category-path="/labs/statistics"
             after="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
-            factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
-            >
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory">
       </node>
       <node 
-      		category-path="/labs/statistics" 
-      		after="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
+      		category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.lda.LDANodeFactory" 
             />
-      <node 
-      		category-path="/labs/statistics" 
-            factory-class="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory" 
-            />
       <node
+            after="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory"
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory"/>
+      <node
+            after="org.knime.base.node.stats.lda.LDANodeFactory"
             category-path="/labs/statistics"
             deprecated="false"
-            factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory"
-            >
+            factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory">
       </node>
       <node
+            after="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
             category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory"
-            >
+            factory-class="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory">
       </node>
       
    </extension>
