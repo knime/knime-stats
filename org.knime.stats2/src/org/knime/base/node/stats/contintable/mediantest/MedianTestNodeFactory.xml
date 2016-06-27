@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./icon.png" type="Manipulator">
+    <name>Numeric Median Test</name>
+    
+    <shortDescription>
+        Compares the distributions of two columns to the median of the two columns together, to determine if their distributions are different 
+    </shortDescription>
+    
+    <fullDescription>
+        <intro><p>See <a href="https://en.wikipedia.org/wiki/Median_test">Wikipedia description of the Median Test</a>.</p>
+               
+        <p>The output includes if the H<sub>0</sub> hypothesis should be rejected based on the confidence level, the <a href="https://en.wikipedia.org/wiki/Yates's_correction_for_continuity">calculated Yate's corrected &#935;</a><sup>2</sup>, the corresponding &#935;-distribution critical value, and the p-value.</p>   
+        </intro>
+        <option name="First Column">The first column to compare</option>
+        <option name="Second Column">The second column to compare</option>
+        <option name="Confidence Level">The confidence level, with which to perform the test</option>
+        <option name="Laplace Correction">Value to add to all entries in the contingency table, if one of them is 0.</option>
+        <option name="Ignore Missing Values">Ignore missing values if any. If not set, and the node encounters a missing value, execution will fail.</option>
+
+ 
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="Input data">The table from which to compare two columns</inPort>
+        <!-- possibly more input ports here-->
+        <outPort index="0" name="Evaluation">Median Test evaluation.</outPort>
+        <!-- possibly more output ports here-->
+    </ports>    
+</knimeNode>

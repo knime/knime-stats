@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./odds-ratio.png" type="Manipulator" xmlns="http://knime.org/node/v2.10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>Odds and Risk Ratios</name>
+    
+    <shortDescription>
+        Calculates the Odds Ratio and Risk Ratio from a 2x2 contingency table.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>
+        <p>This node calculates the Maximum Likelihood Estimate (MLE) Odds Ratio (OR) and the Maximum Likelihood Estimate (MLE) Risk Ratio (RR), i.e., "Wald" OR and RR, 
+        from two selected categorical columns. For each column a value is selected to be considered the value under observation. All other values in non-binary categorical 
+        columns are considered as the "not" case.
+        </p> 
+        <table>
+        	<tr><th></th><th align="center">X</th><th align="center">&#172; X</th></tr>
+        	<tr><th align="center">Y</th><td align="center">a</td><td align="center">b</td></tr>
+        	<tr><th align="center">&#172; Y</th><td align="center">c</td><td align="center">d</td></tr>
+        </table>
+        <p>Odds Ratio: <br></br>
+         OR = (a/b) / (c/d) = (a * d) / (b * c) </p>
+   		<p>
+   		Risk Ratio: <br></br>
+   		RR = (a / (a+b)) / (c / (c+d))</p>
+   		
+   		<p><b>Fisher's Exact Test</b> is calculated with <br></br>
+   		p = (a + b)!(c + d)!(a + c)!(b + d)! / (a!b!c!d!n!), where <br></br> 
+   		n = a + b + c + d
+   		<br></br>over the sum of the marginal tables.</p>
+   		<p>The two-tailed, left-tailed, and right-tailed p-values are calculated. The value for the Laplace correction is not considered for this calculation.
+   		</p>
+    		
+   		<p>The <b>Chi-Squared Test</b> (<b>&#935;</b><sup>2</sup>) is calculated with <br></br> 
+   		&#935;<sup>2</sup> = &#8721;<sub>i</sub> &#8721;<sub>j</sub> (O<sub>ij</sub> - E<sub>ij</sub>)<sup>2</sup> / E<sub>ij</sub><sup>2</sup>
+   		<br></br>
+   		where<br></br>
+   		E<sub>ij</sub> = T<sub>i</sub> * T<sub>j</sub>/n<br></br>
+   		and<br></br>
+   		T<sub>i</sub> and T<sub>j</sub> are the sums of the row and columns respectively.
+   		</p>
+   		
+   		<p><b>Yates' Corrected &#935;</b><sup>2</sup> is<br></br>
+   		&#935;<sup>2</sup><sub>Yates</sub> = &#8721;<sub>i</sub> &#8721;<sub>j</sub> (|O<sub>ij</sub> - E<sub>ij</sub>|-0.5)<sup>2</sup> / E<sub>ij</sub><sup>2</sup>
+   		</p>
+   		
+   		<p><b>Pearson's Coefficient of Contingency</b><br></br>
+           Pearson's C = &#8730;&#935;<sup>2</sup> / (&#935;<sup>2</sup> + n)
+        </p>
+        
+        <p><b>Cram&#233;r's Coefficient of Contingency</b><br></br>
+        Cram&#233;r's V = &#8730;&#935;<sup>2</sup>/n
+        </p>
+   		
+         </intro>
+         <option name="Column X">The column to choose for the X variable.</option>
+         <option name="Column Y">The column to choose for the Y variable.</option>
+         <option name="Value from Column X">The value from the X variable to choose as the value to be examined.</option>
+         <option name="Value from Column Y">The value from the Y variable to choose as the value to be examined.</option>
+         <option name="Confidence Interval">The confidence interval to be calculated.</option>
+        <option name="Laplace Correction">The amount of Laplace correction to use, if one of the values ({a,b,c,d}) is 0. This value is applied to all four entries in the contingency table.</option>
+     </fullDescription>  
+    <ports>
+         <inPort index="0" name="Data">The data table with the two features to compare.</inPort>
+        <!-- possibly more input ports here-->
+        <outPort index="0" name="Results">The output table with the results and significance measurements.</outPort>
+        <outPort index="1" name="Contingency Table">A table with the values from the table shown above.</outPort>
+        <!-- possibly more output ports here-->
+    </ports>    
+</knimeNode>
