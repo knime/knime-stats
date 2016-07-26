@@ -21,6 +21,7 @@
       <node
             after="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
             category-path="/labs/statistics"
+            deprecated="true"
             factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory">
       </node>
       <node 
@@ -53,6 +54,11 @@
             category-path="/labs/statistics"
             deprecated="false"
             factory-class="org.knime.base.node.stats.contintable.oddriskratio.OddsRiskRatioNodeFactory">
+      </node>
+      <node
+            after="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank2.WilcoxonSignedRankNodeFactory">
       </node>
       
    </extension>

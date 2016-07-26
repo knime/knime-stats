@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./wilcoxonsignedrank.png" type="Manipulator">
+	<name>Wilcoxon Signed-Rank</name>
+
+	<shortDescription>
+		Calculates Wilcoxon signed-rank statistics for
+		dependend groups.
+	</shortDescription>
+
+	<fullDescription>
+		<intro>
+			Calculates the Wilcoxon signed-rank statistics for dependent
+			groups. The static
+			w is calculated by building the difference between
+			the two values of
+			a pair and ranking them. The output will be the sum
+			of ranks of positive
+			differences (w+) and the sum of ranks of negative
+			differences (w-) and
+			the measures derived from that.
+		</intro>
+		<option name="Left column - Right column">
+			You can define the test column pairs here. Every
+			pair is used to perform a Wilcoxon signed-rank test separately.
+		</option>
+	</fullDescription>
+
+	<ports>
+		<inPort name="Table" index="0">
+			The input data.
+		</inPort>
+		<outPort name="Test results" index="0">
+			A row for each test.
+		</outPort>
+		<outPort name="Column statistics" index="1">Statistics of the selected columns.</outPort>
+		<outPort name="Ranks" index="2">Information about the calculated ranks.</outPort>
+	</ports>
+</knimeNode>
