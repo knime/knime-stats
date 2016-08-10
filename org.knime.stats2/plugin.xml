@@ -41,6 +41,7 @@
       <node
             after="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
             category-path="/labs/statistics"
+            deprecated="true"
             factory-class="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory">
       </node>
       <node
@@ -59,6 +60,12 @@
             after="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"
             category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank2.WilcoxonSignedRankNodeFactory">
+      </node>
+      <node
+            after="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
+            category-path="/labs/statistics"
+            deprecated="false"
+            factory-class="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory">
       </node>
       
    </extension>
@@ -88,6 +95,27 @@
                type="JAVASCRIPT">
          </importResource>
       </webResourceBundle>
+      <webResourceBundle
+            debug="true"
+            name="Kaplan-Meier Plot"
+            usesDefine="false"
+            version="1.0"
+            webResourceBundleID="org.knime.base.node.stats.kaplanmeier.bundle">
+         <webResource
+               relativePathSource="js-src/org/knime/base/node/stats/kaplanmeier/"
+               relativePathTarget="org/knime/base/node/stats/kaplanmeier/">
+         </webResource>
+         <webDependency
+               webResourceBundleID="D3_3.2.8">
+         </webDependency>
+         <importResource
+               relativePath="org/knime/base/node/stats/kaplanmeier/kmplot.js"
+               type="JAVASCRIPT">
+         </importResource>
+         <webDependency
+               webResourceBundleID="KnimeTable_1.0.0">
+         </webDependency>
+      </webResourceBundle>
    </extension>
    <extension
          point="org.knime.js.core.javascriptComponents">
@@ -98,6 +126,16 @@
             javascriptComponentID="org_knime_base_node_stats_agreement_blandaltmanplot"
             name="Bland-Altman Plot"
             namespace="knime_bland_altman_plot"
+            validate-method-name="validate">
+      </javascriptComponent>
+      <javascriptComponent
+            getComponentValue-method-name="getComponentValue"
+            implementationBundleID="org.knime.base.node.stats.kaplanmeier.bundle"
+            init-method-name="init"
+            javascriptComponentID="org_knime_base_node_stats_kaplanmeierplot"
+            name="Kaplan-Meier Plot"
+            namespace="kmplot_namespace"
+            setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>
    </extension>

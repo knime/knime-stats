@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<knimeNode icon="./kaplanmeier.png" type="Visualizer"
+    xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://knime.org/node/v2.8 http://knime.org/node/v2.8.xsd">
+    <name>Kaplan-Meier Estimator</name>
+    
+    <shortDescription>
+        Calculates the Kaplan-Meier estimator for a given data set of study subjects and events at certain time stamps.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>
+            The Kaplan-Meier estimator, also known as product limit estimator, is used to estimate the survival function from lifetime data.
+            It is often used to measure the fraction of study subjects that are still alive after a certain amount of time after treatment.
+            The curve obtained from the Kaplan-Meier estimator takes right-censoring data into account so that subjects withdrawing from 
+            the study prematurely or finish the study without event occurrence can be dealt with accordingly.<br/>
+            The data passed to this node is a table with one row for each study subject. For each subject the event that is studied either
+            occurred, so that the event column contains a boolean True value, or the subject left the study (boolean False). Additionally
+            to this information the time the event or censoring has taken place must be present.
+            More information about the Kaplan-Meier estimator can be found on <a href="https://en.wikipedia.org/wiki/Kaplan–Meier_estimator">Wikipedia</a>.
+        </intro>
+        <option name="Time column">The time at which the event occurred.</option>
+        <option name="Event column">Whether the event occurred (boolean True) or censoring occurred (boolean False).</option>
+        <option name="Group column">The (optional) group the subject belongs to.</option>
+    </fullDescription>
+    
+    <interactiveView name="Kaplan-Meier Plot">
+        Displays a Kaplan-Meier plot visualization of the data.
+    </interactiveView>
+    
+    <ports>
+        <inPort index="0" name="Input data">The data to calculate the Kaplan-Meier estimator for</inPort>
+        <outPort index="0" name="Image">The SVG image of the plot</outPort>
+        <outPort index="1" name="Statistics">The estimator calculated for each group and time step</outPort>
+    </ports>    
+</knimeNode>
