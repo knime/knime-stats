@@ -428,7 +428,8 @@ final class BlandAltmanPlotNodeModel
             pushFlowVariableDouble("Lower limit of agreement", lowerLimit);
             minY = Math.min(minY, lowerLimit);
             maxY = Math.max(maxY, upperLimit);
-            JSONKeyedValues2DDataset dataset = new JSONKeyedValues2DDataset(new String[]{"Mean", "Difference"},
+            String id = Integer.toString(getInHiLiteHandler(0).hashCode());
+            JSONKeyedValues2DDataset dataset = new JSONKeyedValues2DDataset(id, new String[]{"Mean", "Difference"},
                 rows.toArray(new JSONKeyedValuesRow[rows.size()]));
             m_representation.setKeyedDataset(dataset);
             m_representation.setUpperLimit(upperLimit);
