@@ -51,7 +51,7 @@
             factory-class="org.knime.base.node.stats.contintable.mediantest.MedianTestNodeFactory">
       </node>
       <node
-            after="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory"
+            after="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory"
             category-path="/labs/statistics"
             deprecated="false"
             factory-class="org.knime.base.node.stats.contintable.oddriskratio.OddsRiskRatioNodeFactory">
