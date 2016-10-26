@@ -39,7 +39,7 @@
             factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory">
       </node>
       <node
-            after="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory"
+            after="org.knime.base.node.stats.testing.wilcoxonsignedrank2.WilcoxonSignedRankNodeFactory"
             category-path="/labs/statistics"
             deprecated="true"
             factory-class="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory">
