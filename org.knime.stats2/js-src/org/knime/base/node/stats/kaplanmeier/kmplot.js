@@ -24,7 +24,8 @@
         	margin : "0px",
         	padding : "0px",
         	width : "100%",
-        	height : "100%"
+        	height : "100%",
+        	overflow : "hidden"
         });
         
         // Create container for our content
@@ -42,35 +43,6 @@
             layoutContainer
             	.style("width", _representation.width + "px")
             	.style("height", _representation.height + "px");
-        }
-        
-        // Add container for user controls at the bottom if they are enabled and we are running in a view
-        var controlHeight;
-        if (_representation.enableViewControls && _representation.runningInView) {
-             var controlsContainer = body.append("div")
-             							.attr("id", "controlContainer");
-             
-             controlsContainer.style({
-            	 "position" : "relative",
-	             "bottom" : "0px",
-	             "width" : "100%",
-	             "padding" : "5px",
-	             "padding-left" : "60px",
-	             "border-top" : "1px solid black",
-	             "background-color" : "white",
-	             "box-sizing" : "border-box"
-             });
-             
-             // Fill container
-             createControls(controlsContainer);
-             controlHeight = controlsContainer.node().getBoundingClientRect().height;
-        } else {
-            controlHeight = 0;
-        }
-        
-        // Adjust plot height for control height
-        if (_representation.fullscreen && _representation.runningInView && controlHeight) {
-            layoutContainer.style("height", "calc(100% - " + controlHeight + "px)");
         }
 
         // Add SVG element
@@ -107,6 +79,8 @@
             .attr("y", 46)
             .text(_value.subtitle);
         
+        createControls();
+        
         drawChart();
         
         if (parent != undefined && parent.KnimePageLoader != undefined) {
@@ -114,53 +88,56 @@
         }
     }
     
-    function createControls(controlsContainer) {
+    function createControls() {
+    	
+		if (!knimeService) {
+			// TODO: error handling?
+			return;
+		}
+		knimeService.floatingHeader(false);
+		
+		if (_representation.displayFullscreenButton) {
+			knimeService.allowFullscreen();
+		}
+    	
         if (_representation.enableViewControls) {
-
-            var titleDiv;
-        
-            if (_representation.enableTitleEdit || _representation.enableSubtitleEdit) {
-                titleDiv = controlsContainer.append("div").style({"margin-top" : "5px"});
-            }
-            
-            if (_representation.enableTitleEdit) {
-                titleDiv.append("label").attr("for", "titleIn").text("Title:").style({"display" : "inline-block", "width" : "100px"});
-                titleDiv.append("input")
-                .attr({id : "titleIn", type : "text", value : _value.title}).style("width", 150)
-                .on("keyup", function() {
-                    var hadTitles = (_value.title.length > 0) || (_value.subtitle.length > 0);
-                    _value.title = this.value;
-                    var hasTitles = (_value.title.length > 0) || (_value.subtitle.length > 0);
-                    d3.select("#title").text(this.value);
-                    if (hasTitles != hadTitles) {
-                        drawChart(true);
-                    }
-                });
-            }
-        
-            if (_representation.enableSubtitleEdit) {
-                titleDiv.append("label").attr("for", "subtitleIn")
-                	.text("Subtitle:")
-                	.style({
-                			"margin-left" : "10px",
-                			"display" : "inline-block",
-                			"width" : "100px"
-                		});
-                titleDiv.append("input")
-                .attr({id : "subtitleIn", type : "text", value : _value.subtitle}).style("width", 150)
-                .on("keyup", function() {
-                    var hadTitles = (_value.title.length > 0) || (_value.subtitle.length > 0);
-                    _value.subtitle = this.value;
-                    var hasTitles = (_value.title.length > 0) || (_value.subtitle.length > 0);
-                    d3.select("#subtitle").text(this.value);
-                    if (hasTitles != hadTitles) {
-                        drawChart(true);
-                    }
-                });
-            }
+            if (_representation.enableTitleEdit || enableSubtitleEdit.enableSubtitleEdit) {
+    	    	if (_representation.enableTitleEdit) {
+    	    		var chartTitleText = knimeService.createMenuTextField('chartTitleText', _value.title, updateTitle, false);
+    	    		knimeService.addMenuItem('Chart Title:', 'header', chartTitleText);
+    	    	}
+    	    	if (_representation.enableSubtitleEdit) {
+    	    		var chartSubtitleText = knimeService.createMenuTextField('chartSubtitleText', _value.subtitle, updateSubtitle, false);
+    	    		var mi = knimeService.addMenuItem('Chart Subtitle:', 'header', chartSubtitleText, null, knimeService.SMALL_ICON);
+    	    	}
+    	    }
         }
     }
-
+    
+	updateTitle = function() {
+		var oldTitle = _value.title;
+		_value.title = document.getElementById("chartTitleText").value;
+		if (_value.title !== oldTitle || typeof _value.title !== typeof oldTitle) {
+			setTitles();
+		}
+	};
+	
+	updateSubtitle = function() {
+		var oldTitle = _value.subtitle;
+		_value.subtitle = document.getElementById("chartSubtitleText").value;
+		if (_value.subtitle !== oldTitle || typeof _value.subtitle !== typeof oldTitle) {
+			setTitles();
+		}
+	};
+	
+	setTitles = function() {
+		d3.select("#title").text(_value.title);
+        d3.select("#subtitle")
+        	.text(_value.subtitle)
+        	.attr("y", _value.title ? 46 : 21);
+        drawChart(true);
+	}
+    
     function createData() {
         var groups = {};
         var ktable = new kt();
@@ -184,12 +161,11 @@
 						values : [],
 						censors : []
 				};
-				counts[group] = 1;
-			} else {
-				var numEvent = row[eventHappenedIdx];
-				var censored = row[censorHappenedIdx];
-				counts[group] += numEvent + censored;
+				counts[group] = 0;
 			}
+			var numEvent = row[eventHappenedIdx];
+			var censored = row[censorHappenedIdx];
+			counts[group] += numEvent + censored;
 			maxTime = Math.max(maxTime, table.rows[r].data[timeIdx]);
 		}
 		
@@ -265,7 +241,13 @@
 		
         d3.select(".legend").remove();
         var maxLength = 0;
-        var mTop = (_value.subtitle || _value.title) ? 60 : 15;
+        var mTop = 15;
+    	if (_value.title) {
+    		mTop += 25;
+    	}
+    	if (_value.subtitle) {
+    		mTop += 20;
+    	}
         
         if (_representation.showLegend) {
 	        var legendG = d3svg.append("g").attr("class", "legend");
@@ -297,7 +279,9 @@
         
         // Calculate size of the plot area (without axes)
         var w = Math.max(50, parseInt(d3svg.style('width')) - margin.left - margin.right);
-        var h = Math.max(50, parseInt(d3svg.style('height')) - margin.top - margin.bottom);
+        var h = Math.max(50, parseInt(d3svg.style('height'))
+        				- margin.top - margin.bottom
+        				- d3.select("#knime-service-header").node().getBoundingClientRect().height);
         
         // Resize background rectangles
         plotG.select("#da").attr({

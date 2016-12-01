@@ -89,11 +89,13 @@ public class KaplanMeierViewRepresentation extends JSONViewContent {
 
     private static final String RUNNING_IN_VIEW_CFG = "runningInView";
 
+    private static final String FULLSCREEN_BTN_CFG = "displayFullscreenButton";
+
     private JSONDataTable m_table;
 
-    private int m_width = 400;
+    private int m_width = 800;
 
-    private int m_height = 400;
+    private int m_height = 600;
 
     private boolean m_fullscreen = true;
 
@@ -112,6 +114,22 @@ public class KaplanMeierViewRepresentation extends JSONViewContent {
     private String m_groupCol;
 
     private boolean m_runningInView;
+
+    private boolean m_displayFullscreenButton;
+
+    /**
+     * @return the displayFullscreenButton
+     */
+    public boolean getDisplayFullscreenButton() {
+        return m_displayFullscreenButton;
+    }
+
+    /**
+     * @param displayFullscreenButton the displayFullscreenButton to set
+     */
+    public void setDisplayFullscreenButton(final boolean displayFullscreenButton) {
+        m_displayFullscreenButton = displayFullscreenButton;
+    }
 
     /**
      * Creates an empty view representation.
@@ -305,6 +323,7 @@ public class KaplanMeierViewRepresentation extends JSONViewContent {
         settings.addString(EVENT_COL_CFG, m_eventCol);
         settings.addString(GROUP_COL_CFG, m_groupCol);
         settings.addBoolean(RUNNING_IN_VIEW_CFG, m_runningInView);
+        settings.addBoolean(FULLSCREEN_BTN_CFG, true);
     }
 
     /**
@@ -324,6 +343,7 @@ public class KaplanMeierViewRepresentation extends JSONViewContent {
         m_eventCol = settings.getString(EVENT_COL_CFG);
         m_groupCol = settings.getString(GROUP_COL_CFG);
         m_runningInView = settings.getBoolean(RUNNING_IN_VIEW_CFG);
+        m_displayFullscreenButton = settings.getBoolean(FULLSCREEN_BTN_CFG);
     }
 
     /**
@@ -347,6 +367,8 @@ public class KaplanMeierViewRepresentation extends JSONViewContent {
                 .append(m_timeCol, other.m_timeCol)
                 .append(m_eventCol, other.m_eventCol)
                 .append(m_groupCol, other.m_groupCol)
+                .append(m_runningInView, other.m_runningInView)
+                .append(m_displayFullscreenButton, other.m_displayFullscreenButton)
                 .build();
     }
 
@@ -367,6 +389,8 @@ public class KaplanMeierViewRepresentation extends JSONViewContent {
                 .append(m_timeCol)
                 .append(m_eventCol)
                 .append(m_groupCol)
+                .append(m_runningInView)
+                .append(m_displayFullscreenButton)
                 .build();
     }
 

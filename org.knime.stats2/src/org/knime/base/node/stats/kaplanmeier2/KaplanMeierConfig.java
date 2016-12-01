@@ -52,6 +52,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
+import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 
 /**
@@ -105,6 +106,21 @@ public class KaplanMeierConfig {
     static final String ENABLE_SUBTITLE_EDIT_CFG = "subtitleEdit";
 
     /**
+     * The configuration key for the width setting.
+     */
+    static final String WIDTH_CFG = "width";
+
+    /**
+     * The configuration key for the height setting.
+     */
+    static final String HEIGHT_CFG = "height";
+
+    /**
+     * The configuration key for the fullscreen button.
+     */
+    static final String FULLSCREEN_BTN_CFG = "displayFullscreenButton";
+
+    /**
      * Creates a new empty instance of <code>KaplanMeierConfig</code>.
      */
     public KaplanMeierConfig() {
@@ -117,7 +133,12 @@ public class KaplanMeierConfig {
         m_enableSubtitle = new SettingsModelBoolean(ENABLE_SUBTITLE_EDIT_CFG, true);
         m_enableTitleEdit = new SettingsModelBoolean(ENABLE_TITLE_EDIT_CFG, true);
         m_enableViewControls = new SettingsModelBoolean(ENABLE_VIEW_CTRLS_CFG, true);
+        m_width = new SettingsModelInteger(WIDTH_CFG, 800);
+        m_height = new SettingsModelInteger(HEIGHT_CFG, 600);
+        m_displayFullscreenButton = new SettingsModelBoolean(FULLSCREEN_BTN_CFG, true);
     }
+
+    private SettingsModelBoolean m_displayFullscreenButton;
 
     private SettingsModelString m_timeCol;
 
@@ -136,6 +157,18 @@ public class KaplanMeierConfig {
     private SettingsModelBoolean m_enableTitleEdit;
 
     private SettingsModelBoolean m_enableSubtitle;
+
+    private SettingsModelInteger m_width;
+
+    private SettingsModelInteger m_height;
+
+
+    /**
+     * @return the displayFullscreenButton
+     */
+    public SettingsModelBoolean getDisplayFullscreenButton() {
+        return m_displayFullscreenButton;
+    }
 
     /**
      * @return the enableViewControls
@@ -201,6 +234,20 @@ public class KaplanMeierConfig {
     }
 
     /**
+     * @return the width
+     */
+    public SettingsModelInteger getWidth() {
+        return m_width;
+    }
+
+    /**
+     * @return the height
+     */
+    public SettingsModelInteger getHeight() {
+        return m_height;
+    }
+
+    /**
      * Loads the settings from the given node settings.
      * @param settings the settings
      * @throws InvalidSettingsException when the settings cannot be loaded
@@ -215,6 +262,9 @@ public class KaplanMeierConfig {
         m_enableSubtitle.loadSettingsFrom(settings);
         m_enableTitleEdit.loadSettingsFrom(settings);
         m_enableViewControls.loadSettingsFrom(settings);
+        m_width.loadSettingsFrom(settings);
+        m_height.loadSettingsFrom(settings);
+        m_displayFullscreenButton.loadSettingsFrom(settings);
     }
 
     /**
@@ -231,6 +281,9 @@ public class KaplanMeierConfig {
         m_enableSubtitle.saveSettingsTo(settings);
         m_enableTitleEdit.saveSettingsTo(settings);
         m_enableViewControls.saveSettingsTo(settings);
+        m_width.saveSettingsTo(settings);
+        m_height.saveSettingsTo(settings);
+        m_displayFullscreenButton.saveSettingsTo(settings);
     }
 
     /**
@@ -248,5 +301,9 @@ public class KaplanMeierConfig {
         m_enableSubtitle.validateSettings(settings);
         m_enableTitleEdit.validateSettings(settings);
         m_enableViewControls.validateSettings(settings);
+        m_width.validateSettings(settings);
+        m_height.validateSettings(settings);
+        m_displayFullscreenButton.validateSettings(settings);
     }
+
 }

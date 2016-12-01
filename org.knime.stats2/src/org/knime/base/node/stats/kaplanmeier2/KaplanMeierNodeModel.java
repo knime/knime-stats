@@ -47,8 +47,6 @@ import org.knime.js.core.node.AbstractSVGWizardNodeModel;
 public class KaplanMeierNodeModel
     extends AbstractSVGWizardNodeModel<KaplanMeierViewRepresentation, KaplanMeierViewValue>  {
 
-    //private static final NodeLogger logger = NodeLogger.getLogger(KaplanMeierNodeModel.class);
-
     private BufferedDataTable m_table;
 
     private KaplanMeierConfig m_config = new KaplanMeierConfig();
@@ -375,7 +373,9 @@ public class KaplanMeierNodeModel
         representation.setEventCol(m_config.getEventCol().getStringValue());
         representation.setGroupCol(m_config.getGroupCol().getStringValue());
         representation.setFullscreen(m_config.getFullscreen().getBooleanValue());
-
+        representation.setWidth(m_config.getWidth().getIntValue());
+        representation.setHeight(m_config.getHeight().getIntValue());
+        representation.setDisplayFullscreenButton(m_config.getDisplayFullscreenButton().getBooleanValue());
         value.setSubtitle(m_config.getSubtitle().getStringValue());
         value.setTitle(m_config.getTitle().getStringValue());
     }

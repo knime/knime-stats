@@ -5,6 +5,7 @@ import org.knime.core.data.date.DateAndTimeValue;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
+import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
 import org.knime.core.node.defaultnodesettings.DialogComponentString;
 
 /**
@@ -50,11 +51,25 @@ public class KaplanMeierNodeDialog extends DefaultNodeSettingsPane {
 
         addDialogComponent(title);
         addDialogComponent(subtitle);
+
+        DialogComponentNumber viewWidth = new DialogComponentNumber(
+            cfg.getWidth(), "Image width", 10);
+
+        DialogComponentNumber viewHeight = new DialogComponentNumber(
+            cfg.getHeight(), "Image height", 10);
+
+        addDialogComponent(viewWidth);
+        addDialogComponent(viewHeight);
+
         closeCurrentGroup();
 
         createNewGroup("Display");
-        DialogComponentBoolean fullscreen = new DialogComponentBoolean(cfg.getFullscreen(), "Fullscreen");
-        addDialogComponent(fullscreen);
+        DialogComponentBoolean scale = new DialogComponentBoolean(cfg.getFullscreen(), "Scale view");
+        addDialogComponent(scale);
+
+        DialogComponentBoolean fullscreenBtn = new DialogComponentBoolean(
+                            cfg.getDisplayFullscreenButton(), "Allow Fullscreen");
+        addDialogComponent(fullscreenBtn);
 
         DialogComponentBoolean enableCtrls = new DialogComponentBoolean(
             cfg.getEnableViewControls(), "Enable view controls");
