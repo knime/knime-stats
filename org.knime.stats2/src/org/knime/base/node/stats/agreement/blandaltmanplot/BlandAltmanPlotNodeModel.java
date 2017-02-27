@@ -399,7 +399,7 @@ final class BlandAltmanPlotNodeModel
                 meanDifference += difference;
                 container1.addRowToTable(new DefaultRow(row.getKey(), new DataCell[]{new DoubleCell(measurement1),
                     new DoubleCell(measurement2), new DoubleCell(mean), new DoubleCell(difference)}));
-                rows.add(new JSONKeyedValuesRow(row.getKey().getString(), new double[]{mean, difference}));
+                rows.add(new JSONKeyedValuesRow(row.getKey().getString(), new Double[]{mean, difference}));
                 minX = Math.min(minX, mean);
                 maxX = Math.max(maxX, mean);
                 minY = Math.min(minY, difference);
