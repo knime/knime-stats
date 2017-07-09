@@ -48,39 +48,326 @@
  */
 package org.knime.base.node.stats.dataexplorer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.JSONViewContent;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
  */
+@JsonAutoDetect
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class DataExplorerNodeRepresentation extends JSONViewContent {
 
     private static final String CFG_STATISTICS = "statistics";
-    private static final String CFG_NO_VALUES = "noValues";
-    private static final String CFG_SINGLE_STAT = "stat_";
-    private List<JSONStatisticColumn> m_statistics;
+    private JSONDataTable m_statistics;
+
+    private boolean m_enablePaging;
+    private int m_initialPageSize;
+    private boolean m_enablePageSizeChange;
+    private int[] m_allowedPageSizes;
+    private boolean m_pageSizeShowAll;
+    private boolean m_enableJumpToPage;
+    private boolean m_displayRowIds;
+    private boolean m_displayColumnHeaders;
+    private boolean m_displayFullscreenButton;
+    private boolean m_fixedHeaders;
+    private String m_title;
+    private String m_subtitle;
+    private boolean m_enableSelection;
+    private boolean m_enableSearching;
+    private boolean m_enableSorting;
+    private boolean m_enableClearSortButton;
+    private boolean m_enableGlobalNumberFormat;
+    private int m_globalNumberFormatDecimals;
+    private boolean m_displayMissingValueAsQuestionMark;
 
     /**
      * @return the statistics
      */
-    public List<JSONStatisticColumn> getStatistics() {
+    public JSONDataTable getStatistics() {
         return m_statistics;
     }
 
     /**
      * @param statistics the statistics to set
      */
-    public void setStatistics(final List<JSONStatisticColumn> statistics) {
+    public void setStatistics(final JSONDataTable statistics) {
         m_statistics = statistics;
+    }
+
+    /**
+     * @return the enablePaging
+     */
+    public boolean getEnablePaging() {
+        return m_enablePaging;
+    }
+
+    /**
+     * @param enablePaging the enablePaging to set
+     */
+    public void setEnablePaging(final boolean enablePaging) {
+        m_enablePaging = enablePaging;
+    }
+
+    /**
+     * @return the initialPageSize
+     */
+    public int getInitialPageSize() {
+        return m_initialPageSize;
+    }
+
+    /**
+     * @param initialPageSize the initialPageSize to set
+     */
+    public void setInitialPageSize(final int initialPageSize) {
+        m_initialPageSize = initialPageSize;
+    }
+
+    /**
+     * @return the enablePageSizeChange
+     */
+    public boolean getEnablePageSizeChange() {
+        return m_enablePageSizeChange;
+    }
+
+    /**
+     * @param enablePageSizeChange the enablePageSizeChange to set
+     */
+    public void setEnablePageSizeChange(final boolean enablePageSizeChange) {
+        m_enablePageSizeChange = enablePageSizeChange;
+    }
+
+    /**
+     * @return the allowedPageSizes
+     */
+    public int[] getAllowedPageSizes() {
+        return m_allowedPageSizes;
+    }
+
+    /**
+     * @param allowedPageSizes the allowedPageSizes to set
+     */
+    public void setAllowedPageSizes(final int[] allowedPageSizes) {
+        m_allowedPageSizes = allowedPageSizes;
+    }
+
+    /**
+     * @return the pageSizeShowAll
+     */
+    public boolean getPageSizeShowAll() {
+        return m_pageSizeShowAll;
+    }
+
+    /**
+     * @param pageSizeShowAll the pageSizeShowAll to set
+     */
+    public void setPageSizeShowAll(final boolean pageSizeShowAll) {
+        m_pageSizeShowAll = pageSizeShowAll;
+    }
+
+    /**
+     * @return the enableJumpToPage
+     */
+    public boolean getEnableJumpToPage() {
+        return m_enableJumpToPage;
+    }
+
+    /**
+     * @param enableJumpToPage the enableJumpToPage to set
+     */
+    public void setEnableJumpToPage(final boolean enableJumpToPage) {
+        m_enableJumpToPage = enableJumpToPage;
+    }
+
+    /**
+     * @return the displayRowIds
+     */
+    public boolean getDisplayRowIds() {
+        return m_displayRowIds;
+    }
+
+    /**
+     * @param displayRowIds the displayRowIds to set
+     */
+    public void setDisplayRowIds(final boolean displayRowIds) {
+        m_displayRowIds = displayRowIds;
+    }
+
+    /**
+     * @return the displayColumnHeaders
+     */
+    public boolean getDisplayColumnHeaders() {
+        return m_displayColumnHeaders;
+    }
+
+    /**
+     * @param displayColumnHeaders the displayColumnHeaders to set
+     */
+    public void setDisplayColumnHeaders(final boolean displayColumnHeaders) {
+        m_displayColumnHeaders = displayColumnHeaders;
+    }
+
+    /**
+     * @return the displayFullscreenButton
+     */
+    public boolean getDisplayFullscreenButton() {
+        return m_displayFullscreenButton;
+    }
+
+    /**
+     * @param displayFullscreenButton the displayFullscreenButton to set
+     */
+    public void setDisplayFullscreenButton(final boolean displayFullscreenButton) {
+        m_displayFullscreenButton = displayFullscreenButton;
+    }
+
+    /**
+     * @return the fixedHeaders
+     */
+    public boolean getFixedHeaders() {
+        return m_fixedHeaders;
+    }
+
+    /**
+     * @param fixedHeaders the fixedHeaders to set
+     */
+    public void setFixedHeaders(final boolean fixedHeaders) {
+        m_fixedHeaders = fixedHeaders;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return m_title;
+    }
+
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(final String title) {
+        m_title = title;
+    }
+
+    /**
+     * @return the subtitle
+     */
+    public String getSubtitle() {
+        return m_subtitle;
+    }
+
+    /**
+     * @param subtitle the subtitle to set
+     */
+    public void setSubtitle(final String subtitle) {
+        m_subtitle = subtitle;
+    }
+
+    /**
+     * @return the enableSelection
+     */
+    public boolean getEnableSelection() {
+        return m_enableSelection;
+    }
+
+    /**
+     * @param enableSelection the enableSelection to set
+     */
+    public void setEnableSelection(final boolean enableSelection) {
+        m_enableSelection = enableSelection;
+    }
+
+    /**
+     * @return the enableSearching
+     */
+    public boolean getEnableSearching() {
+        return m_enableSearching;
+    }
+
+    /**
+     * @param enableSearching the enableSearching to set
+     */
+    public void setEnableSearching(final boolean enableSearching) {
+        m_enableSearching = enableSearching;
+    }
+
+    /**
+     * @return the enableSorting
+     */
+    public boolean getEnableSorting() {
+        return m_enableSorting;
+    }
+
+    /**
+     * @param enableSorting the enableSorting to set
+     */
+    public void setEnableSorting(final boolean enableSorting) {
+        m_enableSorting = enableSorting;
+    }
+
+    /**
+     * @return the enableClearSortButton
+     */
+    public boolean getEnableClearSortButton() {
+        return m_enableClearSortButton;
+    }
+
+    /**
+     * @param enableClearSortButton the enableClearSortButton to set
+     */
+    public void setEnableClearSortButton(final boolean enableClearSortButton) {
+        m_enableClearSortButton = enableClearSortButton;
+    }
+
+    /**
+     * @return the enableGlobalNumberFormat
+     */
+    public boolean getEnableGlobalNumberFormat() {
+        return m_enableGlobalNumberFormat;
+    }
+
+    /**
+     * @param enableGlobalNumberFormat the enableGlobalNumberFormat to set
+     */
+    public void setEnableGlobalNumberFormat(final boolean enableGlobalNumberFormat) {
+        m_enableGlobalNumberFormat = enableGlobalNumberFormat;
+    }
+
+    /**
+     * @return the globalNumberFormatDecimals
+     */
+    public int getGlobalNumberFormatDecimals() {
+        return m_globalNumberFormatDecimals;
+    }
+
+    /**
+     * @param globalNumberFormatDecimals the globalNumberFormatDecimals to set
+     */
+    public void setGlobalNumberFormatDecimals(final int globalNumberFormatDecimals) {
+        m_globalNumberFormatDecimals = globalNumberFormatDecimals;
+    }
+
+    /**
+     * @return the displayMissingValueAsQuestionMark
+     */
+    public boolean getDisplayMissingValueAsQuestionMark() {
+        return m_displayMissingValueAsQuestionMark;
+    }
+
+    /**
+     * @param displayMissingValueAsQuestionMark the displayMissingValueAsQuestionMark to set
+     */
+    public void setDisplayMissingValueAsQuestionMark(final boolean displayMissingValueAsQuestionMark) {
+        m_displayMissingValueAsQuestionMark = displayMissingValueAsQuestionMark;
     }
 
     /**
@@ -89,12 +376,26 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     @Override
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         NodeSettingsWO statSettings = settings.addNodeSettings(CFG_STATISTICS);
-        int noValues = m_statistics == null ? 0 : m_statistics.size();
-        statSettings.addInt(CFG_NO_VALUES, noValues);
-        for (int i = 0; i < noValues; i++) {
-            NodeSettingsWO singleColSettings = statSettings.addNodeSettings(CFG_SINGLE_STAT + i);
-            m_statistics.get(i).saveToNodeSettings(singleColSettings);
-        }
+        m_statistics.saveJSONToNodeSettings(statSettings);
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_PAGING, m_enablePaging);
+        settings.addInt(DataExplorerConfig.CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_PAGE_SIZE_CHANGE, m_enablePageSizeChange);
+        settings.addIntArray(DataExplorerConfig.CFG_PAGE_SIZES, m_allowedPageSizes);
+        settings.addBoolean(DataExplorerConfig.CFG_PAGE_SIZE_SHOW_ALL, m_pageSizeShowAll);
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_JUMP_TO_PAGE, m_enableJumpToPage);
+        settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_ROW_IDS, m_displayRowIds);
+        settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_COLUMN_HEADERS, m_displayColumnHeaders);
+        settings.addBoolean(DataExplorerConfig.CFG_FIXED_HEADERS, m_fixedHeaders);
+        settings.addString(DataExplorerConfig.CFG_TITLE, m_title);
+        settings.addString(DataExplorerConfig.CFG_SUBTITLE, m_subtitle);
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_SELECTION, m_enableSelection);
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_SEARCHING, m_enableSearching);
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_SORTING, m_enableSorting);
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_CLEAR_SORT_BUTTON, m_enableClearSortButton);
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_GLOBAL_NUMBER_FORMAT, m_enableGlobalNumberFormat);
+        settings.addInt(DataExplorerConfig.CFG_GLOBAL_NUMBER_FORMAT_DECIMALS, m_globalNumberFormatDecimals);
+        settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
+        settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
     }
 
     /**
@@ -103,16 +404,26 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     @Override
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         NodeSettingsRO statSettings = settings.getNodeSettings(CFG_STATISTICS);
-        int noValues = statSettings.getInt(CFG_NO_VALUES);
-        if (noValues > 0) {
-            m_statistics = new ArrayList<JSONStatisticColumn>(noValues);
-            for (int i = 0; i < noValues; i++) {
-                NodeSettingsRO singleColSettings = statSettings.getNodeSettings(CFG_SINGLE_STAT + i);
-                JSONStatisticColumn col = new JSONStatisticColumn();
-                col.loadFromNodeSettings(singleColSettings);
-                m_statistics.add(col);
-            }
-        }
+        m_statistics = JSONDataTable.loadFromNodeSettings(statSettings);
+        m_enablePaging = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_PAGING);
+        m_initialPageSize = settings.getInt(DataExplorerConfig.CFG_INITIAL_PAGE_SIZE);
+        m_enablePageSizeChange = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_PAGE_SIZE_CHANGE);
+        m_allowedPageSizes = settings.getIntArray(DataExplorerConfig.CFG_PAGE_SIZES);
+        m_pageSizeShowAll = settings.getBoolean(DataExplorerConfig.CFG_PAGE_SIZE_SHOW_ALL);
+        m_enableJumpToPage = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_JUMP_TO_PAGE);
+        m_displayRowIds = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_ROW_IDS);
+        m_displayColumnHeaders = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_COLUMN_HEADERS);
+        m_fixedHeaders = settings.getBoolean(DataExplorerConfig.CFG_FIXED_HEADERS);
+        m_title = settings.getString(DataExplorerConfig.CFG_TITLE);
+        m_subtitle = settings.getString(DataExplorerConfig.CFG_SUBTITLE);
+        m_enableSelection = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_SELECTION);
+        m_enableSearching = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_SEARCHING);
+        m_enableSorting = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_SORTING);
+        m_enableClearSortButton = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_CLEAR_SORT_BUTTON);
+        m_enableGlobalNumberFormat = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_GLOBAL_NUMBER_FORMAT);
+        m_globalNumberFormatDecimals = settings.getInt(DataExplorerConfig.CFG_GLOBAL_NUMBER_FORMAT_DECIMALS);
+        m_displayFullscreenButton = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, DataExplorerConfig.DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
+        m_displayMissingValueAsQuestionMark = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DataExplorerConfig.DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
     }
 
     /**
@@ -132,6 +443,25 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         DataExplorerNodeRepresentation other = (DataExplorerNodeRepresentation)obj;
         return new EqualsBuilder()
                 .append(m_statistics, other.m_statistics)
+                .append(m_enablePaging, other.m_enablePaging)
+                .append(m_initialPageSize, other.m_initialPageSize)
+                .append(m_enablePageSizeChange, other.m_enablePageSizeChange)
+                .append(m_allowedPageSizes, other.m_allowedPageSizes)
+                .append(m_pageSizeShowAll, other.m_pageSizeShowAll)
+                .append(m_enableJumpToPage, other.m_enableJumpToPage)
+                .append(m_displayRowIds, other.m_displayRowIds)
+                .append(m_displayColumnHeaders, other.m_displayColumnHeaders)
+                .append(m_displayFullscreenButton, other.m_displayFullscreenButton)
+                .append(m_fixedHeaders, other.m_fixedHeaders)
+                .append(m_title, other.m_title)
+                .append(m_subtitle, other.m_subtitle)
+                .append(m_enableSelection, other.m_enableSelection)
+                .append(m_enableSearching, other.m_enableSearching)
+                .append(m_enableSorting, other.m_enableSorting)
+                .append(m_enableClearSortButton, other.m_enableClearSortButton)
+                .append(m_enableGlobalNumberFormat, other.m_enableGlobalNumberFormat)
+                .append(m_globalNumberFormatDecimals, other.m_globalNumberFormatDecimals)
+                .append(m_displayMissingValueAsQuestionMark, other.m_displayMissingValueAsQuestionMark)
                 .isEquals();
     }
 
@@ -142,7 +472,25 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(m_statistics)
+                .append(m_enablePaging)
+                .append(m_initialPageSize)
+                .append(m_enablePageSizeChange)
+                .append(m_allowedPageSizes)
+                .append(m_pageSizeShowAll)
+                .append(m_enableJumpToPage)
+                .append(m_displayRowIds)
+                .append(m_displayColumnHeaders)
+                .append(m_displayFullscreenButton)
+                .append(m_fixedHeaders)
+                .append(m_title)
+                .append(m_subtitle)
+                .append(m_enableSelection)
+                .append(m_enableSearching)
+                .append(m_enableSorting)
+                .append(m_enableClearSortButton)
+                .append(m_enableGlobalNumberFormat)
+                .append(m_globalNumberFormatDecimals)
+                .append(m_displayMissingValueAsQuestionMark)
                 .toHashCode();
     }
-
 }

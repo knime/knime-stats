@@ -49,9 +49,8 @@
 package org.knime.base.node.stats.dataexplorer;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.knime.base.data.statistics.Statistic;
 import org.knime.base.data.statistics.StatisticCalculator;
@@ -65,9 +64,12 @@ import org.knime.base.data.statistics.calculation.Skewness;
 import org.knime.base.data.statistics.calculation.SpecialDoubleCells;
 import org.knime.base.data.statistics.calculation.StandardDeviation;
 import org.knime.base.data.statistics.calculation.Variance;
+import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
+import org.knime.core.data.ExtensibleUtilityFactory;
+import org.knime.core.data.LongValue;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
@@ -80,6 +82,10 @@ import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.web.ValidationError;
+import org.knime.js.core.JSONDataTable;
+import org.knime.js.core.JSONDataTable.JSONDataTableRow;
+import org.knime.js.core.JSONDataTableSpec;
+import org.knime.js.core.JSONDataTableSpec.JSTypes;
 import org.knime.js.core.node.AbstractWizardNodeModel;
 
 /**
@@ -167,19 +173,21 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         if (rep.getStatistics() == null) {
             subProgress = 0.1;
             rep.setStatistics(calculateStatistics((BufferedDataTable)inObjects[0], exec.createSubExecutionContext(0.9)));
+            copyConfigToRepresentation();
         }
         DataExplorerNodeValue val = getViewValue();
         BufferedDataTable result = table;
-        if (val.getFilterCols() != null && val.getFilterCols().size() > 0) {
+        String[] filterCols = val.getSelection();
+        if (filterCols != null && filterCols.length > 0) {
             ColumnRearranger rearranger = new ColumnRearranger(table.getDataTableSpec());
-            rearranger.remove(val.getFilterCols().toArray(new String[0]));
+            rearranger.remove(filterCols);
             result = exec.createColumnRearrangeTable(table, rearranger, exec.createSubProgress(subProgress));
         }
 
         return new PortObject[]{result};
     }
 
-    private List<JSONStatisticColumn> calculateStatistics(final BufferedDataTable table, final ExecutionContext exec) throws InvalidSettingsException, CanceledExecutionException {
+    private JSONDataTable calculateStatistics(final BufferedDataTable table, final ExecutionContext exec) throws InvalidSettingsException, CanceledExecutionException {
         DataTableSpec spec = table.getSpec();
         List<String> doubleCols = new ArrayList<String>();
         List<String> nominalCols = new ArrayList<String>();
@@ -210,33 +218,118 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         SpecialDoubleCells spDouble = new SpecialDoubleCells(includeColumns);
         statistics.add(spDouble);
         Median median = new Median(includeColumns);
-        statistics.add(median);
+        if (m_config.getShowMedian()) {
+            statistics.add(median);
+        }
         NominalValue nominal = new NominalValue(100, nominalCols.toArray(new String[0]));
         statistics.add(nominal);
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
         calc.evaluate(table, exec);
-        List<JSONStatisticColumn> jStats = new ArrayList<JSONStatisticColumn>();
-        for (String col : includeColumns) {
-            Map<String, Double> colVals = new LinkedHashMap<String, Double>();
-            colVals.put(DataExplorerConfig.MIN, ((DoubleValue)minMax.getMin(col)).getDoubleValue());
-            colVals.put(DataExplorerConfig.MAX, ((DoubleValue)minMax.getMax(col)).getDoubleValue());
-            colVals.put(DataExplorerConfig.MEAN, mean.getResult(col));
-            colVals.put(DataExplorerConfig.MEDIAN, ((DoubleValue)median.getMedian(col)).getDoubleValue());
-            colVals.put(DataExplorerConfig.STD_DEV, stdDev.getResult(col));
-            colVals.put(DataExplorerConfig.VARIANCE, variance.getResult(col));
-            colVals.put(DataExplorerConfig.SKEWNESS, skewness.getResult(col));
-            colVals.put(DataExplorerConfig.KURTOSIS, kurtosis.getResult(col));
+
+        JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
+        for (int i = 0; i < includeColumns.length; i++) {
+            String col = includeColumns[i];
+            List<Object> rowValues = new ArrayList<Object>();
+            DataCell min = minMax.getMin(col);
+            DataCell max = minMax.getMax(col);
+            rowValues.add(min.isMissing() ? null : ((DoubleValue)min).getDoubleValue());
+            rowValues.add(max.isMissing() ? null : ((DoubleValue)max).getDoubleValue());
+            Double dMean = mean.getResult(col);
+            rowValues.add(dMean.isNaN() ? null : dMean);
+            if (m_config.getShowMedian()) {
+                DataCell med = median.getMedian(col);
+                rowValues.add(med.isMissing() ? null : ((DoubleValue)med).getDoubleValue());
+            }
+            Double dDev = stdDev.getResult(col);
+            rowValues.add(dDev.isNaN() ? null : dDev);
+            Double dVar = variance.getResult(col);
+            rowValues.add(dVar.isNaN() ? null : dDev);
+            Double dSkew = skewness.getResult(col);
+            rowValues.add(dSkew.isNaN() ? null : dSkew);
+            Double dKurt = kurtosis.getResult(col);
+            rowValues.add(dKurt.isNaN() ? null : dKurt);
             //TODO sum
-            colVals.put(DataExplorerConfig.MISSING, (double)missing.getNumberMissingValues(col));
-            colVals.put(DataExplorerConfig.NAN, (double)spDouble.getNumberNaNValues(col));
-            colVals.put(DataExplorerConfig.P_INFINITY, (double)spDouble.getNumberPositiveInfiniteValues(col));
-            colVals.put(DataExplorerConfig.N_INFINITY, (double)spDouble.getNumberNegativeInfiniteValues(col));
-            JSONStatisticColumn jCol = new JSONStatisticColumn();
-            jCol.setName(col);
-            jCol.setValues(colVals);
-            jStats.add(jCol);
+            rowValues.add(missing.getNumberMissingValues(col));
+            rowValues.add(spDouble.getNumberNaNValues(col));
+            rowValues.add(spDouble.getNumberPositiveInfiniteValues(col));
+            rowValues.add(spDouble.getNumberNegativeInfiniteValues(col));
+            rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
-        return jStats;
+        JSONDataTableSpec jSpec = createJSONSpec(includeColumns.length);
+        JSONDataTable jTable = new JSONDataTable();
+        jTable.setSpec(jSpec);
+        jTable.setRows(rows);
+        return jTable;
+    }
+
+    private JSONDataTableSpec createJSONSpec(final int numColumns) {
+        String knimeDouble = ((ExtensibleUtilityFactory)DoubleValue.UTILITY).getName();
+        String knimeInt = ((ExtensibleUtilityFactory)LongValue.UTILITY).getName();
+        JSONDataTableSpec spec = new JSONDataTableSpec();
+        List<String> colNames = new ArrayList<String>();
+        List<String> knimeTypes = new ArrayList<String>();
+        colNames.add(DataExplorerConfig.MIN);
+        knimeTypes.add(knimeDouble);
+        colNames.add(DataExplorerConfig.MAX);
+        knimeTypes.add(knimeDouble);
+        colNames.add(DataExplorerConfig.MEAN);
+        knimeTypes.add(knimeDouble);
+        if (m_config.getShowMedian()) {
+            colNames.add(DataExplorerConfig.MEDIAN);
+            knimeTypes.add(knimeDouble);
+        }
+        colNames.add(DataExplorerConfig.STD_DEV);
+        knimeTypes.add(knimeDouble);
+        colNames.add(DataExplorerConfig.VARIANCE);
+        knimeTypes.add(knimeDouble);
+        colNames.add(DataExplorerConfig.SKEWNESS);
+        knimeTypes.add(knimeDouble);
+        colNames.add(DataExplorerConfig.KURTOSIS);
+        knimeTypes.add(knimeDouble);
+        //TODO sum
+        colNames.add(DataExplorerConfig.MISSING);
+        knimeTypes.add(knimeInt);
+        colNames.add(DataExplorerConfig.NAN);
+        knimeTypes.add(knimeInt);
+        colNames.add(DataExplorerConfig.P_INFINITY);
+        knimeTypes.add(knimeInt);
+        colNames.add(DataExplorerConfig.N_INFINITY);
+        knimeTypes.add(knimeInt);
+
+        JSTypes[] colTypes = new JSTypes[colNames.size()];
+        Arrays.fill(colTypes, JSTypes.NUMBER);
+
+        spec.setNumColumns(colNames.size());
+        spec.setColNames(colNames.toArray(new String[0]));
+        spec.setColTypes(colTypes);
+        spec.setKnimeTypes(knimeTypes.toArray(new String[0]));
+        spec.setNumRows(numColumns);
+        return spec;
+    }
+
+    private void copyConfigToRepresentation() {
+        synchronized(getLock()) {
+            DataExplorerNodeRepresentation viewRepresentation = getViewRepresentation();
+            viewRepresentation.setEnablePaging(m_config.getEnablePaging());
+            viewRepresentation.setInitialPageSize(m_config.getInitialPageSize());
+            viewRepresentation.setEnablePageSizeChange(m_config.getEnablePageSizeChange());
+            viewRepresentation.setAllowedPageSizes(m_config.getAllowedPageSizes());
+            viewRepresentation.setPageSizeShowAll(m_config.getPageSizeShowAll());
+            viewRepresentation.setEnableJumpToPage(m_config.getEnableJumpToPage());
+            viewRepresentation.setDisplayRowIds(m_config.getDisplayRowIds());
+            viewRepresentation.setDisplayColumnHeaders(m_config.getDisplayColumnHeaders());
+            viewRepresentation.setFixedHeaders(m_config.getFixedHeaders());
+            viewRepresentation.setTitle(m_config.getTitle());
+            viewRepresentation.setSubtitle(m_config.getSubtitle());
+            viewRepresentation.setEnableSelection(m_config.getEnableSelection());
+            viewRepresentation.setEnableSearching(m_config.getEnableSearching());
+            viewRepresentation.setEnableSorting(m_config.getEnableSorting());
+            viewRepresentation.setEnableClearSortButton(m_config.getEnableClearSortButton());
+            viewRepresentation.setEnableGlobalNumberFormat(m_config.getEnableGlobalNumberFormat());
+            viewRepresentation.setGlobalNumberFormatDecimals(m_config.getGlobalNumberFormatDecimals());
+            viewRepresentation.setDisplayFullscreenButton(m_config.getDisplayFullscreenButton());
+            viewRepresentation.setDisplayMissingValueAsQuestionMark(m_config.getDisplayMissingValueAsQuestionMark());
+        }
     }
 
     /**
@@ -244,8 +337,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
      */
     @Override
     protected void performReset() {
-        // TODO Auto-generated method stub
-
+        // nothing to do
     }
 
     /**
@@ -253,8 +345,8 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
      */
     @Override
     protected void useCurrentValueAsDefault() {
-        // TODO Auto-generated method stub
-
+        DataExplorerNodeValue value = getViewValue();
+        m_config.setInitialPageSize(value.getPageSize());
     }
 
     /**

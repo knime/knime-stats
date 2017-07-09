@@ -73,7 +73,6 @@ public class DataExplorerNodeFactory extends NodeFactory<DataExplorerNodeModel> 
      */
     @Override
     protected int getNrNodeViews() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -82,7 +81,6 @@ public class DataExplorerNodeFactory extends NodeFactory<DataExplorerNodeModel> 
      */
     @Override
     public NodeView<DataExplorerNodeModel> createNodeView(final int viewIndex, final DataExplorerNodeModel nodeModel) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -91,8 +89,7 @@ public class DataExplorerNodeFactory extends NodeFactory<DataExplorerNodeModel> 
      */
     @Override
     protected boolean hasDialog() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     /**
@@ -100,8 +97,7 @@ public class DataExplorerNodeFactory extends NodeFactory<DataExplorerNodeModel> 
      */
     @Override
     protected NodeDialogPane createNodeDialogPane() {
-        // TODO Auto-generated method stub
-        return null;
+        return new DataExplorerNodeDialog();
     }
 
 }
