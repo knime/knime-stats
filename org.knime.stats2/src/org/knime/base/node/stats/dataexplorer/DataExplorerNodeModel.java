@@ -48,10 +48,19 @@
  */
 package org.knime.base.node.stats.dataexplorer;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.knime.base.data.statistics.HistogramColumn;
+import org.knime.base.data.statistics.HistogramColumn.BinNumberSelectionStrategy;
+import org.knime.base.data.statistics.HistogramColumn.ImageFormats;
+import org.knime.base.data.statistics.HistogramModel;
 import org.knime.base.data.statistics.Statistic;
 import org.knime.base.data.statistics.StatisticCalculator;
 import org.knime.base.data.statistics.calculation.Kurtosis;
@@ -70,17 +79,20 @@ import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.ExtensibleUtilityFactory;
 import org.knime.core.data.LongValue;
+import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
+import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
+import org.knime.core.node.property.hilite.HiLiteHandler;
 import org.knime.core.node.web.ValidationError;
 import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.JSONDataTable.JSONDataTableRow;
@@ -224,7 +236,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         NominalValue nominal = new NominalValue(100, nominalCols.toArray(new String[0]));
         statistics.add(nominal);
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
-        calc.evaluate(table, exec);
+        calc.evaluate(table, exec.createSubExecutionContext(0.5));
 
         JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
         for (int i = 0; i < includeColumns.length; i++) {
@@ -259,6 +271,30 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         JSONDataTable jTable = new JSONDataTable();
         jTable.setSpec(jSpec);
         jTable.setRows(rows);
+
+        Map<Integer, ? extends HistogramModel<?>> histograms = calculateHistograms(table, exec.createSubExecutionContext(0.5), minMax, mean, includeColumns);
+        List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
+        hList.addAll(histograms.values());
+        getViewRepresentation().setHistograms(hList);
+        /*ObjectMapper mapper = new ObjectMapper();
+        try {
+            String json = mapper.writeValueAsString(histograms);
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+        }
+        for (HistogramModel<?> hModel : histograms.values()) {
+            for (Bin<?> bin : hModel.getBins()) {
+                int count = bin.getCount();
+                Object def = bin.getDef();
+                if (def instanceof Pair) {
+                    @SuppressWarnings("unchecked")
+                    Pair<Double, Double> nDef = (Pair<Double, Double>)def;
+                    double min = nDef.getFirst();
+                    double max = nDef.getSecond();
+                }
+            }
+        }*/
+
         return jTable;
     }
 
@@ -306,6 +342,28 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         spec.setNumRows(numColumns);
         return spec;
     }
+
+   private Map<Integer, ? extends HistogramModel<?>> calculateHistograms(final BufferedDataTable table, final ExecutionContext exec, final MinMax minMax, final Mean mean, final String[] includeColumns) {
+       HistogramColumn hCol = HistogramColumn.getDefaultInstance()
+               .withNumberOfBins(10)
+               .withImageFormat(ImageFormats.SVG)
+               .withHistogramWidth(200)
+               .withHistogramHeight(100)
+               .withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange)
+               .withShowMinMax(true);
+       int noCols = includeColumns.length;
+       double[] mins = new double[noCols];
+       double[] maxs = new double[noCols];
+       double[] means = new double[noCols];
+       for (int i = 0; i < noCols; i++) {
+           DataCell min = minMax.getMin(includeColumns[i]);
+           mins[i] = min.isMissing() ? Double.NaN : ((DoubleValue)min).getDoubleValue();
+           DataCell max = minMax.getMax(includeColumns[i]);
+           maxs[i] = max.isMissing() ? Double.NaN : ((DoubleValue)max).getDoubleValue();
+           means[i] = mean.getResult(includeColumns[i]);
+       }
+       return hCol.histograms(table, new HiLiteHandler(), mins, maxs, means, includeColumns);
+   }
 
     private void copyConfigToRepresentation() {
         synchronized(getLock()) {
@@ -371,6 +429,48 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_config.loadSettingsFrom(settings);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
+        super.saveInternals(nodeInternDir, exec);
+        File hFile = new File(nodeInternDir, "histograms.xml.gz");
+        List<HistogramModel<?>> hList = getViewRepresentation().getHistograms();
+        if (hList != null) {
+            Map<Integer, HistogramModel<?>> hMap = new HashMap<Integer, HistogramModel<?>>();
+            for (HistogramModel<?> histogramModel : getViewRepresentation().getHistograms()) {
+                hMap.put(histogramModel.getColIndex(), histogramModel);
+            }
+            HistogramColumn.saveHistogramData(hMap, hFile);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
+        super.loadInternals(nodeInternDir, exec);
+        File hFile = new File(nodeInternDir, "histograms.xml.gz");
+        if (hFile.exists()) {
+            double[] means = getViewRepresentation().getMeans();
+            if (means == null) {
+                throw new IOException("Means could not be retrieved from representation.");
+            }
+            try {
+                Map<Integer, ? extends HistogramModel<?>> histograms = HistogramColumn.loadHistograms(hFile, new HashMap<Integer, Map<Integer, Set<RowKey>>>(), BinNumberSelectionStrategy.DecimalRange, means);
+                List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
+                hList.addAll(histograms.values());
+                getViewRepresentation().setHistograms(hList);
+            } catch (InvalidSettingsException e) {
+                throw new IOException(e);
+            }
+        }
     }
 
 }

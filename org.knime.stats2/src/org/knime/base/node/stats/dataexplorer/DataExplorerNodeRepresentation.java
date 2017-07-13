@@ -48,15 +48,22 @@
  */
 package org.knime.base.node.stats.dataexplorer;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.knime.base.data.statistics.HistogramModel;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.js.core.JSONDataTable;
+import org.knime.js.core.JSONDataTable.JSONDataTableRow;
+import org.knime.js.core.JSONDataTableSpec;
 import org.knime.js.core.JSONViewContent;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
@@ -89,6 +96,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private boolean m_enableGlobalNumberFormat;
     private int m_globalNumberFormatDecimals;
     private boolean m_displayMissingValueAsQuestionMark;
+    private List<HistogramModel<?>> m_histograms;
 
     /**
      * @return the statistics
@@ -371,9 +379,48 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the histograms
+     */
+    public List<HistogramModel<?>> getHistograms() {
+        return m_histograms;
+    }
+
+    /**
+     * @param histograms the histograms to set
+     */
+    public void setHistograms(final List<HistogramModel<?>> histograms) {
+        m_histograms = histograms;
+    }
+
+    /**
+     * Extracts all mean values from statistics table.
+     * @return a double array with all mean values, may be null if operation not possible
+     */
+    @JsonIgnore
+    double[] getMeans() {
+        if (m_statistics != null) {
+            JSONDataTableSpec spec = m_statistics.getSpec();
+            List<String> colNames = Arrays.asList(spec.getColNames());
+            if (!colNames.contains(DataExplorerConfig.MEAN)) {
+                return null;
+            }
+            double[] means = new double[m_statistics.getSpec().getNumRows()];
+            int meanIndex = colNames.indexOf(DataExplorerConfig.MEAN);
+            JSONDataTableRow[] rows = m_statistics.getRows();
+            for (int i = 0; i < rows.length; i++) {
+                JSONDataTableRow row = rows[i];
+                means[i] = (double)row.getData()[meanIndex];
+            }
+            return means;
+        }
+        return null;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
+    @JsonIgnore
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         NodeSettingsWO statSettings = settings.addNodeSettings(CFG_STATISTICS);
         m_statistics.saveJSONToNodeSettings(statSettings);
@@ -396,12 +443,14 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         settings.addInt(DataExplorerConfig.CFG_GLOBAL_NUMBER_FORMAT_DECIMALS, m_globalNumberFormatDecimals);
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
+        // histograms are saved as extra file in DataExplorerNodeModel#saveInternals()
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @JsonIgnore
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         NodeSettingsRO statSettings = settings.getNodeSettings(CFG_STATISTICS);
         m_statistics = JSONDataTable.loadFromNodeSettings(statSettings);
@@ -424,12 +473,14 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_globalNumberFormatDecimals = settings.getInt(DataExplorerConfig.CFG_GLOBAL_NUMBER_FORMAT_DECIMALS);
         m_displayFullscreenButton = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, DataExplorerConfig.DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_displayMissingValueAsQuestionMark = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DataExplorerConfig.DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
+        // histograms are loaded separately in DataExplorerNodeModel#loadInternals()
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @JsonIgnore
     public boolean equals(final Object obj) {
         if (obj == null) {
             return false;
@@ -462,6 +513,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_enableGlobalNumberFormat, other.m_enableGlobalNumberFormat)
                 .append(m_globalNumberFormatDecimals, other.m_globalNumberFormatDecimals)
                 .append(m_displayMissingValueAsQuestionMark, other.m_displayMissingValueAsQuestionMark)
+                .append(m_histograms, other.m_histograms)
                 .isEquals();
     }
 
@@ -469,6 +521,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
      * {@inheritDoc}
      */
     @Override
+    @JsonIgnore
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(m_statistics)
@@ -491,6 +544,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_enableGlobalNumberFormat)
                 .append(m_globalNumberFormatDecimals)
                 .append(m_displayMissingValueAsQuestionMark)
+                .append(m_histograms)
                 .toHashCode();
     }
 }
