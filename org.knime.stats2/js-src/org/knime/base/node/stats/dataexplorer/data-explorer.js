@@ -47,6 +47,7 @@ dataExplorerNamespace = function() {
 		try {
 			knimeTable = new kt();
 			knimeTable.setDataTable(_representation.statistics);
+            console.log("histogra data: ",_representation.histograms)
 			
 			var wrapper = $('<div id="knimeDataExplorerContainer">');
 			body.append(wrapper);
@@ -93,7 +94,7 @@ dataExplorerNamespace = function() {
 					'className': 'no-break'
 				});
 			}
-			
+			//console.log(knimeTable);
 			for (var i = 0; i < knimeTable.getColumnNames().length; i++) {
 				var colType = knimeTable.getColumnTypes()[i];
 				var knimeColType = knimeTable.getKnimeColumnTypes()[i];
@@ -108,6 +109,9 @@ dataExplorerNamespace = function() {
 				if (colType == 'number' && _representation.enableGlobalNumberFormat) {
 					if (knimeTable.getKnimeColumnTypes()[i].indexOf('double') > -1) {
 						colDef.render = function(data, type, full, meta) {
+                            //console.log("data4", data)
+                            //console.log("full4", full)
+                            //console.log(data)
 							if (!$.isNumeric(data)) {
 								return data;
 							}
@@ -118,6 +122,57 @@ dataExplorerNamespace = function() {
 				colArray.push(colDef);
 			}
 			
+            var svgWidth = 100,
+                svgHeight = 30;
+            
+            var xScale = d3.scale.linear()
+                .range([0, svgWidth]), 
+                
+                yScale = d3.scale.linear()
+                .range([0,svgHeight]),
+                
+                colorScale = d3.scale.category10()
+                .domain([0, knimeTable.getNumRows]);
+            
+            var colDef = {
+                'title' :"Histogram",
+                'orderable': false, 
+                'searchable': false,
+                'defaultContent':  '<span class="missing-value-cell">?</span>'
+            }
+            console.log("")
+            colDef.render = function(data, type, full, meta) {
+                console.log("data", data)
+                //var circle=$('<div class="circle">Hi</div>');
+                //var div = $('<div class=bar></div>')
+                //return $('<div/>').append('<svg width="50" height="50"><circle cx="25" cy="25" r="25" fill="purple" /></svg>').html();
+                xScale.domain([0, data.realMax-data.realMin]);
+                yScale.domain([0, data.maxCount]);
+                var fill = colorScale(data.colIndex);
+                var corr = data.realMin;
+                var histDiv = document.createElement("div");
+                var svg = d3.select(histDiv)
+                    .append("svg")
+                    .attr("height", svgHeight)
+                    .attr("width", svgWidth)
+                    .selectAll("rect")
+                    .data(data.bins)
+                        .enter()
+                    .append("rect")
+                    .attr("x", function (d) {return xScale(d.def.first - corr);})
+                    .attr("y", function(d) {return svgHeight - yScale(d.count);})
+                    .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
+                    .attr("height", function(d){return yScale(d.count);})
+                    .attr("fill", fill)
+                    .attr("stroke", "#999999")
+                    .attr("stroke-width", "1px")
+                    .append("title")
+                    .text(function(d, i) { return d.tooltip.slice(0,-13); });
+                //return $('<div/>').append(div).html();
+                return $('<div/>').append(histDiv).html();
+            }
+            colArray.push(colDef);    
+            
 			var pageLength = _representation.initialPageSize;
 			if (_value.pageSize) {
 				pageLength = _value.pageSize;
@@ -147,9 +202,11 @@ dataExplorerNamespace = function() {
 				buttons.push(unsortButton);
 			}
 			var firstChunk = getDataSlice(0, _representation.initialPageSize);
+            //console.log("firstChunk",firstChunk)
+            
 			var searchEnabled = _representation.enableSearching || (knimeService && knimeService.isInteractivityAvailable());
 			dataTable = $('#knimeDataExplorer').DataTable( {
-				'columns': colArray,
+                'columns': colArray,
 				'columnDefs': colDefs,
 				'order': order,
 				'paging': _representation.enablePaging,
@@ -259,6 +316,7 @@ dataExplorerNamespace = function() {
 		var tableSize = knimeTable.getNumRows()
 		var endIndex  = Math.min(tableSize, startIndex + chunkSize);
 		var chunk = getDataSlice(startIndex, endIndex);
+        console.log("datarow",chunk)
 		dataTable.rows.add(chunk);
 		var endTime = new Date().getTime();
 		var chunkDuration = endTime - startTime;
@@ -309,6 +367,7 @@ dataExplorerNamespace = function() {
 				dataRow.push(string);
 			}
 			var dataRow = dataRow.concat(row.data);
+            dataRow.push(_representation.histograms[i]);
 			data.push(dataRow);
 		}
 		return data;
