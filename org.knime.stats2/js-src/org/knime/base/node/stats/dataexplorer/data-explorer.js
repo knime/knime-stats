@@ -129,10 +129,10 @@ dataExplorerNamespace = function() {
                 .range([0, svgWidth]), 
                 
                 yScale = d3.scale.linear()
-                .range([0,svgHeight]),
+                .range([0,svgHeight]);
                 
-                colorScale = d3.scale.category10()
-                .domain([0, knimeTable.getNumRows]);
+//                var colorScale = d3.scale.category10()
+//                .domain([0, knimeTable.getNumRows]);
             
             var colDef = {
                 'title' :"Histogram",
@@ -148,7 +148,7 @@ dataExplorerNamespace = function() {
                 //return $('<div/>').append('<svg width="50" height="50"><circle cx="25" cy="25" r="25" fill="purple" /></svg>').html();
                 xScale.domain([0, data.realMax-data.realMin]);
                 yScale.domain([0, data.maxCount]);
-                var fill = colorScale(data.colIndex);
+                //var fill = colorScale(data.colIndex);
                 var corr = data.realMin;
                 var histDiv = document.createElement("div");
                 var svg = d3.select(histDiv)
@@ -163,11 +163,12 @@ dataExplorerNamespace = function() {
                     .attr("y", function(d) {return svgHeight - yScale(d.count);})
                     .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
                     .attr("height", function(d){return yScale(d.count);})
-                    .attr("fill", fill)
+                    .attr("fill", "purple")
                     .attr("stroke", "#999999")
                     .attr("stroke-width", "1px")
                     .append("title")
                     .text(function(d, i) { return d.tooltip.slice(0,-13); });
+                
                 //return $('<div/>').append(div).html();
                 return $('<div/>').append(histDiv).html();
             }
