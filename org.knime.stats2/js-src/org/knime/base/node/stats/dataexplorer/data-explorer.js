@@ -7,6 +7,15 @@ dataExplorerNamespace = function() {
 	var selection = {};
 	var allCheckboxes = [];
 	var initialized = false;
+    var svgWidth = 100;
+    var svgHeight = 30;
+    var svgWsmall = 100;
+    var svgHsmall = 30;
+    var svgWbig = 400;
+    var svgHbig = 130;
+    var xScale, yScale;
+    var yAxis;
+    var margin = {top:0.15*svgHeight, left: 0.15*svgWidth, bottom: 0.15*svgHeight};
 	
 	//register neutral ordering method for clear selection button
 	$.fn.dataTable.Api.register('order.neutral()', function () {
@@ -35,7 +44,109 @@ dataExplorerNamespace = function() {
 				drawTable();
 			});
 		}
+//        if (dataTable.column(13).visible() == true){
+//            console.log("hidden")
+//        }
+        //console.log("hist column", dataTable.column(13))
+//        dataTable.on( 'column-visibility.dt', function ( e, settings, column, state ) {
+//            console.log('Column '+ column +' has changed to '+ (state ? 'visible' : 'hidden'));
+//            console.log(e);
+//            console.log(settings);
+//        } );
+        $('div.hist:hidden').attr("width", svgWbig)
+        dataTable.on( 'responsive-display', function ( e, datatable, row, showHide, update ) {
+            console.log( 'Details for row '+row.index()+' '+(showHide ? 'shown' : 'hidden') );
+            //console.log("row",row);
+            //console.log("row", e)
+            //dataTable.responsive.recalc();
+            //console.log("update", update)
+
+            svgWidth = svgWbig;
+            svgHeight = svgHbig;
+            rescale(row, showHide);
+//            if (showHide) {
+//                console.log("Make me BIG: "+row[0][0])
+//                svgWidth = svgWbig;
+//                svgHeight = svgHbig;
+//                //rescale(row, showHide);
+//                //enlargeHistogram(row);
+//            } else {
+//                console.log("Make me SMALL: "+row[0][0])
+//                svgWidth = svgWsmall;
+//                svgHeight = svgHsmall;
+//                //rescale(row, showHide);
+//                //diminishHistogram(row);
+//            }
+        } );
 	}
+    
+    rescale = function(row, big) {
+        var histCol = row.data().length - 1;
+        var marginLeft = big? margin.left : 0;
+        var marginTop = big? margin.top : 0;
+        var marginBottom = big? margin.bottom : 0;
+        xScale.range([0, svgWidth - marginLeft])
+            .domain([row.data()[histCol].realMax-row.data()[histCol].realMin]);
+        yScale.range([svgHeight - marginTop - marginBottom, 0])
+            .domain([0, row.data()[histCol].maxCount])
+        yAxis.scale(yScale);
+        d3.selectAll(".bars"+row.data()[0][0])
+            .attr("transform", "translate(" + [margin.left, 0] + ")")
+    }
+    
+//    enlargeHistogram = function(row) {
+//        yAxis.scale(yScale);
+//
+////        var data = row.data()[row.data().length - 1];
+////        var svg = $("svg#id"+ row[0][0]+".svg_hist")
+////            .attr("width", svgWidth)
+////            .attr("height", svgHeight)
+//        
+////        var axis = d3.selectAll('#id'+ row[0][0]+' yAxis')
+////            //.attr("transform", "translate(" + [margin.left, margin.top] + ")")
+////            //
+////            .call(yAxis)
+////            .attr("hidden", false);
+////        
+////        var bar_group = $("g#"+ row[0][0]+".bars")
+////            .css({"-webkit-transform":"translate("+margin.left+"px,"+margin.top+"px)"})
+////        
+////        var bars = d3.selectAll(".rect"+row[0][0])
+////            .data(data.bins)
+////            .attr("x", function (d, i) {
+////                //console.log("d",d)
+////                return xScale(d.def.first - data.realMin);
+////            })
+////            .attr("y", function(d) {return svgHeight - margin.top - margin.bottom - yScale(d.count);})
+////            .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
+////            .attr("height", function(d){return yScale(d.count);})
+////            
+////        
+////        
+////        var svg = d3.select(histDiv).attr("class", "hist")
+////                    .append("svg")
+////                    .attr("height", svgHeight)
+////                    .attr("width", svgWidth)
+////                    .attr("class", "svg_hist")
+////                    .attr("id", data.colIndex)
+////                    .selectAll("rect")
+////                    .data(data.bins)
+////                        .enter()
+////                    .append("rect")
+////                    .attr("x", function (d) {return xScale(d.def.first - corr);})
+////                    .attr("y", function(d) {return svgHeight - yScale(d.count);})
+////                    .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
+////                    .attr("height", function(d){return yScale(d.count);})
+////                    .attr("fill", "purple")
+////                    .attr("stroke", "#999999")
+////                    .attr("stroke-width", "1px")
+////                    .append("title")
+////                    .text(function(d, i) { return d.tooltip.slice(0,-13); });
+//    }
+//    
+//    diminishHistogram = function(row) {
+//        
+//    }
 	
 	drawTable = function() {
 		var body = $('body');
@@ -47,7 +158,7 @@ dataExplorerNamespace = function() {
 		try {
 			knimeTable = new kt();
 			knimeTable.setDataTable(_representation.statistics);
-            console.log("histogra data: ",_representation.histograms)
+            //console.log("histogra data: ",_representation.histograms)
 			
 			var wrapper = $('<div id="knimeDataExplorerContainer">');
 			body.append(wrapper);
@@ -121,15 +232,12 @@ dataExplorerNamespace = function() {
 				}
 				colArray.push(colDef);
 			}
-			
-            var svgWidth = 100,
-                svgHeight = 30;
             
-            var xScale = d3.scale.linear()
-                .range([0, svgWidth]), 
+            xScale = d3.scale.linear()
+                .range([0, svgWidth-margin.left]), 
                 
-                yScale = d3.scale.linear()
-                .range([0,svgHeight]);
+            yScale = d3.scale.linear()
+                .range([svgHeight - margin.top - margin.bottom, 0]);
                 
 //                var colorScale = d3.scale.category10()
 //                .domain([0, knimeTable.getNumRows]);
@@ -140,36 +248,57 @@ dataExplorerNamespace = function() {
                 'searchable': false,
                 'defaultContent':  '<span class="missing-value-cell">?</span>'
             }
-            console.log("")
+
             colDef.render = function(data, type, full, meta) {
                 console.log("data", data)
-                //var circle=$('<div class="circle">Hi</div>');
-                //var div = $('<div class=bar></div>')
-                //return $('<div/>').append('<svg width="50" height="50"><circle cx="25" cy="25" r="25" fill="purple" /></svg>').html();
-                xScale.domain([0, data.realMax-data.realMin]);
+
+                var min = data.bins[0].def.first;
+                var max = data.bins[data.bins.length-1].def.second
+                xScale.domain([0, max - min]);
                 yScale.domain([0, data.maxCount]);
                 //var fill = colorScale(data.colIndex);
-                var corr = data.realMin;
                 var histDiv = document.createElement("div");
-                var svg = d3.select(histDiv)
+                var svg = d3.select(histDiv).attr("class", "hist")
                     .append("svg")
                     .attr("height", svgHeight)
                     .attr("width", svgWidth)
-                    .selectAll("rect")
+                    .attr("class", "svg_hist")
+                    .attr("id", "id"+data.colIndex);
+                
+                var bar_group = svg.append("g")
+                    .attr("transform", "translate(" + [margin.left, 0] + ")")
+                    .attr("class", "bars")
+                    .attr("id", "id"+data.colIndex);
+                
+                var bars = bar_group.selectAll("rect")
                     .data(data.bins)
                         .enter()
                     .append("rect")
-                    .attr("x", function (d) {return xScale(d.def.first - corr);})
-                    .attr("y", function(d) {return svgHeight - yScale(d.count);})
+                    .attr("class", "rect"+data.colIndex)
+                    .attr("x", function (d) {return xScale(d.def.first - min);})
+                    .attr("y", function(d) {return yScale(d.count);})
                     .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
-                    .attr("height", function(d){return yScale(d.count);})
+                    .attr("height", function(d){return svgHeight - margin.top - margin.bottom- yScale(d.count);})
                     .attr("fill", "purple")
                     .attr("stroke", "#999999")
                     .attr("stroke-width", "1px")
                     .append("title")
                     .text(function(d, i) { return d.tooltip.slice(0,-13); });
                 
-                //return $('<div/>').append(div).html();
+                yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .tickSize(Math.min(3, svgWidth/200))
+                    .orient("left")
+                    .ticks(5);
+                
+                var axis = svg.append("g")
+                    .attr("class", "yAxis")
+                    .attr("id", "id"+data.colIndex)
+                    .attr("transform", "translate(" + [margin.left, 0] + ")")
+                    .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
+                    .call(yAxis)
+                    //.attr("hidden", "true");
+                
                 return $('<div/>').append(histDiv).html();
             }
             colArray.push(colDef);    
@@ -220,6 +349,7 @@ dataExplorerNamespace = function() {
 				'deferRender': !_representation.enableSelection,
 				'data': firstChunk,
 				'buttons': buttons,
+                'responsive': true,
 				'fnDrawCallback': function() {
 					if (!_representation.displayColumnHeaders) {
 						$("#knimeDataExplorer thead").remove();
@@ -229,6 +359,8 @@ dataExplorerNamespace = function() {
 					}
 				}
 			});
+            
+
 			
 			//Clear sorting button placement and enable/disable on order change
 			if (_representation.enableSorting && _representation.enableClearSortButton) {
@@ -302,6 +434,8 @@ dataExplorerNamespace = function() {
 				var initialChunkSize = 100;
 				addDataToTable(_representation.initialPageSize, initialChunkSize);
 			}, 0);
+            
+
 			
 		} catch (err) {
 			if (err.stack) {
@@ -317,7 +451,7 @@ dataExplorerNamespace = function() {
 		var tableSize = knimeTable.getNumRows()
 		var endIndex  = Math.min(tableSize, startIndex + chunkSize);
 		var chunk = getDataSlice(startIndex, endIndex);
-        console.log("datarow",chunk)
+        //console.log("datarow",chunk)
 		dataTable.rows.add(chunk);
 		var endTime = new Date().getTime();
 		var chunkDuration = endTime - startTime;

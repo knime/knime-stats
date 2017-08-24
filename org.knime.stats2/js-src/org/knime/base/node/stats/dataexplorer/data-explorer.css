@@ -136,29 +136,3 @@ h2 {
 #knimeDataExplorer td .missing-value-cell {
 	color: #d9534f;
 }
-
-.circle {
-width: 60px;
-
-	height: 60px;
-
-	background: red;
-
-	-moz-border-radius: 30px;
-
-	-webkit-border-radius: 30px;
-
-	border-radius: 30px;
-
-	position:absolute;
-}
-
-div.bar {
-    display: inline-block;
-    width: 20px;
-    height: 15px;   
-    background-color: teal;
-}
-
-.test{
-}
