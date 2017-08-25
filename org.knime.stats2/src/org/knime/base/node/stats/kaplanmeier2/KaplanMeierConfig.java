@@ -61,6 +61,11 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
  */
 public class KaplanMeierConfig {
     /**
+     * The configuration key if this node is shown in wizard.
+     */
+    static final String HIDE_IN_WIZARD = "hideInWizard";
+
+    /**
      * The configuration key for the time column.
      */
     static final String TIME_COL_CFG = "timeCol";
@@ -124,6 +129,7 @@ public class KaplanMeierConfig {
      * Creates a new empty instance of <code>KaplanMeierConfig</code>.
      */
     public KaplanMeierConfig() {
+        m_hideInWizard = false;
         m_timeCol = new SettingsModelString(TIME_COL_CFG, null);
         m_eventCol = new SettingsModelString(EVENT_COL_CFG, null);
         m_groupCol = new SettingsModelString(GROUP_COL_CFG, null);
@@ -137,6 +143,8 @@ public class KaplanMeierConfig {
         m_height = new SettingsModelInteger(HEIGHT_CFG, 600);
         m_displayFullscreenButton = new SettingsModelBoolean(FULLSCREEN_BTN_CFG, true);
     }
+
+    private boolean m_hideInWizard;
 
     private SettingsModelBoolean m_displayFullscreenButton;
 
@@ -162,6 +170,20 @@ public class KaplanMeierConfig {
 
     private SettingsModelInteger m_height;
 
+
+    /**
+     * @return the hideInWizard
+     */
+    public boolean getHideInWizard() {
+        return m_hideInWizard;
+    }
+
+    /**
+     * @param hideInWizard the hideInWizard to set
+     */
+    public void setHideInWizard(final boolean hideInWizard) {
+        m_hideInWizard = hideInWizard;
+    }
 
     /**
      * @return the displayFullscreenButton
@@ -265,6 +287,9 @@ public class KaplanMeierConfig {
         m_width.loadSettingsFrom(settings);
         m_height.loadSettingsFrom(settings);
         m_displayFullscreenButton.loadSettingsFrom(settings);
+
+        //added with 3.5
+        m_hideInWizard = settings.getBoolean(HIDE_IN_WIZARD, false);
     }
 
     /**
@@ -284,6 +309,9 @@ public class KaplanMeierConfig {
         m_width.saveSettingsTo(settings);
         m_height.saveSettingsTo(settings);
         m_displayFullscreenButton.saveSettingsTo(settings);
+
+        //added with 3.5
+        settings.addBoolean(HIDE_IN_WIZARD, m_hideInWizard);
     }
 
     /**
@@ -304,6 +332,9 @@ public class KaplanMeierConfig {
         m_width.validateSettings(settings);
         m_height.validateSettings(settings);
         m_displayFullscreenButton.validateSettings(settings);
+
+        //added with 3.5 for completeness
+        settings.getBoolean(HIDE_IN_WIZARD, false);
     }
 
 }

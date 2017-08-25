@@ -60,6 +60,8 @@ import org.knime.core.node.NodeSettingsWO;
  */
 final class BlandAltmanPlotViewConfig {
 
+    static final String HIDE_IN_WIZARD = "hideInWizard";
+
     static final String ENABLE_DOT_SIZE_CHANGE = "enableDotSizeChange";
 
     static final String ENABLE_ZOOMING = "enableZooming";
@@ -90,6 +92,8 @@ final class BlandAltmanPlotViewConfig {
 
     static final String IMAGE_HEIGHT = "imageHeight";
 
+    private boolean m_hideInWizard = false;
+
     private boolean m_enableDotSizeChange = false;
 
     private boolean m_enableZooming = true;
@@ -119,6 +123,20 @@ final class BlandAltmanPlotViewConfig {
     private int m_imageWidth = 800;
 
     private int m_imageHeight = 600;
+
+    /**
+     * @return the hideInWizard
+     */
+    public boolean getHideInWizard() {
+        return m_hideInWizard;
+    }
+
+    /**
+     * @param hideInWizard the hideInWizard to set
+     */
+    public void setHideInWizard(final boolean hideInWizard) {
+        m_hideInWizard = hideInWizard;
+    }
 
     /**
      * @return the measurement1Column
@@ -351,6 +369,9 @@ final class BlandAltmanPlotViewConfig {
         settings.addBoolean(LOG_SCALE, getLogScale());
         settings.addInt(IMAGE_WIDTH, m_imageWidth);
         settings.addInt(IMAGE_HEIGHT, m_imageHeight);
+
+        //added with 3.5
+        settings.addBoolean(HIDE_IN_WIZARD, m_hideInWizard);
     }
 
     /**
@@ -380,6 +401,9 @@ final class BlandAltmanPlotViewConfig {
         setLogScale(settings.getBoolean(LOG_SCALE));
         setImageWidth(settings.getInt(IMAGE_WIDTH));
         setImageHeight(settings.getInt(IMAGE_HEIGHT));
+
+        //added with 3.5
+        setHideInWizard(settings.getBoolean(HIDE_IN_WIZARD, false));
     }
 
     /**
@@ -408,5 +432,8 @@ final class BlandAltmanPlotViewConfig {
         setLogScale(settings.getBoolean(LOG_SCALE, false));
         setImageWidth(settings.getInt(IMAGE_WIDTH, 800));
         setImageHeight(settings.getInt(IMAGE_HEIGHT, 600));
+
+        //added with 3.5
+        setHideInWizard(settings.getBoolean(HIDE_IN_WIZARD, false));
     }
 }

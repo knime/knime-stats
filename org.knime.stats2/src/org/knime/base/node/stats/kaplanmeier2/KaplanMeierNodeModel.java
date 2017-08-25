@@ -322,7 +322,15 @@ public class KaplanMeierNodeModel
      */
     @Override
     public boolean isHideInWizard() {
-        return false;
+        return m_config.getHideInWizard();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setHideInWizard(final boolean hide) {
+        m_config.setHideInWizard(hide);
     }
 
     /**
