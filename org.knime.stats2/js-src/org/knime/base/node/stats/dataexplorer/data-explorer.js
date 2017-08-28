@@ -44,6 +44,10 @@ dataExplorerNamespace = function() {
 				drawTable();
 			});
 		}
+        
+        
+       
+        
 //        if (dataTable.column(13).visible() == true){
 //            console.log("hidden")
 //        }
@@ -53,31 +57,32 @@ dataExplorerNamespace = function() {
 //            console.log(e);
 //            console.log(settings);
 //        } );
-        $('div.hist:hidden').attr("width", svgWbig)
-        dataTable.on( 'responsive-display', function ( e, datatable, row, showHide, update ) {
-            console.log( 'Details for row '+row.index()+' '+(showHide ? 'shown' : 'hidden') );
-            //console.log("row",row);
-            //console.log("row", e)
-            //dataTable.responsive.recalc();
-            //console.log("update", update)
-
-            svgWidth = svgWbig;
-            svgHeight = svgHbig;
-            rescale(row, showHide);
-//            if (showHide) {
-//                console.log("Make me BIG: "+row[0][0])
-//                svgWidth = svgWbig;
-//                svgHeight = svgHbig;
-//                //rescale(row, showHide);
-//                //enlargeHistogram(row);
-//            } else {
-//                console.log("Make me SMALL: "+row[0][0])
-//                svgWidth = svgWsmall;
-//                svgHeight = svgHsmall;
-//                //rescale(row, showHide);
-//                //diminishHistogram(row);
-//            }
-        } );
+        //$('div.hist:hidden').attr("width", svgWbig)
+//        dataTable.on( 'responsive-display', function ( e, datatable, row, showHide, update ) {
+//            console.log( 'Details for row '+row.index()+' '+(showHide ? 'shown' : 'hidden') );
+//            //console.log("row",row);
+//            //console.log("row", e)
+//            //dataTable.responsive.recalc();
+//            //console.log("update", update)
+//
+//            svgWidth = svgWbig;
+//            svgHeight = svgHbig;
+//            rescale(row, true);
+////            if (showHide) {
+////                console.log("Make me BIG: "+row[0][0])
+////                svgWidth = svgWbig;
+////                svgHeight = svgHbig;
+////                //rescale(row, showHide);
+////                //enlargeHistogram(row);
+////            } else {
+////                console.log("Make me SMALL: "+row[0][0])
+////                svgWidth = svgWsmall;
+////                svgHeight = svgHsmall;
+////                //rescale(row, showHide);
+////                //diminishHistogram(row);
+////            }
+//        } );
+        
 	}
     
     rescale = function(row, big) {
@@ -233,11 +238,9 @@ dataExplorerNamespace = function() {
 				colArray.push(colDef);
 			}
             
-            xScale = d3.scale.linear()
-                .range([0, svgWidth-margin.left]), 
+            xScale = d3.scale.linear(), 
                 
-            yScale = d3.scale.linear()
-                .range([svgHeight - margin.top - margin.bottom, 0]);
+            yScale = d3.scale.linear();
                 
 //                var colorScale = d3.scale.category10()
 //                .domain([0, knimeTable.getNumRows]);
@@ -251,19 +254,23 @@ dataExplorerNamespace = function() {
 
             colDef.render = function(data, type, full, meta) {
                 console.log("data", data)
-
+                svgHeight = svgHbig;
+                svgWidth = svgWbig;
                 var min = data.bins[0].def.first;
                 var max = data.bins[data.bins.length-1].def.second
-                xScale.domain([0, max - min]);
-                yScale.domain([0, data.maxCount]);
+                xScale.range([0, svgWidth-margin.left])
+                    .domain([0, max - min]);
+                yScale.range([svgHeight - margin.top - margin.bottom, 0])
+                    .domain([0, data.maxCount]);
                 //var fill = colorScale(data.colIndex);
                 var histDiv = document.createElement("div");
+
                 var svg = d3.select(histDiv).attr("class", "hist")
                     .append("svg")
                     .attr("height", svgHeight)
                     .attr("width", svgWidth)
                     .attr("class", "svg_hist")
-                    .attr("id", "id"+data.colIndex);
+                    .attr("id", "svg"+data.colIndex);
                 
                 var bar_group = svg.append("g")
                     .attr("transform", "translate(" + [margin.left, 0] + ")")
@@ -435,7 +442,27 @@ dataExplorerNamespace = function() {
 				addDataToTable(_representation.initialPageSize, initialChunkSize);
 			}, 0);
             
-
+            setTimeout(function() {
+                dataTable.columns()[0].forEach(function(d,i){
+                    var smallHist = document.getElementById("svg"+i);
+                    svgWidth = svgWsmall;
+                    svgHeight = svgHsmall;
+                    var data = dataTable.column(13).data()[i];
+                    xScale.range([0, svgWidth])
+                        .domain([0, data.bins[data.bins.length-1].def.second - data.bins[0].def.first]);
+                    yScale.range([svgHeight, 0])
+                        .domain([0, data.maxCount]);
+                    d3.select(smallHist).attr("width", svgWidth).attr("height", svgHeight);
+                    d3.select(smallHist).select(".yAxis").remove()
+                    var bar_group = d3.select(smallHist).selectAll(".bars").attr("transform", "translate(0,0)");
+                    var bars = d3.select(smallHist).selectAll(".bars").selectAll(".rect"+i)
+                                .data(data.bins)
+                                .attr("x", function (d) {return xScale(d.def.first - data.bins[0].def.first);})
+                                .attr("y", function(d) {return yScale(d.count);})
+                                .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
+                                .attr("height", function(d){return svgHeight- yScale(d.count);})
+                    })
+            })
 			
 		} catch (err) {
 			if (err.stack) {
