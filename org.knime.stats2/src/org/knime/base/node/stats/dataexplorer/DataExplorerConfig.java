@@ -72,6 +72,7 @@ public class DataExplorerConfig {
     static final String NAN = "No. NaN";
     static final String P_INFINITY = "No. +∞";
     static final String N_INFINITY = "No. -∞";
+    static final String ZEROS = "No. zeros";
 
     static final String CFG_HIDE_IN_WIZARD = "hideInWizard";
     private static final boolean DEFAULT_HIDE_IN_WIZARD = false;

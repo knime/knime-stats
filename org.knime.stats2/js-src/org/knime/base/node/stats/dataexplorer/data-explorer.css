@@ -136,3 +136,22 @@ h2 {
 #knimeDataExplorer td .missing-value-cell {
 	color: #d9534f;
 }
+
+#knimePreview td.no-break {
+	white-space: nowrap;
+}
+
+#knimePreview td.no-break .rowKey {
+	white-space: normal;
+}
+
+#knimePreview td .missing-value-cell {
+	color: #d9534f;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}

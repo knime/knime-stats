@@ -11,11 +11,11 @@ dataExplorerNamespace = function() {
     var svgHeight = 30;
     var svgWsmall = 100;
     var svgHsmall = 30;
-    var svgWbig = 400;
-    var svgHbig = 130;
+    var svgWbig = 500;
+    var svgHbig = 200;
     var xScale, yScale;
-    var yAxis;
-    var margin = {top:0.15*svgHeight, left: 0.15*svgWidth, bottom: 0.15*svgHeight};
+    var xAxis, yAxis, barsScale;
+    var margin = {top:0.3*svgHeight, left: 0.3*svgWidth, bottom: 0.3*svgHeight};
 	
 	//register neutral ordering method for clear selection button
 	$.fn.dataTable.Api.register('order.neutral()', function () {
@@ -45,43 +45,10 @@ dataExplorerNamespace = function() {
 			});
 		}
         
-        
-       
-        
-//        if (dataTable.column(13).visible() == true){
-//            console.log("hidden")
-//        }
-        //console.log("hist column", dataTable.column(13))
-//        dataTable.on( 'column-visibility.dt', function ( e, settings, column, state ) {
-//            console.log('Column '+ column +' has changed to '+ (state ? 'visible' : 'hidden'));
-//            console.log(e);
-//            console.log(settings);
-//        } );
-        //$('div.hist:hidden').attr("width", svgWbig)
+//        $('div.hist:hidden').attr("width", svgWbig)
 //        dataTable.on( 'responsive-display', function ( e, datatable, row, showHide, update ) {
 //            console.log( 'Details for row '+row.index()+' '+(showHide ? 'shown' : 'hidden') );
-//            //console.log("row",row);
-//            //console.log("row", e)
-//            //dataTable.responsive.recalc();
-//            //console.log("update", update)
-//
-//            svgWidth = svgWbig;
-//            svgHeight = svgHbig;
-//            rescale(row, true);
-////            if (showHide) {
-////                console.log("Make me BIG: "+row[0][0])
-////                svgWidth = svgWbig;
-////                svgHeight = svgHbig;
-////                //rescale(row, showHide);
-////                //enlargeHistogram(row);
-////            } else {
-////                console.log("Make me SMALL: "+row[0][0])
-////                svgWidth = svgWsmall;
-////                svgHeight = svgHsmall;
-////                //rescale(row, showHide);
-////                //diminishHistogram(row);
-////            }
-//        } );
+//        });
         
 	}
     
@@ -98,60 +65,7 @@ dataExplorerNamespace = function() {
         d3.selectAll(".bars"+row.data()[0][0])
             .attr("transform", "translate(" + [margin.left, 0] + ")")
     }
-    
-//    enlargeHistogram = function(row) {
-//        yAxis.scale(yScale);
-//
-////        var data = row.data()[row.data().length - 1];
-////        var svg = $("svg#id"+ row[0][0]+".svg_hist")
-////            .attr("width", svgWidth)
-////            .attr("height", svgHeight)
-//        
-////        var axis = d3.selectAll('#id'+ row[0][0]+' yAxis')
-////            //.attr("transform", "translate(" + [margin.left, margin.top] + ")")
-////            //
-////            .call(yAxis)
-////            .attr("hidden", false);
-////        
-////        var bar_group = $("g#"+ row[0][0]+".bars")
-////            .css({"-webkit-transform":"translate("+margin.left+"px,"+margin.top+"px)"})
-////        
-////        var bars = d3.selectAll(".rect"+row[0][0])
-////            .data(data.bins)
-////            .attr("x", function (d, i) {
-////                //console.log("d",d)
-////                return xScale(d.def.first - data.realMin);
-////            })
-////            .attr("y", function(d) {return svgHeight - margin.top - margin.bottom - yScale(d.count);})
-////            .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
-////            .attr("height", function(d){return yScale(d.count);})
-////            
-////        
-////        
-////        var svg = d3.select(histDiv).attr("class", "hist")
-////                    .append("svg")
-////                    .attr("height", svgHeight)
-////                    .attr("width", svgWidth)
-////                    .attr("class", "svg_hist")
-////                    .attr("id", data.colIndex)
-////                    .selectAll("rect")
-////                    .data(data.bins)
-////                        .enter()
-////                    .append("rect")
-////                    .attr("x", function (d) {return xScale(d.def.first - corr);})
-////                    .attr("y", function(d) {return svgHeight - yScale(d.count);})
-////                    .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
-////                    .attr("height", function(d){return yScale(d.count);})
-////                    .attr("fill", "purple")
-////                    .attr("stroke", "#999999")
-////                    .attr("stroke-width", "1px")
-////                    .append("title")
-////                    .text(function(d, i) { return d.tooltip.slice(0,-13); });
-//    }
-//    
-//    diminishHistogram = function(row) {
-//        
-//    }
+
 	
 	drawTable = function() {
 		var body = $('body');
@@ -239,8 +153,8 @@ dataExplorerNamespace = function() {
 			}
             
             xScale = d3.scale.linear(), 
-                
-            yScale = d3.scale.linear();
+            yScale = d3.scale.linear(),
+            barsScale = d3.scale.linear();
                 
 //                var colorScale = d3.scale.category10()
 //                .domain([0, knimeTable.getNumRows]);
@@ -253,14 +167,14 @@ dataExplorerNamespace = function() {
             }
 
             colDef.render = function(data, type, full, meta) {
-                console.log("data", data)
+                //console.log("data", data)
                 svgHeight = svgHbig;
                 svgWidth = svgWbig;
                 var min = data.bins[0].def.first;
                 var max = data.bins[data.bins.length-1].def.second
                 xScale.range([0, svgWidth-margin.left])
-                    .domain([0, max - min]);
-                yScale.range([svgHeight - margin.top - margin.bottom, 0])
+                    .domain([min, max]);
+                yScale.range([svgHeight - margin.top - 2*margin.bottom, 0])
                     .domain([0, data.maxCount]);
                 //var fill = colorScale(data.colIndex);
                 var histDiv = document.createElement("div");
@@ -273,38 +187,71 @@ dataExplorerNamespace = function() {
                     .attr("id", "svg"+data.colIndex);
                 
                 var bar_group = svg.append("g")
-                    .attr("transform", "translate(" + [margin.left, 0] + ")")
+                    .attr("transform", "translate(" + [margin.left , margin.top] + ")")
                     .attr("class", "bars")
                     .attr("id", "id"+data.colIndex);
+                
+                var barWidth = xScale(data.bins[0].def.second - data.bins[0].def.first + min)
                 
                 var bars = bar_group.selectAll("rect")
                     .data(data.bins)
                         .enter()
                     .append("rect")
                     .attr("class", "rect"+data.colIndex)
-                    .attr("x", function (d) {return xScale(d.def.first - min);})
+                    .attr("x", function (d) {return xScale(d.def.first);})
                     .attr("y", function(d) {return yScale(d.count);})
-                    .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
-                    .attr("height", function(d){return svgHeight - margin.top - margin.bottom- yScale(d.count);})
+                    .attr("width", barWidth)
+                    .attr("height", function(d){return svgHeight - margin.top - 2*margin.bottom - yScale(d.count);})
                     .attr("fill", "purple")
                     .attr("stroke", "#999999")
                     .attr("stroke-width", "1px")
                     .append("title")
                     .text(function(d, i) { return d.tooltip.slice(0,-13); });
                 
+                var text_group = svg.append("g")
+                    .attr("class", "caption")
+                    .attr("transform", "translate(" + [margin.left , margin.top] + ")")
+                    .attr("id", "id"+data.colIndex);
+                
+                var texts = text_group.selectAll("text")
+                    .data(data.bins)
+                    .enter()
+                    .append("text")
+                    .attr("x", function (d) {return xScale(d.def.first) + barWidth/2;})
+                    .attr("y", function(d) {return yScale(d.count) - 1;})
+                    .text(function(d) {return d.count;})
+                    .attr("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
+                    .attr("text-anchor", "middle");
+                
+                var ticks = [];
+                data.bins.forEach(function(d,i) {
+                    ticks.push(d.def.first.toFixed(2));
+                })
+                
+                xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom")
+                    .tickValues(ticks)
+                    .tickFormat(d3.format(".2f"))
+                
                 yAxis = d3.svg.axis()
                     .scale(yScale)
-                    .tickSize(Math.min(3, svgWidth/200))
                     .orient("left")
                     .ticks(5);
                 
-                var axis = svg.append("g")
-                    .attr("class", "yAxis")
-                    .attr("id", "id"+data.colIndex)
-                    .attr("transform", "translate(" + [margin.left, 0] + ")")
+                var axisX = svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("id", "xAxis"+data.colIndex)
+                    .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
                     .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
-                    .call(yAxis)
-                    //.attr("hidden", "true");
+                    .call(xAxis);
+                
+                var axisY = svg.append("g")
+                    .attr("class", "y axis")
+                    .attr("id", "yAxis"+data.colIndex)
+                    .attr("transform", "translate(" + [margin.left, margin.top] + ")")
+                    .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
+                    .call(yAxis);
                 
                 return $('<div/>').append(histDiv).html();
             }
@@ -443,26 +390,26 @@ dataExplorerNamespace = function() {
 			}, 0);
             
             setTimeout(function() {
-                dataTable.columns()[0].forEach(function(d,i){
+                dataTable.rows()[0].forEach(function(d,i){
                     var smallHist = document.getElementById("svg"+i);
                     svgWidth = svgWsmall;
                     svgHeight = svgHsmall;
-                    var data = dataTable.column(13).data()[i];
+                    var data = dataTable.column(dataTable.columns()[0].length - 1).data()[i];
                     xScale.range([0, svgWidth])
                         .domain([0, data.bins[data.bins.length-1].def.second - data.bins[0].def.first]);
                     yScale.range([svgHeight, 0])
                         .domain([0, data.maxCount]);
                     d3.select(smallHist).attr("width", svgWidth).attr("height", svgHeight);
-                    d3.select(smallHist).select(".yAxis").remove()
+                    d3.select(smallHist).selectAll(".axis").remove()
                     var bar_group = d3.select(smallHist).selectAll(".bars").attr("transform", "translate(0,0)");
                     var bars = d3.select(smallHist).selectAll(".bars").selectAll(".rect"+i)
-                                .data(data.bins)
-                                .attr("x", function (d) {return xScale(d.def.first - data.bins[0].def.first);})
-                                .attr("y", function(d) {return yScale(d.count);})
-                                .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
-                                .attr("height", function(d){return svgHeight- yScale(d.count);})
+                        .data(data.bins)
+                        .attr("x", function (d) {return xScale(d.def.first - data.bins[0].def.first);})
+                        .attr("y", function(d) {return yScale(d.count);})
+                        .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
+                        .attr("height", function(d){return svgHeight- yScale(d.count);})
                     })
-            })
+            }, 0)
 			
 		} catch (err) {
 			if (err.stack) {

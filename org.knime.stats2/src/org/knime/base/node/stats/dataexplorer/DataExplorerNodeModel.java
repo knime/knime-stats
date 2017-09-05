@@ -72,7 +72,9 @@ import org.knime.base.data.statistics.calculation.NominalValue;
 import org.knime.base.data.statistics.calculation.Skewness;
 import org.knime.base.data.statistics.calculation.SpecialDoubleCells;
 import org.knime.base.data.statistics.calculation.StandardDeviation;
+import org.knime.base.data.statistics.calculation.Sum;
 import org.knime.base.data.statistics.calculation.Variance;
+import org.knime.base.data.statistics.calculation.ZeroNumber;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
@@ -224,7 +226,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         statistics.add(skewness);
         Kurtosis kurtosis = new Kurtosis(includeColumns);
         statistics.add(kurtosis);
-        //TODO sum
+        Sum sum = new Sum(includeColumns);
+        statistics.add(sum);
+        ZeroNumber zeros = new ZeroNumber(includeColumns);
+        statistics.add(zeros);
         MissingValue missing = new MissingValue(includeColumns);
         statistics.add(missing);
         SpecialDoubleCells spDouble = new SpecialDoubleCells(includeColumns);
@@ -260,7 +265,9 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             rowValues.add(dSkew.isNaN() ? null : dSkew);
             Double dKurt = kurtosis.getResult(col);
             rowValues.add(dKurt.isNaN() ? null : dKurt);
-            //TODO sum
+            Double dSum = sum.getResult(col);
+            rowValues.add(dSum.isNaN() ? null : dSum);
+            rowValues.add(zeros.getNumberZeroValues(col));
             rowValues.add(missing.getNumberMissingValues(col));
             rowValues.add(spDouble.getNumberNaNValues(col));
             rowValues.add(spDouble.getNumberPositiveInfiniteValues(col));
@@ -322,7 +329,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         knimeTypes.add(knimeDouble);
         colNames.add(DataExplorerConfig.KURTOSIS);
         knimeTypes.add(knimeDouble);
-        //TODO sum
+        colNames.add(DataExplorerConfig.SUM);
+        knimeTypes.add(knimeDouble);
+        colNames.add(DataExplorerConfig.ZEROS);
+        knimeTypes.add(knimeInt);
         colNames.add(DataExplorerConfig.MISSING);
         knimeTypes.add(knimeInt);
         colNames.add(DataExplorerConfig.NAN);
