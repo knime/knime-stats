@@ -3,6 +3,8 @@ dataExplorerNamespace = function() {
 	var view = {};
 	var _representation, _value;
 	var knimeTable = null;
+    var previewTable = null;
+    var previewDataTable = null;
 	var dataTable = null;
 	var selection = {};
 	var allCheckboxes = [];
@@ -16,6 +18,7 @@ dataExplorerNamespace = function() {
     var xScale, yScale;
     var xAxis, yAxis, barsScale;
     var margin = {top:0.3*svgHeight, left: 0.3*svgWidth, bottom: 0.3*svgHeight};
+    var content;
 	
 	//register neutral ordering method for clear selection button
 	$.fn.dataTable.Api.register('order.neutral()', function () {
@@ -41,7 +44,44 @@ dataExplorerNamespace = function() {
 			drawTable();
 		} else {
 			$(document).ready(function() {
+
+                
+                var tabs = $('<div />').attr('id', 'tabs').appendTo('body');
+                var listOfTabNames = $('<ul />').attr("class", "nav nav-tabs").attr('role', 'tabList').appendTo(tabs);
+                content = $('<div />').attr('class', 'tab-content').appendTo(tabs);
+
+                $('<li class="active"><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="true">' + 'Statistics' + '</a></li>').appendTo(listOfTabNames);
 				drawTable();
+                
+                $('<li class=""><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="false">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
+                drawDataPreviewTable();
+                
+//                $("#tabs").tabs( {
+//                    "activate": function(event, ui) {
+//                        $( $.fn.dataTable.tables( true ) ).DataTable().columns.adjust();
+//                    }
+//                } );
+//                
+//                $('table.display').dataTable( {
+//                    "scrollY": "200px",
+//                    "scrollCollapse": true,
+//                    "paging": false,
+//                    "jQueryUI": true
+//                } );
+                $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
+                    $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust();
+                } );
+                
+//                $('table.table').DataTable( {
+//                    //ajax:           '../ajax/data/arrays.txt',
+//                    scrollY:        "200px",
+//                    scrollCollapse: true,
+//                    paging:         false, 
+//                    jQueryUI:       true, 
+//                    "aoColumnDefs": [
+//                        { "sWidth": "10%", "aTargets": [ -1 ] }
+//                    ]
+//                } );
 			});
 		}
         
@@ -51,24 +91,9 @@ dataExplorerNamespace = function() {
 //        });
         
 	}
-    
-    rescale = function(row, big) {
-        var histCol = row.data().length - 1;
-        var marginLeft = big? margin.left : 0;
-        var marginTop = big? margin.top : 0;
-        var marginBottom = big? margin.bottom : 0;
-        xScale.range([0, svgWidth - marginLeft])
-            .domain([row.data()[histCol].realMax-row.data()[histCol].realMin]);
-        yScale.range([svgHeight - marginTop - marginBottom, 0])
-            .domain([0, row.data()[histCol].maxCount])
-        yAxis.scale(yScale);
-        d3.selectAll(".bars"+row.data()[0][0])
-            .attr("transform", "translate(" + [margin.left, 0] + ")")
-    }
-
 	
 	drawTable = function() {
-		var body = $('body');
+		//var body = $('body');
 		if (_representation.enableSelection && _value.selection) {
 			for (var i = 0; i < _value.selection.length; i++) {
 				selection[_value.selection[i]] = true;
@@ -78,9 +103,11 @@ dataExplorerNamespace = function() {
 			knimeTable = new kt();
 			knimeTable.setDataTable(_representation.statistics);
             //console.log("histogra data: ",_representation.histograms)
-			
-			var wrapper = $('<div id="knimeDataExplorerContainer">');
-			body.append(wrapper);
+            //var tabContent = $('<div />').attr("class", "tab-pane active").attr('id', 'tabContent-stats').appendTo(content);
+            
+			var wrapper = $('<div id="tabs-knimeDataExplorerContainer">').attr("class", "tab-pane active");
+			content.append(wrapper);
+            
 			if (_representation.title != null && _representation.title != '') {
 				wrapper.append('<h1>' + _representation.title + '</h1>')
 			}
@@ -293,6 +320,7 @@ dataExplorerNamespace = function() {
                 'columns': colArray,
 				'columnDefs': colDefs,
 				'order': order,
+                //'retrieve': true,
 				'paging': _representation.enablePaging,
 				'pageLength': pageLength,
 				'lengthMenu': pageLengths,
@@ -419,6 +447,111 @@ dataExplorerNamespace = function() {
 			}
 		}
 	}
+    
+    drawDataPreviewTable = function() {
+        //var body = $('body');
+		if (_representation.enableSelection && _value.selection) {
+			for (var i = 0; i < _value.selection.length; i++) {
+				selection[_value.selection[i]] = true;
+			}
+		}
+		try {
+			previewTable = new kt();
+			previewTable.setDataTable(_representation.dataPreview);
+            
+            //var tabContent = $('<div />').attr("class", "tab-pane").attr('id', 'tabContent-preview').appendTo(content);
+            //console.log("histogra data: ",_representation.histograms)
+			
+			var wrapper = $('<div id="tabs-knimePreviewContainer">').attr("class", "tab-pane");
+			content.append(wrapper);
+			var table = $('<table id="knimePreview" class="table table-striped table-bordered" width="100%">');
+			wrapper.append(table);
+			
+			var colArray = [];
+			var colDefs = [];
+            
+            for (var i = 0; i < previewTable.getColumnNames().length; i++) {
+				var colType = previewTable.getColumnTypes()[i];
+				var knimeColType = previewTable.getKnimeColumnTypes()[i];
+				var colDef = {
+					'title': previewTable.getColumnNames()[i],
+					'orderable' : isColumnSortable(colType),
+					'searchable': isColumnSearchable(colType)					
+				}
+				if (_representation.displayMissingValueAsQuestionMark) {
+					colDef.defaultContent = '<span class="missing-value-cell">?</span>';
+				}
+				if (colType == 'number' && _representation.enableGlobalNumberFormat) {
+					if (previewTable.getKnimeColumnTypes()[i].indexOf('double') > -1) {
+						colDef.render = function(data, type, full, meta) {
+							if (!$.isNumeric(data)) {
+								return data;
+							}
+							return Number(data).toFixed(_representation.globalNumberFormatDecimals);
+						}
+					}
+				}
+				colArray.push(colDef);
+			}
+            
+            var pageLength = _representation.initialPageSize;
+			if (_value.pageSize) {
+				pageLength = _value.pageSize;
+			}
+			var pageLengths = _representation.allowedPageSizes;
+			if (_representation.pageSizeShowAll) {
+				var first = pageLengths.slice(0);
+				first.push(-1);
+				var second = pageLengths.slice(0);
+				second.push("All");
+				pageLengths = [first, second];
+			}
+            
+            var dataPreview = []
+            for (var i = 0; i < previewTable.getRows().length; i++) {
+                dataPreview.push(previewTable.getRow(i).data);
+            }
+            
+            previewDataTable = $('#knimePreview').DataTable( {
+                'columns': colArray,
+				'columnDefs': colDefs,
+				//'order': order,
+                //'retrieve': true,
+				'paging': false,
+				'pageLength': dataPreview.length,
+				//'lengthMenu': pageLengths,
+				//'lengthChange': _representation.enablePageSizeChange,
+				'searching': false,
+				//'ordering': _representation.enableSorting,
+				'processing': true,
+				//'deferRender': !_representation.enableSelection,
+				'data': dataPreview,
+				//'buttons': buttons,
+                'responsive': true//,
+//				'fnDrawCallback': function() {
+//					if (!_representation.displayColumnHeaders) {
+//						$("#knimeDataExplorer thead").remove();
+//				  	}
+//					if (searchEnabled && !_representation.enableSearching) {
+//						$('#knimeDataExplorer_filter').remove();
+//					}
+//				}
+			});
+            
+            //load all data
+//			setTimeout(function() {
+//				var initialChunkSize = 100;
+//				addDataToTable(_representation.initialPageSize, initialChunkSize);
+//			}, 0);
+            
+        } catch (err) {
+			if (err.stack) {
+				alert(err.stack);
+			} else {
+				alert (err);
+			}
+		}
+    }
 	
 	addDataToTable = function(startIndex, chunkSize) {
 		var startTime = new Date().getTime();

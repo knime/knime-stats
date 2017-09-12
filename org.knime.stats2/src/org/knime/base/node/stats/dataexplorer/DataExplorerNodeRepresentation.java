@@ -98,6 +98,9 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private boolean m_displayMissingValueAsQuestionMark;
     private List<HistogramModel<?>> m_histograms;
 
+    private static final String CFG_PREVIEW = "preview";
+    private JSONDataTable m_preview;
+
     /**
      * @return the statistics
      */
@@ -393,6 +396,21 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the preview
+     */
+    public JSONDataTable getDataPreview() {
+        return m_preview;
+    }
+
+    /**
+     * @param preview the preview to set
+     *
+     */
+    public void setDataPreview(final JSONDataTable preview) {
+        m_preview = preview;
+    }
+
+    /**
      * Extracts all mean values from statistics table.
      * @return a double array with all mean values, may be null if operation not possible
      */
@@ -424,6 +442,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         NodeSettingsWO statSettings = settings.addNodeSettings(CFG_STATISTICS);
         m_statistics.saveJSONToNodeSettings(statSettings);
+
         settings.addBoolean(DataExplorerConfig.CFG_ENABLE_PAGING, m_enablePaging);
         settings.addInt(DataExplorerConfig.CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
         settings.addBoolean(DataExplorerConfig.CFG_ENABLE_PAGE_SIZE_CHANGE, m_enablePageSizeChange);
@@ -443,6 +462,9 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         settings.addInt(DataExplorerConfig.CFG_GLOBAL_NUMBER_FORMAT_DECIMALS, m_globalNumberFormatDecimals);
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
+
+        NodeSettingsWO prevSettings = settings.addNodeSettings(CFG_PREVIEW);
+        m_preview.saveJSONToNodeSettings(prevSettings);
         // histograms are saved as extra file in DataExplorerNodeModel#saveInternals()
     }
 
@@ -454,6 +476,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         NodeSettingsRO statSettings = settings.getNodeSettings(CFG_STATISTICS);
         m_statistics = JSONDataTable.loadFromNodeSettings(statSettings);
+
         m_enablePaging = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_PAGING);
         m_initialPageSize = settings.getInt(DataExplorerConfig.CFG_INITIAL_PAGE_SIZE);
         m_enablePageSizeChange = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_PAGE_SIZE_CHANGE);
@@ -473,6 +496,9 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_globalNumberFormatDecimals = settings.getInt(DataExplorerConfig.CFG_GLOBAL_NUMBER_FORMAT_DECIMALS);
         m_displayFullscreenButton = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, DataExplorerConfig.DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_displayMissingValueAsQuestionMark = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DataExplorerConfig.DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
+
+        NodeSettingsRO prevSettings = settings.getNodeSettings(CFG_PREVIEW);
+        m_preview = JSONDataTable.loadFromNodeSettings(prevSettings);
         // histograms are loaded separately in DataExplorerNodeModel#loadInternals()
     }
 
@@ -514,6 +540,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_globalNumberFormatDecimals, other.m_globalNumberFormatDecimals)
                 .append(m_displayMissingValueAsQuestionMark, other.m_displayMissingValueAsQuestionMark)
                 .append(m_histograms, other.m_histograms)
+                .append(m_preview, other.m_preview)
                 .isEquals();
     }
 
@@ -545,6 +572,9 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_globalNumberFormatDecimals)
                 .append(m_displayMissingValueAsQuestionMark)
                 .append(m_histograms)
+                .append(m_preview)
                 .toHashCode();
     }
+
+
 }

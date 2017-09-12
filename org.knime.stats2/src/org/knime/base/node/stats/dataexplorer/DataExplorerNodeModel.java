@@ -77,6 +77,7 @@ import org.knime.base.data.statistics.calculation.Variance;
 import org.knime.base.data.statistics.calculation.ZeroNumber;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
+import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.ExtensibleUtilityFactory;
@@ -84,6 +85,8 @@ import org.knime.core.data.LongValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.ColumnRearranger;
+import org.knime.core.data.def.DoubleCell;
+import org.knime.core.data.def.StringCell;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -187,7 +190,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         if (rep.getStatistics() == null) {
             subProgress = 0.1;
             rep.setStatistics(calculateStatistics((BufferedDataTable)inObjects[0], exec.createSubExecutionContext(0.9)));
+            //rep.setStatistics(dataPreview((BufferedDataTable)inObjects[0], 10));
             copyConfigToRepresentation();
+            rep.setDataPreview(calculatePreview((BufferedDataTable)inObjects[0], 10));
+            //rep.setDataPreview(calculateStatistics((BufferedDataTable)inObjects[0], exec.createSubExecutionContext(0.9)));
         }
         DataExplorerNodeValue val = getViewValue();
         BufferedDataTable result = table;
@@ -274,7 +280,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             rowValues.add(spDouble.getNumberNegativeInfiniteValues(col));
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
-        JSONDataTableSpec jSpec = createJSONSpec(includeColumns.length);
+        JSONDataTableSpec jSpec = createStatsJSONSpec(includeColumns.length);
         JSONDataTable jTable = new JSONDataTable();
         jTable.setSpec(jSpec);
         jTable.setRows(rows);
@@ -305,7 +311,36 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         return jTable;
     }
 
-    private JSONDataTableSpec createJSONSpec(final int numColumns) {
+    private JSONDataTable calculatePreview (final BufferedDataTable table, final int rowsPreview) {
+        JSONDataTable jTable = new JSONDataTable();
+        JSONDataTableSpec jSpec = new JSONDataTableSpec(table.getDataTableSpec(), rowsPreview);
+        JSONDataTableRow[] rows = new JSONDataTableRow[rowsPreview];
+        int numCol = table.getDataTableSpec().getNumColumns();
+        int i = 0;
+        for (DataRow row : table) {
+            if (i == rowsPreview) {
+                break;
+            }
+            List<Object> rowValues = new ArrayList<Object>();
+            for (int j = 0; j < numCol; j++) {
+                DataCell cell = row.getCell(j);
+                if (cell instanceof DoubleValue) {
+                    rowValues.add(((DoubleCell)cell).getDoubleValue());
+                } else if (cell instanceof StringValue) {
+                    rowValues.add(((StringCell)cell).getStringValue());
+                } else {
+                    rowValues.add(null);
+                }
+            }
+            rows[i] = new JSONDataTableRow(row.getKey().getString(), rowValues.toArray(new Object[0]));
+            i++;
+        }
+        jTable.setSpec(jSpec);
+        jTable.setRows(rows);
+        return jTable;
+    }
+
+    private JSONDataTableSpec createStatsJSONSpec(final int numColumns) {
         String knimeDouble = ((ExtensibleUtilityFactory)DoubleValue.UTILITY).getName();
         String knimeInt = ((ExtensibleUtilityFactory)LongValue.UTILITY).getName();
         JSONDataTableSpec spec = new JSONDataTableSpec();

@@ -158,6 +158,10 @@ public class DataExplorerConfig {
     final static boolean DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK = true;
     private boolean m_displayMissingValueAsQuestionMark = DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK;
 
+    final static String CFG_DISPLAY_ROW_NUMBER = "displayRowNumber";
+    final static int DEFAULT_DISPLAY_ROW_NUMBER = 10;
+    private int m_displayRowNumber = DEFAULT_DISPLAY_ROW_NUMBER;
+
     /**
      * @return the hideInWizard
      */
@@ -452,6 +456,20 @@ public class DataExplorerConfig {
         m_displayMissingValueAsQuestionMark = displayMissingValueAsQuestionMark;
     }
 
+    /**
+     * @return the m_displayRowNumber
+     */
+    public int getdisplayRowNumber() {
+        return m_displayRowNumber;
+    }
+
+    /**
+     * @param displayRowNumber the m_displayRowNumber to set
+     */
+    public void setdisplayRowNumber(final int displayRowNumber) {
+        this.m_displayRowNumber = displayRowNumber;
+    }
+
     void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addBoolean(CFG_HIDE_IN_WIZARD, m_hideInWizard);
         settings.addBoolean(CFG_SHOW_MEDIAN, m_showMedian);
@@ -474,6 +492,7 @@ public class DataExplorerConfig {
         settings.addInt(CFG_GLOBAL_NUMBER_FORMAT_DECIMALS, m_globalNumberFormatDecimals);
         settings.addBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
         settings.addBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
+        settings.addInt(CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
     }
 
     void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
@@ -498,6 +517,7 @@ public class DataExplorerConfig {
         m_globalNumberFormatDecimals = settings.getInt(CFG_GLOBAL_NUMBER_FORMAT_DECIMALS);
         m_displayFullscreenButton = settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_displayMissingValueAsQuestionMark = settings.getBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
+        m_displayRowNumber = settings.getInt(CFG_DISPLAY_ROW_NUMBER, DEFAULT_DISPLAY_ROW_NUMBER);
     }
 
     void loadSettingsForDialog(final NodeSettingsRO settings, final DataTableSpec spec) {
@@ -522,6 +542,9 @@ public class DataExplorerConfig {
         m_globalNumberFormatDecimals = settings.getInt(CFG_GLOBAL_NUMBER_FORMAT_DECIMALS, DEFAULT_GLOBAL_NUMBER_FORMAT_DECIMALS);
         m_displayFullscreenButton = settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_displayMissingValueAsQuestionMark = settings.getBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
+        m_displayRowNumber = settings.getInt(CFG_DISPLAY_ROW_NUMBER, DEFAULT_DISPLAY_ROW_NUMBER);
     }
+
+
 
 }
