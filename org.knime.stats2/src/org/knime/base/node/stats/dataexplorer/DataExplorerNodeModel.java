@@ -168,6 +168,14 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
      * {@inheritDoc}
      */
     @Override
+    public void setHideInWizard(final boolean hide) {
+        m_config.setHideInWizard(hide);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ValidationError validateViewValue(final DataExplorerNodeValue viewContent) {
         /*always valid */
         return null;

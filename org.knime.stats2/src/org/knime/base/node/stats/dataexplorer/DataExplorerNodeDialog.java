@@ -78,7 +78,6 @@ import org.knime.core.node.port.PortObjectSpec;
 public class DataExplorerNodeDialog extends NodeDialogPane {
     private static final int TEXT_FIELD_SIZE = 20;
 
-    private final JCheckBox m_hideInWizardCheckBox;
     private final JCheckBox m_showMedianCheckBox;
     private final JCheckBox m_enablePagingCheckBox;
     private final JSpinner m_initialPageSizeSpinner;
@@ -98,7 +97,6 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
 
     /** Creates a new dialog instance */
     public DataExplorerNodeDialog() {
-        m_hideInWizardCheckBox = new JCheckBox("Hide in wizard");
         m_showMedianCheckBox = new JCheckBox("Show median (computationally expensive)");
         m_enablePagingCheckBox = new JCheckBox("Enable pagination");
         m_enablePagingCheckBox.addChangeListener(new ChangeListener() {
@@ -158,8 +156,6 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         GridBagConstraints gbcG = createConfiguredGridBagConstraints();
         gbcG.gridwidth = 2;
         gbcG.fill = GridBagConstraints.HORIZONTAL;
-        generalPanel.add(m_hideInWizardCheckBox, gbcG);
-        gbcG.gridy++;
         generalPanel.add(m_displayFullscreenButtonCheckBox, gbcG);
         gbcG.gridy++;
         generalPanel.add(m_showMedianCheckBox, gbcG);
@@ -319,7 +315,6 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         DataExplorerConfig config = new DataExplorerConfig();
-        config.setHideInWizard(m_hideInWizardCheckBox.isSelected());
         config.setShowMedian(m_showMedianCheckBox.isSelected());
         config.setEnablePaging(m_enablePagingCheckBox.isSelected());
         config.setInitialPageSize((Integer)m_initialPageSizeSpinner.getValue());
@@ -347,7 +342,6 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         DataExplorerConfig config = new DataExplorerConfig();
         DataTableSpec inSpec = (DataTableSpec)specs[0];
         config.loadSettingsForDialog(settings, inSpec);
-        m_hideInWizardCheckBox.setSelected(config.getHideInWizard());
         m_showMedianCheckBox.setSelected(config.getShowMedian());
         m_enablePagingCheckBox.setSelected(config.getEnablePaging());
         m_initialPageSizeSpinner.setValue(config.getInitialPageSize());
