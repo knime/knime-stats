@@ -459,7 +459,7 @@ public class DataExplorerConfig {
     /**
      * @return the m_displayRowNumber
      */
-    public int getdisplayRowNumber() {
+    public int getDisplayRowNumber() {
         return m_displayRowNumber;
     }
 
@@ -499,7 +499,7 @@ public class DataExplorerConfig {
         m_hideInWizard = settings.getBoolean(CFG_HIDE_IN_WIZARD);
         m_showMedian = settings.getBoolean(CFG_SHOW_MEDIAN);
         m_enablePaging = settings.getBoolean(CFG_ENABLE_PAGING);
-        m_initialPageSize = settings.getInt(CFG_INITIAL_PAGE_SIZE);
+        m_initialPageSize = settings.getInt(CFG_INITIAL_PAGE_SIZE, DEFAULT_INITIAL_PAGE_SIZE);
         m_enablePageSizeChange = settings.getBoolean(CFG_ENABLE_PAGE_SIZE_CHANGE);
         m_allowedPageSizes = settings.getIntArray(CFG_PAGE_SIZES);
         m_pageSizeShowAll = settings.getBoolean(CFG_PAGE_SIZE_SHOW_ALL);

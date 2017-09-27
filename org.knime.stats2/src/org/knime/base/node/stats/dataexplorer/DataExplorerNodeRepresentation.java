@@ -97,6 +97,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private int m_globalNumberFormatDecimals;
     private boolean m_displayMissingValueAsQuestionMark;
     private List<HistogramModel<?>> m_histograms;
+    private int m_displayRowNumber;
 
     private static final String CFG_PREVIEW = "preview";
     private JSONDataTable m_preview;
@@ -411,6 +412,20 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the m_displayRowNumber
+     */
+    public int getDisplayRowNumber() {
+        return m_displayRowNumber;
+    }
+
+    /**
+     * @param displayRowNumber the m_displayRowNumber to set
+     */
+    public void setDisplayRowNumber(final int displayRowNumber) {
+        m_displayRowNumber = displayRowNumber;
+    }
+
+    /**
      * Extracts all mean values from statistics table.
      * @return a double array with all mean values, may be null if operation not possible
      */
@@ -462,6 +477,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         settings.addInt(DataExplorerConfig.CFG_GLOBAL_NUMBER_FORMAT_DECIMALS, m_globalNumberFormatDecimals);
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
+        settings.addInt(DataExplorerConfig.CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
 
         NodeSettingsWO prevSettings = settings.addNodeSettings(CFG_PREVIEW);
         m_preview.saveJSONToNodeSettings(prevSettings);
@@ -496,6 +512,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_globalNumberFormatDecimals = settings.getInt(DataExplorerConfig.CFG_GLOBAL_NUMBER_FORMAT_DECIMALS);
         m_displayFullscreenButton = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, DataExplorerConfig.DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_displayMissingValueAsQuestionMark = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DataExplorerConfig.DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
+        m_displayRowNumber = settings.getInt(DataExplorerConfig.CFG_DISPLAY_ROW_NUMBER, DataExplorerConfig.DEFAULT_DISPLAY_ROW_NUMBER);
 
         NodeSettingsRO prevSettings = settings.getNodeSettings(CFG_PREVIEW);
         m_preview = JSONDataTable.loadFromNodeSettings(prevSettings);
@@ -539,6 +556,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_enableGlobalNumberFormat, other.m_enableGlobalNumberFormat)
                 .append(m_globalNumberFormatDecimals, other.m_globalNumberFormatDecimals)
                 .append(m_displayMissingValueAsQuestionMark, other.m_displayMissingValueAsQuestionMark)
+                .append(m_displayRowNumber, other.m_displayRowNumber)
                 .append(m_histograms, other.m_histograms)
                 .append(m_preview, other.m_preview)
                 .isEquals();
@@ -571,10 +589,9 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_enableGlobalNumberFormat)
                 .append(m_globalNumberFormatDecimals)
                 .append(m_displayMissingValueAsQuestionMark)
+                .append(m_displayRowNumber)
                 .append(m_histograms)
                 .append(m_preview)
                 .toHashCode();
     }
-
-
 }

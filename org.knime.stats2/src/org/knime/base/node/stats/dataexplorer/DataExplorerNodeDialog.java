@@ -94,6 +94,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     private final JCheckBox m_enableClearSortButtonCheckBox;
     private final JCheckBox m_enableGlobalNumberFormatCheckbox;
     private final JSpinner m_globalNumberFormatDecimalSpinner;
+    private final JSpinner m_displayPreviewRowsSpinner;
 
     /** Creates a new dialog instance */
     public DataExplorerNodeDialog() {
@@ -145,6 +146,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
             }
         });
         m_globalNumberFormatDecimalSpinner = new JSpinner(new SpinnerNumberModel(2, 0, null, 1));
+        m_displayPreviewRowsSpinner = new JSpinner(new SpinnerNumberModel(1, 1, null, 1));
 
         addTab("Options", initOptions());
         addTab("Table", initTable());
@@ -219,6 +221,13 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         gbcP.gridy++;
         gbcP.gridwidth = 2;
         pagingPanel.add(m_enableShowAllCheckBox, gbcP);
+
+        gbcP.gridy++;
+        gbcP.gridwidth = 1;
+        pagingPanel.add(new JLabel("Number of rows for data preview: "), gbcP);
+        gbcP.gridx++;
+        m_displayPreviewRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+        pagingPanel.add(m_displayPreviewRowsSpinner, gbcP);
         //gbcP.gridy++;
         //pagingPanel.add(m_enableJumpToPageCheckBox, gbcP);
 
@@ -331,6 +340,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         config.setEnableSearching(m_enableSearchCheckbox.isSelected());
         config.setEnableGlobalNumberFormat(m_enableGlobalNumberFormatCheckbox.isSelected());
         config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
+        config.setdisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
         config.saveSettingsTo(settings);
     }
 
@@ -358,6 +368,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_enableClearSortButtonCheckBox.setSelected(config.getEnableClearSortButton());
         m_enableGlobalNumberFormatCheckbox.setSelected(config.getEnableGlobalNumberFormat());
         m_globalNumberFormatDecimalSpinner.setValue(config.getGlobalNumberFormatDecimals());
+        m_displayPreviewRowsSpinner.setValue(config.getDisplayRowNumber());
         enablePagingFields();
         enableSearchFields();
         enableFormatterFields();

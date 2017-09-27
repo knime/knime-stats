@@ -108,6 +108,7 @@ import org.knime.js.core.node.AbstractWizardNodeModel;
 /**
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  */
 public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerNodeRepresentation, DataExplorerNodeValue> {
 
@@ -200,7 +201,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             rep.setStatistics(calculateStatistics((BufferedDataTable)inObjects[0], exec.createSubExecutionContext(0.9)));
             //rep.setStatistics(dataPreview((BufferedDataTable)inObjects[0], 10));
             copyConfigToRepresentation();
-            rep.setDataPreview(calculatePreview((BufferedDataTable)inObjects[0], 10));
+            rep.setDataPreview(calculatePreview((BufferedDataTable)inObjects[0], m_config.getDisplayRowNumber()));
             //rep.setDataPreview(calculateStatistics((BufferedDataTable)inObjects[0], exec.createSubExecutionContext(0.9)));
         }
         DataExplorerNodeValue val = getViewValue();
@@ -274,7 +275,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             Double dDev = stdDev.getResult(col);
             rowValues.add(dDev.isNaN() ? null : dDev);
             Double dVar = variance.getResult(col);
-            rowValues.add(dVar.isNaN() ? null : dDev);
+            rowValues.add(dVar.isNaN() ? null : dVar);
             Double dSkew = skewness.getResult(col);
             rowValues.add(dSkew.isNaN() ? null : dSkew);
             Double dKurt = kurtosis.getResult(col);
@@ -292,6 +293,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         JSONDataTable jTable = new JSONDataTable();
         jTable.setSpec(jSpec);
         jTable.setRows(rows);
+        jTable.setId("numeric");
 
         Map<Integer, ? extends HistogramModel<?>> histograms = calculateHistograms(table, exec.createSubExecutionContext(0.5), minMax, mean, includeColumns);
         List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
@@ -345,6 +347,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         }
         jTable.setSpec(jSpec);
         jTable.setRows(rows);
+        jTable.setId("preview");
         return jTable;
     }
 
@@ -440,6 +443,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             viewRepresentation.setGlobalNumberFormatDecimals(m_config.getGlobalNumberFormatDecimals());
             viewRepresentation.setDisplayFullscreenButton(m_config.getDisplayFullscreenButton());
             viewRepresentation.setDisplayMissingValueAsQuestionMark(m_config.getDisplayMissingValueAsQuestionMark());
+            viewRepresentation.setDisplayRowNumber(m_config.getDisplayRowNumber());
         }
     }
 

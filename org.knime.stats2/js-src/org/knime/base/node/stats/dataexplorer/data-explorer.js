@@ -17,8 +17,16 @@ dataExplorerNamespace = function() {
     var svgHbig = 200;
     var xScale, yScale;
     var xAxis, yAxis, barsScale;
-    var margin = {top:0.3*svgHeight, left: 0.3*svgWidth, bottom: 0.3*svgHeight};
+    var margin = {top:0.35*svgHeight, left: 0.3*svgWidth, bottom: 0.3*svgHeight, right:0.2*svgHeight};
     var content;
+    var hideUnselected = false;
+    var histSizes = [];
+    var histCol;
+    var pageLength;
+    var pageLengths;
+    var order = [];
+    var buttons = [];
+    
 	
 	//register neutral ordering method for clear selection button
 	$.fn.dataTable.Api.register('order.neutral()', function () {
@@ -44,56 +52,27 @@ dataExplorerNamespace = function() {
 			drawTable();
 		} else {
 			$(document).ready(function() {
-
                 
                 var tabs = $('<div />').attr('id', 'tabs').appendTo('body');
                 var listOfTabNames = $('<ul />').attr("class", "nav nav-tabs").attr('role', 'tabList').appendTo(tabs);
                 content = $('<div />').attr('class', 'tab-content').appendTo(tabs);
 
                 $('<li class="active"><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="true">' + 'Statistics' + '</a></li>').appendTo(listOfTabNames);
-				drawTable();
+				drawNumericTable();
                 
                 $('<li class=""><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="false">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
                 drawDataPreviewTable();
                 
-//                $("#tabs").tabs( {
-//                    "activate": function(event, ui) {
-//                        $( $.fn.dataTable.tables( true ) ).DataTable().columns.adjust();
-//                    }
-//                } );
-//                
-//                $('table.display').dataTable( {
-//                    "scrollY": "200px",
-//                    "scrollCollapse": true,
-//                    "paging": false,
-//                    "jQueryUI": true
-//                } );
                 $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
-                    $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust();
+                    $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust().responsive.recalc();
                 } );
                 
-//                $('table.table').DataTable( {
-//                    //ajax:           '../ajax/data/arrays.txt',
-//                    scrollY:        "200px",
-//                    scrollCollapse: true,
-//                    paging:         false, 
-//                    jQueryUI:       true, 
-//                    "aoColumnDefs": [
-//                        { "sWidth": "10%", "aTargets": [ -1 ] }
-//                    ]
-//                } );
-			});
+            });
 		}
-        
-//        $('div.hist:hidden').attr("width", svgWbig)
-//        dataTable.on( 'responsive-display', function ( e, datatable, row, showHide, update ) {
-//            console.log( 'Details for row '+row.index()+' '+(showHide ? 'shown' : 'hidden') );
-//        });
         
 	}
 	
-	drawTable = function() {
-		//var body = $('body');
+	drawNumericTable = function() {
 		if (_representation.enableSelection && _value.selection) {
 			for (var i = 0; i < _value.selection.length; i++) {
 				selection[_value.selection[i]] = true;
@@ -102,8 +81,6 @@ dataExplorerNamespace = function() {
 		try {
 			knimeTable = new kt();
 			knimeTable.setDataTable(_representation.statistics);
-            //console.log("histogra data: ",_representation.histograms)
-            //var tabContent = $('<div />').attr("class", "tab-pane active").attr('id', 'tabContent-stats').appendTo(content);
             
 			var wrapper = $('<div id="tabs-knimeDataExplorerContainer">').attr("class", "tab-pane active");
 			content.append(wrapper);
@@ -119,11 +96,21 @@ dataExplorerNamespace = function() {
 			
 			var colArray = [];
 			var colDefs = [];
+            
+            if (_representation.displayRowIds || true) {
+				var title = _representation.displayRowIds ? 'Column' : '';
+				var orderable = _representation.displayRowIds;
+				colArray.push({
+					'title': title, 
+					'orderable': orderable,
+					'className': 'no-break'
+				});
+			}
 			if (_representation.enableSelection) {
 				var all = _value.selectAll;
-				colArray.push({'title': /*'<input name="select_all" value="1" id="checkbox-select-all" type="checkbox"' + (all ? ' checked' : '')  + ' />'*/ 'Exclude'})
+				colArray.push({'title': /*'<input name="select_all" value="1" id="checkbox-select-all" type="checkbox"' + (all ? ' checked' : '')  + ' />'*/ 'Exclude Column'})
 				colDefs.push({
-					'targets': 0,
+					'targets': 1,
 					'searchable':false,
 					'orderable':false,
 					'className': 'dt-body-center',
@@ -137,20 +124,12 @@ dataExplorerNamespace = function() {
 						}, 0);
 						return '<input type="checkbox" name="id[]"'
 							+ (selection[data] ? ' checked' : '')
-							+' value="' + $('<div/>').text(data).html() + '">';
+							+' value="' + $('<div/>').text(full[0]).html() + '">';
 					}
 				});
 			}
 			
-			if (_representation.displayRowIds || true) {
-				var title = _representation.displayRowIds ? 'Column' : '';
-				var orderable = _representation.displayRowIds;
-				colArray.push({
-					'title': title, 
-					'orderable': orderable,
-					'className': 'no-break'
-				});
-			}
+
 			//console.log(knimeTable);
 			for (var i = 0; i < knimeTable.getColumnNames().length; i++) {
 				var colType = knimeTable.getColumnTypes()[i];
@@ -181,10 +160,7 @@ dataExplorerNamespace = function() {
             
             xScale = d3.scale.linear(), 
             yScale = d3.scale.linear(),
-            barsScale = d3.scale.linear();
-                
-//                var colorScale = d3.scale.category10()
-//                .domain([0, knimeTable.getNumRows]);
+            _representation.histograms.forEach(function(d) {histSizes.push(d.bins.length)});
             
             var colDef = {
                 'title' :"Histogram",
@@ -195,14 +171,14 @@ dataExplorerNamespace = function() {
 
             colDef.render = function(data, type, full, meta) {
                 //console.log("data", data)
-                svgHeight = svgHbig;
-                svgWidth = svgWbig;
-                var min = data.bins[0].def.first;
-                var max = data.bins[data.bins.length-1].def.second
-                xScale.range([0, svgWidth-margin.left])
-                    .domain([min, max]);
-                yScale.range([svgHeight - margin.top - 2*margin.bottom, 0])
+                svgHeight = svgHsmall + margin.top;
+                svgWidth = svgWsmall;
+                
+                xScale.range([0, svgWidth])
+                    .domain([0, data.bins[data.bins.length-1].def.second - data.bins[0].def.first]);
+                yScale.range([svgHsmall, 0])
                     .domain([0, data.maxCount]);
+                
                 //var fill = colorScale(data.colIndex);
                 var histDiv = document.createElement("div");
 
@@ -214,81 +190,37 @@ dataExplorerNamespace = function() {
                     .attr("id", "svg"+data.colIndex);
                 
                 var bar_group = svg.append("g")
-                    .attr("transform", "translate(" + [margin.left , margin.top] + ")")
+                    .attr("transform", "translate(" + [0 , margin.top] + ")")
                     .attr("class", "bars")
                     .attr("id", "id"+data.colIndex);
-                
-                var barWidth = xScale(data.bins[0].def.second - data.bins[0].def.first + min)
                 
                 var bars = bar_group.selectAll("rect")
                     .data(data.bins)
                         .enter()
                     .append("rect")
                     .attr("class", "rect"+data.colIndex)
-                    .attr("x", function (d) {return xScale(d.def.first);})
+                    .attr("x", function (d) {return xScale(d.def.first - data.bins[0].def.first);})
                     .attr("y", function(d) {return yScale(d.count);})
-                    .attr("width", barWidth)
-                    .attr("height", function(d){return svgHeight - margin.top - 2*margin.bottom - yScale(d.count);})
-                    .attr("fill", "purple")
-                    .attr("stroke", "#999999")
+                    .attr("width", function(d) {return xScale(d.def.second - d.def.first)})
+                    .attr("height", function(d){return svgHsmall - yScale(d.count);})
+                    .attr("fill", "#547cac")
+                    .attr("stroke", "black")
                     .attr("stroke-width", "1px")
                     .append("title")
                     .text(function(d, i) { return d.tooltip.slice(0,-13); });
                 
-                var text_group = svg.append("g")
-                    .attr("class", "caption")
-                    .attr("transform", "translate(" + [margin.left , margin.top] + ")")
-                    .attr("id", "id"+data.colIndex);
-                
-                var texts = text_group.selectAll("text")
-                    .data(data.bins)
-                    .enter()
-                    .append("text")
-                    .attr("x", function (d) {return xScale(d.def.first) + barWidth/2;})
-                    .attr("y", function(d) {return yScale(d.count) - 1;})
-                    .text(function(d) {return d.count;})
-                    .attr("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
-                    .attr("text-anchor", "middle");
-                
-                var ticks = [];
-                data.bins.forEach(function(d,i) {
-                    ticks.push(d.def.first.toFixed(2));
-                })
-                
-                xAxis = d3.svg.axis()
-                    .scale(xScale)
-                    .orient("bottom")
-                    .tickValues(ticks)
-                    .tickFormat(d3.format(".2f"))
-                
-                yAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .orient("left")
-                    .ticks(5);
-                
-                var axisX = svg.append("g")
-                    .attr("class", "x axis")
-                    .attr("id", "xAxis"+data.colIndex)
-                    .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
-                    .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
-                    .call(xAxis);
-                
-                var axisY = svg.append("g")
-                    .attr("class", "y axis")
-                    .attr("id", "yAxis"+data.colIndex)
-                    .attr("transform", "translate(" + [margin.left, margin.top] + ")")
-                    .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
-                    .call(yAxis);
-                
                 return $('<div/>').append(histDiv).html();
             }
-            colArray.push(colDef);    
+            colArray.push(colDef);
             
-			var pageLength = _representation.initialPageSize;
+            //number of histogram column to use in the next calculations
+            histCol = colArray.length - 1;
+            
+			pageLength = _representation.initialPageSize;
 			if (_value.pageSize) {
 				pageLength = _value.pageSize;
 			}
-			var pageLengths = _representation.allowedPageSizes;
+			pageLengths = _representation.allowedPageSizes;
 			if (_representation.pageSizeShowAll) {
 				var first = pageLengths.slice(0);
 				first.push(-1);
@@ -296,11 +228,11 @@ dataExplorerNamespace = function() {
 				second.push("All");
 				pageLengths = [first, second];
 			}
-			var order = [];
+			//var order = [];
 			if (_value.currentOrder) {
 				order = _value.currentOrder;
 			}
-			var buttons = [];
+			//var buttons = [];
 			if (_representation.enableSorting && _representation.enableClearSortButton) {
 				var unsortButton = {
 						'text': "Clear Sorting",
@@ -312,8 +244,7 @@ dataExplorerNamespace = function() {
 				}
 				buttons.push(unsortButton);
 			}
-			var firstChunk = getDataSlice(0, _representation.initialPageSize);
-            //console.log("firstChunk",firstChunk)
+			var firstChunk = getDataSlice(0, _representation.initialPageSize, knimeTable);
             
 			var searchEnabled = _representation.enableSearching || (knimeService && knimeService.isInteractivityAvailable());
 			dataTable = $('#knimeDataExplorer').DataTable( {
@@ -342,33 +273,33 @@ dataExplorerNamespace = function() {
 				}
 			});
             
-
+            drawControls("knimeDataExplorer", knimeTable, dataTable);
 			
 			//Clear sorting button placement and enable/disable on order change
-			if (_representation.enableSorting && _representation.enableClearSortButton) {
-				dataTable.buttons().container().appendTo('#knimeDataExplorer_wrapper .col-sm-6:eq(0)');
-				$('#knimeDataExplorer_length').css({'display': 'inline-block', 'margin-right': '10px'});
-				dataTable.on('order.dt', function () {
-					var order = dataTable.order();
-					dataTable.button(0).enable(order.length > 0);
-				});
-			}
-			
-			$('#knimeDataExplorer_paginate').css('display', 'none');
-
-			$('#knimeDataExplorer_info').html(
-				'<strong>Loading data</strong> - Displaying '
-				+ 1 + ' to ' + Math.min(knimeTable.getNumRows(), _representation.initialPageSize)
-				+ ' of ' + knimeTable.getNumRows() + ' entries.');
-			
-			if (knimeService) {
-				if (_representation.enableSearching && !_representation.title) {
-					knimeService.floatingHeader(false);
-				}
-				if (_representation.displayFullscreenButton) {
-					knimeService.allowFullscreen();
-				}
-			}
+//			if (_representation.enableSorting && _representation.enableClearSortButton) {
+//				dataTable.buttons().container().appendTo('#knimeDataExplorer_wrapper .col-sm-6:eq(0)');
+//				$('#knimeDataExplorer_length').css({'display': 'inline-block', 'margin-right': '10px'});
+//				dataTable.on('order.dt', function () {
+//					var order = dataTable.order();
+//					dataTable.button(0).enable(order.length > 0);
+//				});
+//			}
+//			
+//			$('#knimeDataExplorer_paginate').css('display', 'none');
+//
+//			$('#knimeDataExplorer_info').html(
+//				'<strong>Loading data</strong> - Displaying '
+//				+ 1 + ' to ' + Math.min(knimeTable.getNumRows(), _representation.initialPageSize)
+//				+ ' of ' + knimeTable.getNumRows() + ' entries.');
+//			
+//			if (knimeService) {
+//				if (_representation.enableSearching && !_representation.title) {
+//					knimeService.floatingHeader(false);
+//				}
+//				if (_representation.displayFullscreenButton) {
+//					knimeService.allowFullscreen();
+//				}
+//			}
 			
 			if (_representation.enableSelection) {
 				// Handle click on "Select all" control
@@ -413,31 +344,97 @@ dataExplorerNamespace = function() {
 			
 			//load all data
 			setTimeout(function() {
-				var initialChunkSize = 100;
-				addDataToTable(_representation.initialPageSize, initialChunkSize);
+				var initialChunkSize = 10;
+				addDataToTable(_representation.initialPageSize, initialChunkSize, knimeTable, dataTable, "knimeDataExplorer");
 			}, 0);
             
-            setTimeout(function() {
-                dataTable.rows()[0].forEach(function(d,i){
-                    var smallHist = document.getElementById("svg"+i);
-                    svgWidth = svgWsmall;
-                    svgHeight = svgHsmall;
-                    var data = dataTable.column(dataTable.columns()[0].length - 1).data()[i];
-                    xScale.range([0, svgWidth])
-                        .domain([0, data.bins[data.bins.length-1].def.second - data.bins[0].def.first]);
-                    yScale.range([svgHeight, 0])
-                        .domain([0, data.maxCount]);
-                    d3.select(smallHist).attr("width", svgWidth).attr("height", svgHeight);
-                    d3.select(smallHist).selectAll(".axis").remove()
-                    var bar_group = d3.select(smallHist).selectAll(".bars").attr("transform", "translate(0,0)");
-                    var bars = d3.select(smallHist).selectAll(".bars").selectAll(".rect"+i)
-                        .data(data.bins)
-                        .attr("x", function (d) {return xScale(d.def.first - data.bins[0].def.first);})
-                        .attr("y", function(d) {return yScale(d.count);})
-                        .attr("width", function(d) {return xScale(d.def.second - d.def.first);})
-                        .attr("height", function(d){return svgHeight- yScale(d.count);})
+            dataTable.on("responsive-display", function(e, datatable, row, showHide, update) {
+                var textScale = d3.scale.linear()
+                    .range([8, 11])
+                    .domain([d3.max(histSizes), 16]);
+                
+                var data = row.data()[histCol];
+                
+                //when responsive is opened it creates an additional div of the same class right under its original one
+                var bigHist = $(".hist")[data.colIndex % _representation.initialPageSize + 1];
+                svgWidth = svgWbig;
+                svgHeight = svgHbig;
+                var svgBigHist = d3.select(bigHist).select("#svg"+data.colIndex)[0][0]
+                
+                var min = data.bins[0].def.first;
+                var max = data.bins[data.bins.length - 1].def.second;
+                var barWidthValue = (max - min)/data.bins.length;
+                
+                xScale.range([0, svgWidth - margin.left - margin.right])
+                    .domain([min, (max + barWidthValue * 0.5)]);
+                yScale.range([svgHeight - margin.top - 2*margin.bottom, 0])
+                    .domain([0, data.maxCount]);
+                
+                var svg = d3.select(svgBigHist).attr("width", svgWidth).attr("height", svgHeight);
+                
+                var bar_group = svg.selectAll(".bars")
+                    .attr("transform", "translate("+[margin.left , margin.top]+")");
+                var barWidth = xScale((barWidthValue + min))
+                
+                var bars = svg.selectAll(".bars").selectAll(".rect"+data.colIndex)
+                    .data(data.bins)
+                    .attr("x", function (d) {return xScale(d.def.first);})
+                    .attr("y", function(d) {return yScale(d.count);})
+                    .attr("width", function(d) {return barWidth;})
+                    .attr("height", function(d){return svgHeight - margin.top - 2*margin.bottom -  yScale(d.count);})
+                
+                var text_group = svg.append("g")
+                    .attr("class", "caption")
+                    .attr("transform", "translate(" + [margin.left , margin.top] + ")")
+                    .attr("id", "id"+data.colIndex);
+                
+                var texts = text_group.selectAll("text")
+                    .data(data.bins)
+                    .enter()
+                    .append("text")
+                    .attr("x", function (d) {return xScale(d.def.first) + barWidth/2;})
+                    .attr("y", function(d) {return yScale(d.count) - 2;})
+                    .text(function(d) {return d.count;})
+                    .attr("font-size", Math.round(Math.min(svgHeight/15, 11))+"px")
+                    .attr("text-anchor", "middle");
+                
+                var ticks = [];
+                data.bins.forEach(function(d,i) {
+                    ticks.push(d.def.first);
+                })
+                ticks.push(data.bins[data.bins.length - 1].def.second)
+                
+                xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom")
+                    .tickValues(ticks)
+                    .tickFormat(d3.format(".2f"))
+                
+                yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left")
+                    .ticks(5);
+                
+                var axisX = svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("id", "xAxis"+data.colIndex)
+                    .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
+                    .style("font-size", function (d) {
+                        if (data.bins.length > 15) {
+                            return textScale(data.bins.length)+"px"
+                        } else {
+                            return "12px";
+                        }
                     })
-            }, 0)
+                    .call(xAxis);
+                
+                var axisY = svg.append("g")
+                    .attr("class", "y axis")
+                    .attr("id", "yAxis"+data.colIndex)
+                    .attr("transform", "translate(" + [margin.left, margin.top] + ")")
+                    .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
+                    .call(yAxis);
+            })
 			
 		} catch (err) {
 			if (err.stack) {
@@ -448,19 +445,37 @@ dataExplorerNamespace = function() {
 		}
 	}
     
+    drawControls = function(tableName, knTable, jsDataTable) {
+        if (_representation.enableSorting && _representation.enableClearSortButton) {
+            jsDataTable.buttons().container().appendTo('#'+ tableName +'_wrapper .col-sm-6:eq(0)');
+            $('#' + tableName + '_length').css({'display': 'inline-block', 'margin-right': '10px'});
+            jsDataTable.on('order.dt', function () {
+                var order = dataTable.order();
+                jsDataTable.button(0).enable(order.length > 0);
+            });
+        }
+
+        $('#' + tableName +'_paginate').css('display', 'none');
+
+        $('#' + tableName + '_info').html(
+            '<strong>Loading data</strong> - Displaying '
+            + 1 + ' to ' + Math.min(knTable.getNumRows(), _representation.initialPageSize)
+            + ' of ' + knTable.getNumRows() + ' entries.');
+
+        if (knimeService) {
+            if (_representation.enableSearching && !_representation.title) {
+                knimeService.floatingHeader(false);
+            }
+            if (_representation.displayFullscreenButton) {
+                knimeService.allowFullscreen();
+            }
+        }
+    }
+    
     drawDataPreviewTable = function() {
-        //var body = $('body');
-		if (_representation.enableSelection && _value.selection) {
-			for (var i = 0; i < _value.selection.length; i++) {
-				selection[_value.selection[i]] = true;
-			}
-		}
 		try {
 			previewTable = new kt();
 			previewTable.setDataTable(_representation.dataPreview);
-            
-            //var tabContent = $('<div />').attr("class", "tab-pane").attr('id', 'tabContent-preview').appendTo(content);
-            //console.log("histogra data: ",_representation.histograms)
 			
 			var wrapper = $('<div id="tabs-knimePreviewContainer">').attr("class", "tab-pane");
 			content.append(wrapper);
@@ -469,6 +484,16 @@ dataExplorerNamespace = function() {
 			
 			var colArray = [];
 			var colDefs = [];
+            
+            if (_representation.displayRowIds || true) {
+				var title = _representation.displayRowIds ? 'Row ID' : '';
+				var orderable = _representation.displayRowIds;
+				colArray.push({
+					'title': title, 
+					'orderable': orderable,
+					'className': 'no-break'
+				});
+			}
             
             for (var i = 0; i < previewTable.getColumnNames().length; i++) {
 				var colType = previewTable.getColumnTypes()[i];
@@ -494,55 +519,36 @@ dataExplorerNamespace = function() {
 				colArray.push(colDef);
 			}
             
-            var pageLength = _representation.initialPageSize;
-			if (_value.pageSize) {
-				pageLength = _value.pageSize;
-			}
-			var pageLengths = _representation.allowedPageSizes;
-			if (_representation.pageSizeShowAll) {
-				var first = pageLengths.slice(0);
-				first.push(-1);
-				var second = pageLengths.slice(0);
-				second.push("All");
-				pageLengths = [first, second];
-			}
-            
             var dataPreview = []
             for (var i = 0; i < previewTable.getRows().length; i++) {
                 dataPreview.push(previewTable.getRow(i).data);
             }
             
+            var firstChunk = getDataSlice(0, _representation.initialPageSize, previewTable);
+            
             previewDataTable = $('#knimePreview').DataTable( {
                 'columns': colArray,
 				'columnDefs': colDefs,
-				//'order': order,
-                //'retrieve': true,
-				'paging': false,
-				'pageLength': dataPreview.length,
-				//'lengthMenu': pageLengths,
-				//'lengthChange': _representation.enablePageSizeChange,
+				'order': order,
+				'paging': true,
+                'pageLength': pageLength,
+				'lengthMenu': pageLengths,
+				'lengthChange': _representation.enablePageSizeChange,
 				'searching': false,
-				//'ordering': _representation.enableSorting,
+				'ordering': _representation.enableSorting,
 				'processing': true,
-				//'deferRender': !_representation.enableSelection,
-				'data': dataPreview,
-				//'buttons': buttons,
+				'data': firstChunk,
+				'buttons': buttons,
                 'responsive': true//,
-//				'fnDrawCallback': function() {
-//					if (!_representation.displayColumnHeaders) {
-//						$("#knimeDataExplorer thead").remove();
-//				  	}
-//					if (searchEnabled && !_representation.enableSearching) {
-//						$('#knimeDataExplorer_filter').remove();
-//					}
-//				}
 			});
             
+            drawControls("knimePreview", previewTable, previewDataTable);
+            
             //load all data
-//			setTimeout(function() {
-//				var initialChunkSize = 100;
-//				addDataToTable(_representation.initialPageSize, initialChunkSize);
-//			}, 0);
+			setTimeout(function() {
+				var initialChunkSize = 10;
+				addDataToTable(_representation.initialPageSize, initialChunkSize, previewTable, previewDataTable, "knimePreview");
+			}, 0);
             
         } catch (err) {
 			if (err.stack) {
@@ -553,18 +559,18 @@ dataExplorerNamespace = function() {
 		}
     }
 	
-	addDataToTable = function(startIndex, chunkSize) {
+	addDataToTable = function(startIndex, chunkSize, knTable, jsDataTable, tableName) {
 		var startTime = new Date().getTime();
-		var tableSize = knimeTable.getNumRows()
+		var tableSize = knTable.getNumRows()
 		var endIndex  = Math.min(tableSize, startIndex + chunkSize);
-		var chunk = getDataSlice(startIndex, endIndex);
+		var chunk = getDataSlice(startIndex, endIndex, knTable);
         //console.log("datarow",chunk)
-		dataTable.rows.add(chunk);
+		jsDataTable.rows.add(chunk);
 		var endTime = new Date().getTime();
 		var chunkDuration = endTime - startTime;
 		var newChunkSize = chunkSize;
 		if (startIndex + chunkSize < tableSize) {
-			$('#knimeDataExplorer_info').html(
+			$('#' + tableName + '_info').html(
 				'<strong>Loading data ('
 				+ endIndex + ' of ' + tableSize + ' records)</strong> - Displaying '
 				+ 1 + ' to ' + Math.min(tableSize, _representation.initialPageSize) 
@@ -580,27 +586,40 @@ dataExplorerNamespace = function() {
 				};
 			})(startIndex + chunkSize, newChunkSize), chunkDuration);
 		} else {
-			$('#knimeDataExplorer_paginate').css('display', 'block');
-			applyViewValue();
-			dataTable.draw();
-			finishInit();
+			$('#' + tableName + '_paginate').css('display', 'block');
+			applyViewValue(jsDataTable);
+			jsDataTable.draw();
+            if (knTable.getNumRows == "numeric") {
+                finishInit(jsDataTable);
+            }
 		}
 	}
 	
-	getDataSlice = function(start, end) {
+	getDataSlice = function(start, end, knTable) {
 		if (typeof end == 'undefined') {
-			end = knimeTable.getNumRows();
+			end = knTable.getNumRows();
 		}
 		var data = [];
-		for (var i = start; i < Math.min(end, knimeTable.getNumRows()); i++) {
-			var row = knimeTable.getRows()[i];
+		for (var i = start; i < Math.min(end, knTable.getNumRows()); i++) {
+			var row = knTable.getRows()[i];
 			var dataRow = [];
+            
 			if (_representation.enableSelection) {
-				dataRow.push(row.rowKey);
+                switch (knTable.getTableId()) {
+                    case "numeric":
+                        dataRow.push(row.rowKey);
+                        break;
+                    case "nominal":
+                        break;
+                    default: 
+                        break;
+                }
 			}
-			if (_representation.displayRowIndex) {
-				dataRow.push(i);
-			}
+            
+//			if (_representation.displayRowIndex) {
+//				dataRow.push(i);
+//			}
+            
 			if (_representation.displayRowIds) {
 				var string = '';
 				if (_representation.displayRowIds) {
@@ -609,25 +628,33 @@ dataExplorerNamespace = function() {
 				dataRow.push(string);
 			}
 			var dataRow = dataRow.concat(row.data);
-            dataRow.push(_representation.histograms[i]);
+            switch (knTable.getTableId()) {
+                case "numeric":
+                    dataRow.push(_representation.histograms[i]);
+                    break;
+                case "preview":
+                    break;
+                default: 
+                    break;
+            }
 			data.push(dataRow);
 		}
 		return data;
 	}
 	
-	applyViewValue = function() {
+	applyViewValue = function(jsDataTable) {
 		if (_representation.enableSearching && _value.filterString) {
-			dataTable.search(_value.filterString);
+			jsDataTable.search(_value.filterString);
 		}
 		if (_representation.enablePaging && _value.currentPage) {
 			setTimeout(function() {
-				dataTable.page(_value.currentPage).draw('page');
+				jsDataTable.page(_value.currentPage).draw('page');
 			}, 0);
 		}
 	}
 	
-	finishInit = function() {
-		allCheckboxes = dataTable.column(0).nodes().to$().find('input[type="checkbox"]');
+	finishInit = function(jsDataTable) {
+		allCheckboxes = jsDataTable.column(1).nodes().to$().find('input[type="checkbox"]');
 		initialized = true;
 	}
 	
@@ -718,7 +745,7 @@ dataExplorerNamespace = function() {
 				_value.columnFilterStrings = null;
 			}
 		}
-		var hideUnselected = document.getElementById('showSelectedOnlyCheckbox');
+		hideUnselected = document.getElementById('showSelectedOnlyCheckbox');
 		if (hideUnselected) {
 			_value.hideUnselected = hideUnselected.checked;
 		}
