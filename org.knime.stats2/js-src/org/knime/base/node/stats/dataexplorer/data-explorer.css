@@ -1,6 +1,11 @@
-#knimeDataExplorerContainer {
+.content {
 	margin: 10px;
 	overflow: auto;
+}
+
+#tabs-knimeDataExplorerContainer {
+	margin: 20px;
+	overflow: hidden;
 }
 
 h1 {
@@ -119,10 +124,12 @@ h2 {
 
 #knimeDataExplorerContainer .row {
 	margin: 0;
+	width: auto;
 }
 
+
 #knimeDataExplorer_wrapper .dt-buttons.btn-group {
-	width: auto;
+    width: auto;
 }
 
 #knimeDataExplorer td.no-break {
@@ -150,9 +157,9 @@ h2 {
 	color: #d9534f;
 }
 
-#knimePreviewContainer {
-	margin: 10px;
-	overflow: auto;
+#tabs-knimePreviewContainer {
+	margin: 20px;
+	overflow: hidden;
 }
 
 #knimePreview_wrapper .dt-buttons.btn-group {
@@ -272,8 +279,6 @@ h2 {
   stroke: #000;
   shape-rendering: crispEdges;
 }
-
-
 
 .tab-pane{display:none}
 

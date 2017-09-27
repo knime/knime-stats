@@ -263,6 +263,7 @@ dataExplorerNamespace = function() {
 				'data': firstChunk,
 				'buttons': buttons,
                 'responsive': true,
+                'scrollX':false,
 				'fnDrawCallback': function() {
 					if (!_representation.displayColumnHeaders) {
 						$("#knimeDataExplorer thead").remove();
