@@ -581,11 +581,11 @@ dataExplorerNamespace = function() {
 			} else if (chunkDuration < 100) {
 				newChunkSize = chunkSize * 2;
 			}
-			setTimeout((function(i, c) {
+			setTimeout((function(i, c, t, js, tn) {
 				return function() {
-					addDataToTable(i, c);
+					addDataToTable(i, c, t, js, tn);
 				};
-			})(startIndex + chunkSize, newChunkSize), chunkDuration);
+			})(startIndex + chunkSize, newChunkSize, knTable, jsDataTable, tableName), chunkDuration);
 		} else {
 			$('#' + tableName + '_paginate').css('display', 'block');
 			applyViewValue(jsDataTable);
