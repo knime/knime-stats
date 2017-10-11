@@ -85,8 +85,6 @@ import org.knime.core.data.LongValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.ColumnRearranger;
-import org.knime.core.data.def.DoubleCell;
-import org.knime.core.data.def.StringCell;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -202,6 +200,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             //rep.setStatistics(dataPreview((BufferedDataTable)inObjects[0], 10));
             copyConfigToRepresentation();
             rep.setDataPreview(calculatePreview((BufferedDataTable)inObjects[0], m_config.getDisplayRowNumber()));
+            //rep.setNominal(calculateNominal((BufferedDataTable)inObjects[0]));
             //rep.setDataPreview(calculateStatistics((BufferedDataTable)inObjects[0], exec.createSubExecutionContext(0.9)));
         }
         DataExplorerNodeValue val = getViewValue();
@@ -216,15 +215,29 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         return new PortObject[]{result};
     }
 
+    /**
+     * @param bufferedDataTable
+     * @return
+     */
+    private JSONDataTable calculateNominal(final BufferedDataTable table) {
+        DataTableSpec spec = table.getSpec();
+        List<String> nominalCols = new ArrayList<String>();
+        for (DataColumnSpec columnSpec : spec) {
+            if (columnSpec.getType().isCompatible(StringValue.class)) {
+                nominalCols.add(columnSpec.getName());
+            }
+        }
+        String[] includeColumns = nominalCols.toArray(new String[0]);
+        NominalValue nominal = new NominalValue(100, nominalCols.toArray(new String[0]));
+        return null;
+    }
+
     private JSONDataTable calculateStatistics(final BufferedDataTable table, final ExecutionContext exec) throws InvalidSettingsException, CanceledExecutionException {
         DataTableSpec spec = table.getSpec();
         List<String> doubleCols = new ArrayList<String>();
-        List<String> nominalCols = new ArrayList<String>();
         for (DataColumnSpec columnSpec : spec) {
             if (columnSpec.getType().isCompatible(DoubleValue.class)) {
                 doubleCols.add(columnSpec.getName());
-            } else if (columnSpec.getType().isCompatible(StringValue.class)) {
-                nominalCols.add(columnSpec.getName());
             }
         }
         String[] includeColumns = doubleCols.toArray(new String[0]);
@@ -253,8 +266,8 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         if (m_config.getShowMedian()) {
             statistics.add(median);
         }
-        NominalValue nominal = new NominalValue(100, nominalCols.toArray(new String[0]));
-        statistics.add(nominal);
+
+        //statistics.add(nominal);
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
         calc.evaluate(table, exec.createSubExecutionContext(0.5));
 
@@ -335,9 +348,11 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             for (int j = 0; j < numCol; j++) {
                 DataCell cell = row.getCell(j);
                 if (cell instanceof DoubleValue) {
-                    rowValues.add(((DoubleCell)cell).getDoubleValue());
+                    rowValues.add(((DoubleValue)cell).getDoubleValue());
                 } else if (cell instanceof StringValue) {
-                    rowValues.add(((StringCell)cell).getStringValue());
+                    rowValues.add(((StringValue)cell).getStringValue());
+//                } else if (cell instanceof IntCell) {
+//                    rowValues.add(((IntCell)cell).getIntValue());
                 } else {
                     rowValues.add(null);
                 }
