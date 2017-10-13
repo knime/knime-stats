@@ -57,11 +57,10 @@ dataExplorerNamespace = function() {
                 var listOfTabNames = $('<ul />').attr("class", "nav nav-tabs").attr('role', 'tabList').appendTo(tabs);
                 content = $('<div />').attr('class', 'tab-content').appendTo(tabs);
 
-                $('<li class="active"><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="true">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
-                
-                $('<li class=""><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="false">' + 'Statistics' + '</a></li>').appendTo(listOfTabNames);
-                
+                $('<li class="active"><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="true">' + 'Statistics' + '</a></li>').appendTo(listOfTabNames);
 				drawNumericTable();
+                
+                $('<li class=""><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="false">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
                 drawDataPreviewTable();
                 
                 $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
@@ -83,7 +82,7 @@ dataExplorerNamespace = function() {
 			knimeTable = new kt();
 			knimeTable.setDataTable(_representation.statistics);
             
-			var wrapper = $('<div id="tabs-knimeDataExplorerContainer">').attr("class", "tab-pane");
+			var wrapper = $('<div id="tabs-knimeDataExplorerContainer">').attr("class", "tab-pane active");
 			content.append(wrapper);
             
 			if (_representation.title != null && _representation.title != '') {
@@ -189,20 +188,17 @@ dataExplorerNamespace = function() {
                     .attr("width", svgWidth)
                     .attr("class", "svg_hist")
                     .attr("id", "svg"+data.colIndex);
-                    //.attr("id", "svg"+meta.row);
                 
                 var bar_group = svg.append("g")
                     .attr("transform", "translate(" + [0 , margin.top] + ")")
                     .attr("class", "bars")
-                    //.attr("id", "id"+data.colIndex);
-                    .attr("id", "svg"+meta.row);
+                    .attr("id", "id"+data.colIndex);
                 
                 var bars = bar_group.selectAll("rect")
                     .data(data.bins)
                         .enter()
                     .append("rect")
                     .attr("class", "rect"+data.colIndex)
-                    //.attr("class", "rect"+meta.row)
                     .attr("x", function (d) {return xScale(d.def.first - data.bins[0].def.first);})
                     .attr("y", function(d) {return yScale(d.count);})
                     .attr("width", function(d) {return xScale(d.def.second - d.def.first)})
@@ -361,12 +357,10 @@ dataExplorerNamespace = function() {
                 var data = row.data()[histCol];
                 
                 //when responsive is opened it creates an additional div of the same class right under its original one
-                var bigHist = $(".hist")[data.colIndex % dataTable.page.len() + 1];
-                //var bigHist = $(".hist")[row[0][0] % _representation.initialPageSize + 1];
+                var bigHist = $(".hist")[data.colIndex % _representation.initialPageSize + 1];
                 svgWidth = svgWbig;
                 svgHeight = svgHbig;
                 var svgBigHist = d3.select(bigHist).select("#svg"+data.colIndex)[0][0]
-                //var svgBigHist = d3.select(bigHist).select("#svg"+row[0][0])[0][0]
                 
                 var min = data.bins[0].def.first;
                 var max = data.bins[data.bins.length - 1].def.second;
@@ -374,7 +368,7 @@ dataExplorerNamespace = function() {
                 
                 xScale.range([0, svgWidth - margin.left - margin.right])
                     .domain([min, (max + barWidthValue * 0.5)]);
-                yScale.range([svgHeight - 2*margin.top - margin.bottom, 0])
+                yScale.range([svgHeight - margin.top - 2*margin.bottom, 0])
                     .domain([0, data.maxCount]);
                 
                 var svg = d3.select(svgBigHist).attr("width", svgWidth).attr("height", svgHeight);
@@ -383,20 +377,17 @@ dataExplorerNamespace = function() {
                     .attr("transform", "translate("+[margin.left , margin.top]+")");
                 var barWidth = xScale((barWidthValue + min))
                 
-                var bars = svg.selectAll(".bars")
-                    .selectAll(".rect"+data.colIndex)
-                    //.selectAll(".rect"+row[0][0])
+                var bars = svg.selectAll(".bars").selectAll(".rect"+data.colIndex)
                     .data(data.bins)
                     .attr("x", function (d) {return xScale(d.def.first);})
                     .attr("y", function(d) {return yScale(d.count);})
                     .attr("width", function(d) {return barWidth;})
-                    .attr("height", function(d){return svgHeight - 2*margin.top - margin.bottom -  yScale(d.count);})
+                    .attr("height", function(d){return svgHeight - margin.top - 2*margin.bottom -  yScale(d.count);})
                 
                 var text_group = svg.append("g")
                     .attr("class", "caption")
                     .attr("transform", "translate(" + [margin.left , margin.top] + ")")
                     .attr("id", "id"+data.colIndex);
-                    //.attr("id", "id"+row[0][0]);
                 
                 var texts = text_group.selectAll("text")
                     .data(data.bins)
@@ -428,7 +419,6 @@ dataExplorerNamespace = function() {
                 var axisX = svg.append("g")
                     .attr("class", "x axis")
                     .attr("id", "xAxis"+data.colIndex)
-                    //.attr("id", "xAxis"+row[0][0])
                     .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
                     .style("font-size", function (d) {
                         if (data.bins.length > 15) {
@@ -442,7 +432,6 @@ dataExplorerNamespace = function() {
                 var axisY = svg.append("g")
                     .attr("class", "y axis")
                     .attr("id", "yAxis"+data.colIndex)
-                    //.attr("id", "yAxis"+row[0][0])
                     .attr("transform", "translate(" + [margin.left, margin.top] + ")")
                     .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
                     .call(yAxis);
@@ -489,7 +478,7 @@ dataExplorerNamespace = function() {
 			previewTable = new kt();
 			previewTable.setDataTable(_representation.dataPreview);
 			
-			var wrapper = $('<div id="tabs-knimePreviewContainer">').attr("class", "tab-pane active");
+			var wrapper = $('<div id="tabs-knimePreviewContainer">').attr("class", "tab-pane");
 			content.append(wrapper);
 			var table = $('<table id="knimePreview" class="table table-striped table-bordered" width="100%">');
 			wrapper.append(table);

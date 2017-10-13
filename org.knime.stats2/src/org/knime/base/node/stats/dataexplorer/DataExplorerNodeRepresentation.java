@@ -102,9 +102,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private static final String CFG_PREVIEW = "preview";
     private JSONDataTable m_preview;
 
-    private static final String CFG_NOMINAL = "nominal";
-    private JSONDataTable m_nominal;
-
     /**
      * @return the statistics
      */
@@ -429,20 +426,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     }
 
     /**
-     * @return the m_nominal
-     */
-    public JSONDataTable getNominal() {
-        return m_nominal;
-    }
-
-    /**
-     * @param nominal the m_nominal to set
-     */
-    public void setNominal(final JSONDataTable nominal) {
-        this.m_nominal = nominal;
-    }
-
-    /**
      * Extracts all mean values from statistics table.
      * @return a double array with all mean values, may be null if operation not possible
      */
@@ -498,8 +481,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
 
         NodeSettingsWO prevSettings = settings.addNodeSettings(CFG_PREVIEW);
         m_preview.saveJSONToNodeSettings(prevSettings);
-        NodeSettingsWO nomSettings = settings.addNodeSettings(CFG_NOMINAL);
-        m_nominal.saveJSONToNodeSettings(nomSettings);
         // histograms are saved as extra file in DataExplorerNodeModel#saveInternals()
     }
 
@@ -535,9 +516,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
 
         NodeSettingsRO prevSettings = settings.getNodeSettings(CFG_PREVIEW);
         m_preview = JSONDataTable.loadFromNodeSettings(prevSettings);
-
-        NodeSettingsRO nomSettings = settings.getNodeSettings(CFG_NOMINAL);
-        m_nominal = JSONDataTable.loadFromNodeSettings(nomSettings);
         // histograms are loaded separately in DataExplorerNodeModel#loadInternals()
     }
 
@@ -581,7 +559,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_displayRowNumber, other.m_displayRowNumber)
                 .append(m_histograms, other.m_histograms)
                 .append(m_preview, other.m_preview)
-                .append(m_nominal, other.m_nominal)
                 .isEquals();
     }
 
@@ -615,9 +592,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_displayRowNumber)
                 .append(m_histograms)
                 .append(m_preview)
-                .append(m_nominal)
                 .toHashCode();
     }
-
-
 }
