@@ -283,3 +283,133 @@ h2 {
 .tab-pane{display:none}
 
 .tab-content>.tab-pane{display:none}.tab-content>.active{display:block}.nav-tabs 
+
+
+
+#knimeNominal td.no-break {
+	white-space: nowrap;
+}
+
+#knimeNominal td.no-break .rowKey {
+	white-space: normal;
+}
+
+#knimeNominal td .missing-value-cell {
+	color: #d9534f;
+}
+
+#tabs-knimeNominalContainer {
+	margin: 20px;
+	overflow: hidden;
+}
+
+#knimeNominal_wrapper .dt-buttons.btn-group {
+	width: auto;
+}
+
+
+#knimeNominalContainer .col-lg-1:first-child,
+#knimeNominalContainer .col-lg-10:first-child,
+#knimeNominalContainer .col-lg-11:first-child,
+#knimeNominalContainer .col-lg-12:first-child,
+#knimeNominalContainer .col-lg-2:first-child,
+#knimeNominalContainer .col-lg-3:first-child,
+#knimeNominalContainer .col-lg-4:first-child,
+#knimeNominalContainer .col-lg-5:first-child,
+#knimeNominalContainer .col-lg-6:first-child,
+#knimeNominalContainer .col-lg-7:first-child,
+#knimeNominalContainer .col-lg-8:first-child,
+#knimeNominalContainer .col-lg-9:first-child,
+#knimeNominalContainer .col-md-1:first-child,
+#knimeNominalContainer .col-md-10:first-child,
+#knimeNominalContainer .col-md-11:first-child,
+#knimeNominalContainer .col-md-12:first-child,
+#knimeNominalContainer .col-md-2:first-child,
+#knimeNominalContainer .col-md-3:first-child,
+#knimeNominalContainer .col-md-4:first-child,
+#knimeNominalContainer .col-md-5:first-child,
+#knimeNominalContainer .col-md-6:first-child,
+#knimeNominalContainer .col-md-7:first-child,
+#knimeNominalContainer .col-md-8:first-child,
+#knimeNominalContainer .col-md-9:first-child,
+#knimeNominalContainer .col-sm-1:first-child,
+#knimeNominalContainer .col-sm-10:first-child,
+#knimeNominalContainer .col-sm-11:first-child,
+#knimeNominalContainer .col-sm-12:first-child,
+#knimeNominalContainer .col-sm-2:first-child,
+#knimeNominalContainer .col-sm-3:first-child,
+#knimeNominalContainer .col-sm-4:first-child,
+#knimeNominalContainer .col-sm-5:first-child,
+#knimeNominalContainer .col-sm-6:first-child,
+#knimeNominalContainer .col-sm-7:first-child,
+#knimeNominalContainer .col-sm-8:first-child,
+#knimeNominalContainer .col-sm-9:first-child,
+#knimeNominalContainer .col-xs-1:first-child,
+#knimeNominalContainer .col-xs-10:first-child,
+#knimeNominalContainer .col-xs-11:first-child,
+#knimeNominalContainer .col-xs-12:first-child,
+#knimeNominalContainer .col-xs-2:first-child,
+#knimeNominalContainer .col-xs-3:first-child,
+#knimeNominalContainer .col-xs-4:first-child,
+#knimeNominalContainer .col-xs-5:first-child,
+#knimeNominalContainer .col-xs-6:first-child,
+#knimeNominalContainer .col-xs-7:first-child,
+#knimeNominalContainer .col-xs-8:first-child,
+#knimeNominalContainer .col-xs-9:first-child {
+	padding-left: 0;
+}
+
+#knimeNominalContainer .col-lg-1:last-child,
+#knimeNominalContainer .col-lg-10:last-child,
+#knimeNominalContainer .col-lg-11:last-child,
+#knimeNominalContainer .col-lg-12:last-child,
+#knimeNominalContainer .col-lg-2:last-child,
+#knimeNominalContainer .col-lg-3:last-child,
+#knimeNominalContainer .col-lg-4:last-child,
+#knimeNominalContainer .col-lg-5:last-child,
+#knimeNominalContainer .col-lg-6:last-child,
+#knimeNominalContainer .col-lg-7:last-child,
+#knimeNominalContainer .col-lg-8:last-child,
+#knimeNominalContainer .col-lg-9:last-child,
+#knimeNominalContainer .col-md-1:last-child,
+#knimeNominalContainer .col-md-10:last-child,
+#knimeNominalContainer .col-md-11:last-child,
+#knimeNominalContainer .col-md-12:last-child,
+#knimeNominalContainer .col-md-2:last-child,
+#knimeNominalContainer .col-md-3:last-child,
+#knimeNominalContainer .col-md-4:last-child,
+#knimeNominalContainer .col-md-5:last-child,
+#knimeNominalContainer .col-md-6:last-child,
+#knimeNominalContainer .col-md-7:last-child,
+#knimeNominalContainer .col-md-8:last-child,
+#knimeNominalContainer .col-md-9:last-child,
+#knimeNominalContainer .col-sm-1:last-child,
+#knimeNominalContainer .col-sm-10:last-child,
+#knimeNominalContainer .col-sm-11:last-child,
+#knimeNominalContainer .col-sm-12:last-child,
+#knimeNominalContainer .col-sm-2:last-child,
+#knimeNominalContainer .col-sm-3:last-child,
+#knimeNominalContainer .col-sm-4:last-child,
+#knimeNominalContainer .col-sm-5:last-child,
+#knimeNominalContainer .col-sm-6:last-child,
+#knimeNominalContainer .col-sm-7:last-child,
+#knimeNominalContainer .col-sm-8:last-child,
+#knimeNominalContainer .col-sm-9:last-child,
+#knimeNominalContainer .col-xs-1:last-child,
+#knimeNominalContainer .col-xs-10:last-child,
+#knimeNominalContainer .col-xs-11:last-child,
+#knimeNominalContainer .col-xs-12:last-child,
+#knimeNominalContainer .col-xs-2:last-child,
+#knimeNominalContainer .col-xs-3:last-child,
+#knimeNominalContainer .col-xs-4:last-child,
+#knimeNominalContainer .col-xs-5:last-child,
+#knimeNominalContainer .col-xs-6:last-child,
+#knimeNominalContainer .col-xs-7:last-child,
+#knimeNominalContainer .col-xs-8:last-child,
+#knimeNominalContainer .col-xs-9:last-child {
+	padding-right: 0;
+}
+
+#knimeNominalContainer .row {
+	margin: 0;
+}

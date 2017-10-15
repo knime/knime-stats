@@ -5,6 +5,8 @@ dataExplorerNamespace = function() {
 	var knimeTable = null;
     var previewTable = null;
     var previewDataTable = null;
+    var nominalTable = null;
+    var nominalDataTable = null;
 	var dataTable = null;
 	var selection = {};
 	var allCheckboxes = [];
@@ -57,11 +59,15 @@ dataExplorerNamespace = function() {
                 var listOfTabNames = $('<ul />').attr("class", "nav nav-tabs").attr('role', 'tabList').appendTo(tabs);
                 content = $('<div />').attr('class', 'tab-content').appendTo(tabs);
 
-                $('<li class="active"><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="true">' + 'Statistics' + '</a></li>').appendTo(listOfTabNames);
-				drawNumericTable();
+                $('<li class="active"><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="true">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
                 
-                $('<li class=""><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="false">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
+                $('<li class=""><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="false">' + 'Statistics' + '</a></li>').appendTo(listOfTabNames);
+                
+                $('<li class=""><a href="#tabs-knimeNominalContainer" data-toggle="tab" aria-expanded="false">' + 'Nominal' + '</a></li>').appendTo(listOfTabNames);
+                
+				drawNumericTable();
                 drawDataPreviewTable();
+                drawNominalTable();
                 
                 $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
                     $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust().responsive.recalc();
@@ -71,6 +77,203 @@ dataExplorerNamespace = function() {
 		}
         
 	}
+    
+    drawNominalTable = function() {
+
+        try {
+            nominalTable = new kt();
+			nominalTable.setDataTable(_representation.nominal);
+            
+			var wrapper = $('<div id="tabs-knimeNominalContainer">').attr("class", "tab-pane");
+			content.append(wrapper);
+            
+			if (_representation.title != null && _representation.title != '') {
+				wrapper.append('<h1>' + _representation.title + '</h1>')
+			}
+			if (_representation.subtitle != null && _representation.subtitle != '') {
+				wrapper.append('<h2>' + _representation.subtitle + '</h2>')
+			}
+			var table = $('<table id="knimeNominal" class="table table-striped table-bordered" width="100%">');
+			wrapper.append(table);
+			
+			var colArray = [];
+			var colDefs = [];
+            
+            if (_representation.displayRowIds || true) {
+				var title = _representation.displayRowIds ? 'Column' : '';
+				var orderable = _representation.displayRowIds;
+				colArray.push({
+					'title': title, 
+					'orderable': orderable,
+					'className': 'no-break'
+				});
+			}
+            
+            if (_representation.enableSelection) {
+				var all = _value.selectAll;
+				colArray.push({'title': /*'<input name="select_all" value="1" id="checkbox-select-all" type="checkbox"' + (all ? ' checked' : '')  + ' />'*/ 'Exclude Column'})
+				colDefs.push({
+					'targets': 1,
+					'searchable':false,
+					'orderable':false,
+					'className': 'dt-body-center',
+					'render': function (data, type, full, meta) {
+						//var selected = selection[data] ? !all : all;
+						setTimeout(function(){
+							var el = $('#checkbox-select-all').get(0);
+							/*if (all && selection[data] && el && ('indeterminate' in el)) {
+								el.indeterminate = true;
+							}*/
+						}, 0);
+						return '<input type="checkbox" name="id[]"'
+							+ (selection[data] ? ' checked' : '')
+							+' value="' + $('<div/>').text(full[0]).html() + '">';
+					}
+				});
+			}
+            
+            for (var i = 0; i < nominalTable.getColumnNames().length; i++) {
+				var colType = nominalTable.getColumnTypes()[i];
+				var knimeColType = nominalTable.getKnimeColumnTypes()[i];
+				var colDef = {
+					'title': nominalTable.getColumnNames()[i],
+					'orderable' : isColumnSortable(colType),
+					'searchable': isColumnSearchable(colType)					
+				}
+				if (_representation.displayMissingValueAsQuestionMark) {
+					colDef.defaultContent = '<span class="missing-value-cell">?</span>';
+				}
+				if (colType == 'number' && _representation.enableGlobalNumberFormat) {
+					if (nominalTable.getKnimeColumnTypes()[i].indexOf('double') > -1) {
+						colDef.render = function(data, type, full, meta) {
+                            //console.log("data4", data)
+                            //console.log("full4", full)
+                            //console.log(data)
+							if (!$.isNumeric(data)) {
+								return data;
+							}
+							return Number(data).toFixed(_representation.globalNumberFormatDecimals);
+						}
+					}
+				}
+				colArray.push(colDef);
+			}
+            
+            pageLength = _representation.initialPageSize;
+			if (_value.pageSize) {
+				pageLength = _value.pageSize;
+			}
+			pageLengths = _representation.allowedPageSizes;
+			if (_representation.pageSizeShowAll) {
+				var first = pageLengths.slice(0);
+				first.push(-1);
+				var second = pageLengths.slice(0);
+				second.push("All");
+				pageLengths = [first, second];
+			}
+			//var order = [];
+			if (_value.currentOrder) {
+				order = _value.currentOrder;
+			}
+			//var buttons = [];
+			if (_representation.enableSorting && _representation.enableClearSortButton) {
+				var unsortButton = {
+						'text': "Clear Sorting",
+						'action': function (e, dt, node, config) {
+							dt.order.neutral();
+							dt.draw();
+						},
+						'enabled': (order.length > 0)
+				}
+				buttons.push(unsortButton);
+			}
+			var firstChunk = getDataSlice(0, _representation.initialPageSize, nominalTable);
+            
+			var searchEnabled = _representation.enableSearching || (knimeService && knimeService.isInteractivityAvailable());
+            
+			nominalDataTable = $('#knimeNominal').DataTable( {
+                'columns': colArray,
+				'columnDefs': colDefs,
+				'order': order,
+                //'retrieve': true,
+				'paging': _representation.enablePaging,
+				'pageLength': pageLength,
+				'lengthMenu': pageLengths,
+				'lengthChange': _representation.enablePageSizeChange,
+				'searching': searchEnabled,
+				'ordering': _representation.enableSorting,
+				'processing': true,
+				'deferRender': !_representation.enableSelection,
+				'data': firstChunk,
+				'buttons': buttons,
+                'responsive': true,
+                'scrollX':false,
+				'fnDrawCallback': function() {
+					if (!_representation.displayColumnHeaders) {
+						$("#knimeDataExplorer thead").remove();
+				  	}
+					if (searchEnabled && !_representation.enableSearching) {
+						$('#knimeDataExplorer_filter').remove();
+					}
+				}
+			});
+            
+            drawControls("knimeNominal", nominalTable, nominalDataTable);
+            
+            if (_representation.enableSelection) {
+				// Handle click on "Select all" control
+				var selectAllCheckbox = $('#checkbox-select-all').get(0);
+				if (selectAllCheckbox) {
+					if (selectAllCheckbox.checked && ('indeterminate' in selectAllCheckbox)) {
+						selectAllCheckbox.indeterminate = _value.selectAllIndeterminate;
+					}
+					selectAllCheckbox.addEventListener('click', function() {
+						selectAll(this.checked);
+					});
+				}
+
+				// Handle click on checkbox to set state of "Select all" control
+				$('#knimeNominal tbody').on('change', 'input[type="checkbox"]', function() {
+					//var el = $('#checkbox-select-all').get(0);
+					//var selected = el.checked ? !this.checked : this.checked;
+					// we could call delete _value.selection[this.value], but the call is very slow 
+					// and we can assume that a user doesn't click on a lot of checkboxes
+					selection[this.value] = this.checked;
+					
+					if (this.checked) {
+						/*if (knimeService && knimeService.isInteractivityAvailable() && _value.publishSelection) {
+							knimeService.addRowsToSelection(_representation.table.id, [this.value], selectionChanged);
+						}*/
+					} else {
+						// If "Select all" control is checked and has 'indeterminate' property
+						if(selectAllCheckbox && selectAllCheckbox.checked && ('indeterminate' in selectAllCheckbox)){
+							// Set visual state of "Select all" control as 'indeterminate'
+							selectAllCheckbox.indeterminate = true;
+							_value.selectAllIndeterminate = true;
+						}
+						if (hideUnselected) {
+							nominalTable.draw('full-hold');
+						}
+						/*if (knimeService && knimeService.isInteractivityAvailable() && _value.publishSelection) {
+							knimeService.removeRowsFromSelection(_representation.table.id, [this.value], selectionChanged);
+						}*/
+					}
+				});
+			}
+			
+			//load all data
+			setTimeout(function() {
+				var initialChunkSize = 10;
+				addDataToTable(_representation.initialPageSize, initialChunkSize, nominalTable, nominalDataTable, "knimeNominal");
+			}, 0);
+        } catch (err) {
+			if (err.stack) {
+				alert(err.stack);
+			} else {
+				alert (err);
+			}
+		}
+    }
 	
 	drawNumericTable = function() {
 		if (_representation.enableSelection && _value.selection) {
@@ -82,7 +285,7 @@ dataExplorerNamespace = function() {
 			knimeTable = new kt();
 			knimeTable.setDataTable(_representation.statistics);
             
-			var wrapper = $('<div id="tabs-knimeDataExplorerContainer">').attr("class", "tab-pane active");
+			var wrapper = $('<div id="tabs-knimeDataExplorerContainer">').attr("class", "tab-pane");
 			content.append(wrapper);
             
 			if (_representation.title != null && _representation.title != '') {
@@ -188,17 +391,20 @@ dataExplorerNamespace = function() {
                     .attr("width", svgWidth)
                     .attr("class", "svg_hist")
                     .attr("id", "svg"+data.colIndex);
+                    //.attr("id", "svg"+meta.row);
                 
                 var bar_group = svg.append("g")
                     .attr("transform", "translate(" + [0 , margin.top] + ")")
                     .attr("class", "bars")
-                    .attr("id", "id"+data.colIndex);
+                    //.attr("id", "id"+data.colIndex);
+                    .attr("id", "svg"+meta.row);
                 
                 var bars = bar_group.selectAll("rect")
                     .data(data.bins)
                         .enter()
                     .append("rect")
                     .attr("class", "rect"+data.colIndex)
+                    //.attr("class", "rect"+meta.row)
                     .attr("x", function (d) {return xScale(d.def.first - data.bins[0].def.first);})
                     .attr("y", function(d) {return yScale(d.count);})
                     .attr("width", function(d) {return xScale(d.def.second - d.def.first)})
@@ -357,10 +563,12 @@ dataExplorerNamespace = function() {
                 var data = row.data()[histCol];
                 
                 //when responsive is opened it creates an additional div of the same class right under its original one
-                var bigHist = $(".hist")[data.colIndex % _representation.initialPageSize + 1];
+                var bigHist = $(".hist")[data.colIndex % dataTable.page.len() + 1];
+                //var bigHist = $(".hist")[row[0][0] % _representation.initialPageSize + 1];
                 svgWidth = svgWbig;
                 svgHeight = svgHbig;
                 var svgBigHist = d3.select(bigHist).select("#svg"+data.colIndex)[0][0]
+                //var svgBigHist = d3.select(bigHist).select("#svg"+row[0][0])[0][0]
                 
                 var min = data.bins[0].def.first;
                 var max = data.bins[data.bins.length - 1].def.second;
@@ -368,7 +576,7 @@ dataExplorerNamespace = function() {
                 
                 xScale.range([0, svgWidth - margin.left - margin.right])
                     .domain([min, (max + barWidthValue * 0.5)]);
-                yScale.range([svgHeight - margin.top - 2*margin.bottom, 0])
+                yScale.range([svgHeight - 2*margin.top - margin.bottom, 0])
                     .domain([0, data.maxCount]);
                 
                 var svg = d3.select(svgBigHist).attr("width", svgWidth).attr("height", svgHeight);
@@ -377,17 +585,20 @@ dataExplorerNamespace = function() {
                     .attr("transform", "translate("+[margin.left , margin.top]+")");
                 var barWidth = xScale((barWidthValue + min))
                 
-                var bars = svg.selectAll(".bars").selectAll(".rect"+data.colIndex)
+                var bars = svg.selectAll(".bars")
+                    .selectAll(".rect"+data.colIndex)
+                    //.selectAll(".rect"+row[0][0])
                     .data(data.bins)
                     .attr("x", function (d) {return xScale(d.def.first);})
                     .attr("y", function(d) {return yScale(d.count);})
                     .attr("width", function(d) {return barWidth;})
-                    .attr("height", function(d){return svgHeight - margin.top - 2*margin.bottom -  yScale(d.count);})
+                    .attr("height", function(d){return svgHeight - 2*margin.top - margin.bottom -  yScale(d.count);})
                 
                 var text_group = svg.append("g")
                     .attr("class", "caption")
                     .attr("transform", "translate(" + [margin.left , margin.top] + ")")
                     .attr("id", "id"+data.colIndex);
+                    //.attr("id", "id"+row[0][0]);
                 
                 var texts = text_group.selectAll("text")
                     .data(data.bins)
@@ -419,6 +630,7 @@ dataExplorerNamespace = function() {
                 var axisX = svg.append("g")
                     .attr("class", "x axis")
                     .attr("id", "xAxis"+data.colIndex)
+                    //.attr("id", "xAxis"+row[0][0])
                     .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
                     .style("font-size", function (d) {
                         if (data.bins.length > 15) {
@@ -432,6 +644,7 @@ dataExplorerNamespace = function() {
                 var axisY = svg.append("g")
                     .attr("class", "y axis")
                     .attr("id", "yAxis"+data.colIndex)
+                    //.attr("id", "yAxis"+row[0][0])
                     .attr("transform", "translate(" + [margin.left, margin.top] + ")")
                     .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
                     .call(yAxis);
@@ -478,7 +691,7 @@ dataExplorerNamespace = function() {
 			previewTable = new kt();
 			previewTable.setDataTable(_representation.dataPreview);
 			
-			var wrapper = $('<div id="tabs-knimePreviewContainer">').attr("class", "tab-pane");
+			var wrapper = $('<div id="tabs-knimePreviewContainer">').attr("class", "tab-pane active");
 			content.append(wrapper);
 			var table = $('<table id="knimePreview" class="table table-striped table-bordered" width="100%">');
 			wrapper.append(table);
@@ -527,6 +740,7 @@ dataExplorerNamespace = function() {
             
             var firstChunk = getDataSlice(0, _representation.initialPageSize, previewTable);
             
+            var searchEnabled = _representation.enableSearching || (knimeService && knimeService.isInteractivityAvailable());
             previewDataTable = $('#knimePreview').DataTable( {
                 'columns': colArray,
 				'columnDefs': colDefs,
@@ -535,7 +749,7 @@ dataExplorerNamespace = function() {
                 'pageLength': pageLength,
 				'lengthMenu': pageLengths,
 				'lengthChange': _representation.enablePageSizeChange,
-				'searching': false,
+				'searching': searchEnabled,
 				'ordering': _representation.enableSorting,
 				'processing': true,
 				'data': firstChunk,
@@ -611,6 +825,7 @@ dataExplorerNamespace = function() {
                         dataRow.push(row.rowKey);
                         break;
                     case "nominal":
+                        dataRow.push(row.rowKey);
                         break;
                     default: 
                         break;

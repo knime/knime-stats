@@ -73,6 +73,7 @@ public class DataExplorerConfig {
     static final String P_INFINITY = "No. +∞";
     static final String N_INFINITY = "No. -∞";
     static final String ZEROS = "No. zeros";
+    static final String UNIQUE_NOMINAL = "Unique values";
 
     static final String CFG_HIDE_IN_WIZARD = "hideInWizard";
     private static final boolean DEFAULT_HIDE_IN_WIZARD = false;
@@ -161,6 +162,8 @@ public class DataExplorerConfig {
     final static String CFG_DISPLAY_ROW_NUMBER = "displayRowNumber";
     final static int DEFAULT_DISPLAY_ROW_NUMBER = 10;
     private int m_displayRowNumber = DEFAULT_DISPLAY_ROW_NUMBER;
+
+    //UNIQUE_NUMERICAL
 
     /**
      * @return the hideInWizard

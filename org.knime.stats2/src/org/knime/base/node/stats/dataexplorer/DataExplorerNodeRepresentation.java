@@ -2,7 +2,7 @@
  * ------------------------------------------------------------------------
  *
  *  Copyright by KNIME GmbH, Konstanz, Germany
- *  Website: http://www.knime.org; Email: contact@knime.org
+ *  Website: http://www.knime.com; Email: contact@knime.com
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -98,9 +98,13 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private boolean m_displayMissingValueAsQuestionMark;
     private List<HistogramModel<?>> m_histograms;
     private int m_displayRowNumber;
+    private List<HistogramModel<?>> m_nominalHistograms;
 
     private static final String CFG_PREVIEW = "preview";
     private JSONDataTable m_preview;
+
+    private static final String CFG_NOMINAL = "nominal";
+    private JSONDataTable m_nominal;
 
     /**
      * @return the statistics
@@ -426,6 +430,34 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the m_nominal
+     */
+    public JSONDataTable getNominal() {
+        return m_nominal;
+    }
+
+    /**
+     * @param nominal the m_nominal to set
+     */
+    public void setNominal(final JSONDataTable nominal) {
+        this.m_nominal = nominal;
+    }
+
+    /**
+     * @return the m_nominalHistograms
+     */
+    public List<HistogramModel<?>> getNominalHistograms() {
+        return m_nominalHistograms;
+    }
+
+    /**
+     * @param nominalHistograms the m_nominalHistograms to set
+     */
+    public void setNominalHistograms(final List<HistogramModel<?>> nominalHistograms) {
+        this.m_nominalHistograms = nominalHistograms;
+    }
+
+    /**
      * Extracts all mean values from statistics table.
      * @return a double array with all mean values, may be null if operation not possible
      */
@@ -481,6 +513,8 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
 
         NodeSettingsWO prevSettings = settings.addNodeSettings(CFG_PREVIEW);
         m_preview.saveJSONToNodeSettings(prevSettings);
+        NodeSettingsWO nomSettings = settings.addNodeSettings(CFG_NOMINAL);
+        m_nominal.saveJSONToNodeSettings(nomSettings);
         // histograms are saved as extra file in DataExplorerNodeModel#saveInternals()
     }
 
@@ -516,6 +550,9 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
 
         NodeSettingsRO prevSettings = settings.getNodeSettings(CFG_PREVIEW);
         m_preview = JSONDataTable.loadFromNodeSettings(prevSettings);
+
+        NodeSettingsRO nomSettings = settings.getNodeSettings(CFG_NOMINAL);
+        m_nominal = JSONDataTable.loadFromNodeSettings(nomSettings);
         // histograms are loaded separately in DataExplorerNodeModel#loadInternals()
     }
 
@@ -559,6 +596,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_displayRowNumber, other.m_displayRowNumber)
                 .append(m_histograms, other.m_histograms)
                 .append(m_preview, other.m_preview)
+                .append(m_nominal, other.m_nominal)
                 .isEquals();
     }
 
@@ -592,6 +630,8 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_displayRowNumber)
                 .append(m_histograms)
                 .append(m_preview)
+                .append(m_nominal)
                 .toHashCode();
     }
+
 }
