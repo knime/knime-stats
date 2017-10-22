@@ -56,6 +56,7 @@ import org.knime.core.node.NodeSettingsWO;
 /**
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  */
 public class DataExplorerConfig {
 

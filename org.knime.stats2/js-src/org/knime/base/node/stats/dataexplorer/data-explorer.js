@@ -28,6 +28,7 @@ dataExplorerNamespace = function() {
     var pageLengths;
     var order = [];
     var buttons = [];
+    var responsiveOpened = 0;
     
 	
 	//register neutral ordering method for clear selection button
@@ -95,7 +96,13 @@ dataExplorerNamespace = function() {
 			}
 			var table = $('<table id="knimeNominal" class="table table-striped table-bordered" width="100%">');
 			wrapper.append(table);
-			
+            
+            for (var i = 0; i < _representation.nominalHistograms.length; i++) {
+                _representation.nominalHistograms[i].bins.sort(function(x,y){
+                    return d3.descending(x.second, y.second);
+                })
+            }
+            
 			var colArray = [];
 			var colDefs = [];
             
@@ -363,7 +370,7 @@ dataExplorerNamespace = function() {
             
             xScale = d3.scale.linear(), 
             yScale = d3.scale.linear(),
-            _representation.histograms.forEach(function(d) {histSizes.push(d.bins.length)});
+            _representation.numericalHistograms.forEach(function(d) {histSizes.push(d.bins.length)});
             
             var colDef = {
                 'title' :"Histogram",
@@ -556,6 +563,9 @@ dataExplorerNamespace = function() {
 			}, 0);
             
             dataTable.on("responsive-display", function(e, datatable, row, showHide, update) {
+                
+                responsiveOpened = showHide? responsiveOpened+1 : responsiveOpened;
+                
                 var textScale = d3.scale.linear()
                     .range([8, 11])
                     .domain([d3.max(histSizes), 16]);
@@ -563,7 +573,7 @@ dataExplorerNamespace = function() {
                 var data = row.data()[histCol];
                 
                 //when responsive is opened it creates an additional div of the same class right under its original one
-                var bigHist = $(".hist")[data.colIndex % dataTable.page.len() + 1];
+                var bigHist = $(".hist")[data.colIndex % dataTable.page.len() + responsiveOpened];
                 //var bigHist = $(".hist")[row[0][0] % _representation.initialPageSize + 1];
                 svgWidth = svgWbig;
                 svgHeight = svgHbig;
@@ -648,6 +658,7 @@ dataExplorerNamespace = function() {
                     .attr("transform", "translate(" + [margin.left, margin.top] + ")")
                     .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
                     .call(yAxis);
+                responsiveOpened = !showHide? responsiveOpened-1 : responsiveOpened;
             })
 			
 		} catch (err) {
@@ -846,7 +857,7 @@ dataExplorerNamespace = function() {
 			var dataRow = dataRow.concat(row.data);
             switch (knTable.getTableId()) {
                 case "numeric":
-                    dataRow.push(_representation.histograms[i]);
+                    dataRow.push(_representation.numericalHistograms[i]);
                     break;
                 case "preview":
                     break;

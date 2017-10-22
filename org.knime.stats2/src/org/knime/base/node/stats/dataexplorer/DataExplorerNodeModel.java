@@ -238,9 +238,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
         calc.evaluate(table, exec.createSubExecutionContext(0.5));
 
-        HistogramColumn hcol = HistogramColumn.getDefaultInstance();
-        List<HistogramModel<?>> histograms = new ArrayList<HistogramModel<?>>();
+        //HistogramColumn hcol = HistogramColumn.getDefaultInstance();
+        List<JSNominalHistogram> histograms = new ArrayList<JSNominalHistogram>();
         JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
+        JSNominalHistogram jsHist = null;
         //int[] indexes = new int[includeColumns.length];
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
@@ -249,7 +250,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
 
             Map<DataValue, Integer> nomValue = nominal.getNominalValues(i);
             rowValues.add(nomValue.size());
-            histograms.add(hcol.fromNominalModel(nomValue, i, col));
+            //histograms.add(hcol.fromNominalModel(nomValue, i, col));
+
+            jsHist = new JSNominalHistogram(col, i, nomValue);
+            histograms.add(jsHist);
 
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
@@ -260,7 +264,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         jTable.setId("nominal");
 
         //histograms.get(0).getBins().get(0);
-        //getViewRepresentation().setNominalHistograms(histograms);
+        getViewRepresentation().setNominalHistograms(histograms);
         return jTable;
     }
 
@@ -344,6 +348,16 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
         hList.addAll(histograms.values());
         getViewRepresentation().setHistograms(hList);
+
+        List<JSNumericHistogram> numHist = new ArrayList<JSNumericHistogram>();
+        for (int i = 0; i < includeColumns.length; i++) {
+            JSNumericHistogram histTest = new JSNumericHistogram(includeColumns[i], i, table,  ((DoubleValue)minMax.getMin(includeColumns[i])).getDoubleValue(),
+                ((DoubleValue)minMax.getMax(includeColumns[i])).getDoubleValue(),  mean.getResult(includeColumns[i]));
+            numHist.add(histTest);
+        }
+
+        getViewRepresentation().setNumericalHistograms(numHist);
+
         /*ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(histograms);

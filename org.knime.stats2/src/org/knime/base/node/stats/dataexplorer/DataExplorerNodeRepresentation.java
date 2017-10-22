@@ -69,6 +69,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 /**
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  */
 @JsonAutoDetect
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
@@ -98,13 +99,16 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private boolean m_displayMissingValueAsQuestionMark;
     private List<HistogramModel<?>> m_histograms;
     private int m_displayRowNumber;
-    private List<HistogramModel<?>> m_nominalHistograms;
+
+    private List<JSNominalHistogram> m_nominalHistograms;
 
     private static final String CFG_PREVIEW = "preview";
     private JSONDataTable m_preview;
 
     private static final String CFG_NOMINAL = "nominal";
     private JSONDataTable m_nominal;
+
+    private List<JSNumericHistogram> m_numericalHistograms;
 
     /**
      * @return the statistics
@@ -446,14 +450,14 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     /**
      * @return the m_nominalHistograms
      */
-    public List<HistogramModel<?>> getNominalHistograms() {
+    public List<JSNominalHistogram> getNominalHistograms() {
         return m_nominalHistograms;
     }
 
     /**
      * @param nominalHistograms the m_nominalHistograms to set
      */
-    public void setNominalHistograms(final List<HistogramModel<?>> nominalHistograms) {
+    public void setNominalHistograms(final List<JSNominalHistogram> nominalHistograms) {
         this.m_nominalHistograms = nominalHistograms;
     }
 
@@ -597,6 +601,8 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_histograms, other.m_histograms)
                 .append(m_preview, other.m_preview)
                 .append(m_nominal, other.m_nominal)
+                .append(m_nominalHistograms, other.m_nominalHistograms)
+                .append(m_numericalHistograms, other.m_numericalHistograms)
                 .isEquals();
     }
 
@@ -631,7 +637,23 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_histograms)
                 .append(m_preview)
                 .append(m_nominal)
+                .append(m_nominalHistograms)
+                .append(m_numericalHistograms)
                 .toHashCode();
+    }
+
+    /**
+     * @return the m_numTest
+     */
+    public List<JSNumericHistogram> getNumericalHistograms() {
+        return m_numericalHistograms;
+    }
+
+    /**
+     * @param m_numHistogram the m_numTest to set
+     */
+    public void setNumericalHistograms(final List<JSNumericHistogram> m_numHistogram) {
+        this.m_numericalHistograms = m_numHistogram;
     }
 
 }
