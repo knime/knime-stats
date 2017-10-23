@@ -17,18 +17,22 @@ dataExplorerNamespace = function() {
     var svgHsmall = 30;
     var svgWbig = 500;
     var svgHbig = 200;
-    var xScale, yScale;
+    var xScale, yScale, xScaleNom;
     var xAxis, yAxis, barsScale;
-    var margin = {top:0.35*svgHeight, left: 0.3*svgWidth, bottom: 0.3*svgHeight, right:0.2*svgHeight};
+    var margin = {top:0.35*svgHeight, left: 0.3*svgWidth, bottom: 0.35*svgHeight, right:0.2*svgHeight};
     var content;
     var hideUnselected = false;
     var histSizes = [];
+    var histNomSizes = [];
     var histCol;
+    var histColNom;
     var pageLength;
     var pageLengths;
     var order = [];
     var buttons = [];
-    var responsiveOpened = 0;
+    var respOpenedNum = [];
+    var respOpenedNom = [];
+    
     
 	
 	//register neutral ordering method for clear selection button
@@ -72,6 +76,7 @@ dataExplorerNamespace = function() {
                 
                 $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
                     $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust().responsive.recalc();
+                    //console.log(responsiveOpened);
                 } );
                 
             });
@@ -166,6 +171,64 @@ dataExplorerNamespace = function() {
 				colArray.push(colDef);
 			}
             
+            xScaleNom = d3.scale.ordinal(), 
+            yScale = d3.scale.linear(),
+            _representation.nominalHistograms.forEach(function(d) {histNomSizes.push(d.bins.length)});
+            
+            var colDef = {
+                'title' :"Histogram",
+                'orderable': false, 
+                'searchable': false,
+                'defaultContent':  '<span class="missing-value-cell">?</span>'
+            }
+
+            colDef.render = function(data, type, full, meta) {
+                //console.log("data", data)
+                svgHeight = svgHsmall + margin.top;
+                svgWidth = svgWsmall;
+                
+                xScaleNom.rangeBands([0, svgWidth])
+                    .domain(data.bins.map(function(d){return d.first}));
+                yScale.range([svgHsmall, 0])
+                    .domain([0, data.maxCount]);
+                
+//                //var fill = colorScale(data.colIndex);
+                var histDiv = document.createElement("div");
+
+                var svg = d3.select(histDiv).attr("class", "histNom")
+                    .append("svg")
+                    .attr("height", svgHeight)
+                    .attr("width", svgWidth)
+                    .attr("class", "svg_hist_nom")
+                    .attr("id", "svgNom"+data.colIndex);
+                    //.attr("id", "svg"+meta.row);
+                
+                var bar_group = svg.append("g")
+                    .attr("transform", "translate(" + [0 , margin.top] + ")")
+                    .attr("class", "bars")
+                    //.attr("id", "id"+data.colIndex);
+                    .attr("id", "svgNom"+meta.row);
+                
+                var bars = bar_group.selectAll("rect")
+                    .data(data.bins)
+                        .enter()
+                    .append("rect")
+                    .attr("class", "rect"+data.colIndex)
+                    //.attr("class", "rect"+meta.row)
+                    .attr("x", function (d) {return xScaleNom(d.first);})
+                    .attr("y", function(d) {return yScale(d.second);})
+                    .attr("width", function(d) {return xScaleNom.rangeBand()})
+                    .attr("height", function(d){return svgHsmall - yScale(d.second);})
+                    .attr("fill", "#547cac")
+                    .attr("stroke", "black")
+                    .attr("stroke-width", "1px")
+                    .append("title")
+                    .text(function(d, i) { return d.first+": "+d.second; });
+                
+                return $('<div/>').append(histDiv).html();
+            }
+            colArray.push(colDef);
+            
             pageLength = _representation.initialPageSize;
 			if (_value.pageSize) {
 				pageLength = _value.pageSize;
@@ -183,17 +246,17 @@ dataExplorerNamespace = function() {
 				order = _value.currentOrder;
 			}
 			//var buttons = [];
-			if (_representation.enableSorting && _representation.enableClearSortButton) {
-				var unsortButton = {
-						'text': "Clear Sorting",
-						'action': function (e, dt, node, config) {
-							dt.order.neutral();
-							dt.draw();
-						},
-						'enabled': (order.length > 0)
-				}
-				buttons.push(unsortButton);
-			}
+//			if (_representation.enableSorting && _representation.enableClearSortButton) {
+//				var unsortButton = {
+//						'text': "Clear Sorting",
+//						'action': function (e, dt, node, config) {
+//							dt.order.neutral();
+//							dt.draw();
+//						},
+//						'enabled': (order.length > 0)
+//				}
+//				buttons.push(unsortButton);
+//			}
 			var firstChunk = getDataSlice(0, _representation.initialPageSize, nominalTable);
             
 			var searchEnabled = _representation.enableSearching || (knimeService && knimeService.isInteractivityAvailable());
@@ -273,6 +336,144 @@ dataExplorerNamespace = function() {
 				var initialChunkSize = 10;
 				addDataToTable(_representation.initialPageSize, initialChunkSize, nominalTable, nominalDataTable, "knimeNominal");
 			}, 0);
+            
+            histColNom = colArray.length - 1;
+            
+            nominalDataTable.on("responsive-display", function(e, datatable, row, showHide, update) {
+                
+                
+                var textScale = d3.scale.linear()
+                    .range([8, 11])
+                    .domain([d3.max(histNomSizes), 16]);
+                
+                var charecterScale = d3.scale.linear()
+                    .range([3, 10])
+                    .domain([d3.max(histNomSizes), 16])
+                
+                var data = row.data()[histColNom];
+                
+                if (!update && showHide) {
+                    respOpenedNom.push(data.colIndex);
+                    respOpenedNom.sort();
+                }
+                
+                //when responsive is opened it creates an additional div of the same class right under its original one
+                var bigHist = $(".histNom")[data.colIndex % dataTable.page.len() + respOpenedNom.indexOf(data.colIndex) + 1];
+                //var bigHist = $(".hist")[row[0][0] % _representation.initialPageSize + 1];
+                svgWidth = svgWbig;
+                svgHeight = svgHbig;
+                var svgBigHist = d3.select(bigHist).select("#svgNom"+data.colIndex)[0][0]
+                //var svgBigHist = d3.select(bigHist).select("#svg"+row[0][0])[0][0]
+                
+//                var min = data.bins[0].def.first;
+//                var max = data.bins[data.bins.length - 1].def.second;
+//                var barWidthValue = (max - min)/data.bins.length;
+                
+                xScaleNom.rangeBands([0, svgWidth - margin.left - margin.right])
+                    .domain(data.bins.map(function(d){return d.first}));
+                yScale.range([svgHeight - 2*margin.top - margin.bottom, 0])
+                    .domain([0, data.maxCount]);
+                
+                var svg = d3.select(svgBigHist).attr("width", svgWidth).attr("height", svgHeight);
+                
+                var bar_group = svg.selectAll(".bars")
+                    .attr("transform", "translate("+[margin.left , margin.top]+")");
+                //var barWidth = xScale((barWidthValue + min))
+                
+                var bars = svg.selectAll(".bars")
+                    .selectAll(".rect"+data.colIndex)
+                    //.selectAll(".rect"+row[0][0])
+                    .data(data.bins)
+                    .attr("x", function (d) {return xScaleNom(d.first);})
+                    .attr("y", function(d) {return yScale(d.second);})
+                    .attr("width", function(d) {return xScaleNom.rangeBand();})
+                    .attr("height", function(d){return svgHeight - 2*margin.top - margin.bottom -  yScale(d.second);})
+                
+                var text_group = svg.append("g")
+                    .attr("class", "caption")
+                    .attr("transform", "translate(" + [margin.left , margin.top] + ")")
+                    .attr("id", "id"+data.colIndex);
+                    //.attr("id", "id"+row[0][0]);
+                
+                var texts = text_group.selectAll("text")
+                    .data(data.bins)
+                    .enter()
+                    .append("text")
+                    .attr("x", function (d) {return xScaleNom(d.first) + xScaleNom.rangeBand()/2;})
+                    .attr("y", function(d) {return yScale(d.second) - 2;})
+                    .text(function(d) {return d.second;})
+                    .attr("font-size", Math.round(Math.min(svgHeight/15, 11))+"px")
+                    .attr("text-anchor", "middle");
+                
+//                var ticks = [];
+//                data.bins.forEach(function(d,i) {
+//                    ticks.push(d.def.first);
+//                })
+//                ticks.push(data.bins[data.bins.length - 1].def.second)
+                
+                xAxis = d3.svg.axis()
+                    .scale(xScaleNom)
+                    .ticks(0)
+                    .orient("bottom");
+                    
+                    //.tickValues(ticks)
+                    //.tick
+                    //.tickFormat(d3.format(".2f"))
+                
+                yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left")
+                    .ticks(5);
+                
+                var axisX = svg.append("g")
+                    .attr("class", "x nom axis")
+                    .attr("id", "xAxis"+data.colIndex)
+                    .attr("transform", "translate(" + [margin.left, svgHeight - margin.bottom - margin.top] + ")")
+                    .call(xAxis)
+                
+                //different patterns of labels depending on number of elements in one column
+                if (histNomSizes[data.colIndex] > 15) {
+                    axisX.selectAll("text")
+                        .attr("y", -xScaleNom.rangeBand()/4)
+                        .attr("x", -2)
+                        .attr("transform", "rotate(-90)")
+                        .style("text-anchor", "end")
+                        .text(function(d){ 
+                            return d.slice(0,3)+".";
+                        })
+                        .style("font-size", textScale(data.bins.length)+"px");
+                } else {
+                    axisX.selectAll("text")
+                        .attr("y", 2)
+                        .attr("x", 0)
+                        //.attr("dy", ".35em")
+                        .attr("transform", "rotate(0)")
+                        .style("text-anchor", "middle")
+                        .text(function(d){ 
+                            return d.slice(0,charecterScale(histNomSizes[data.colIndex]));
+                        })
+                        .style("font-size", "11px");
+                }
+
+                
+                var axisY = svg.append("g")
+                    .attr("class", "y axis")
+                    .attr("id", "yAxis"+data.colIndex)
+                    //.attr("id", "yAxis"+row[0][0])
+                    .attr("transform", "translate(" + [margin.left, margin.top] + ")")
+                    .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
+                    .call(yAxis);
+                
+                //responsiveOpened = !showHide? responsiveOpened-1 : responsiveOpened;
+                //console.log("showHide: ", responsiveOpened)
+                //console.log("index: ",respOpenedNom.indexOf(data.colIndex))
+                if (!update && !showHide) {
+                    respOpenedNom.splice(respOpenedNom.indexOf(data.colIndex), 1);
+                }
+                
+                //console.log("showHide: ",showHide, respOpenedNom)
+            })
+            
         } catch (err) {
 			if (err.stack) {
 				alert(err.stack);
@@ -562,18 +763,25 @@ dataExplorerNamespace = function() {
 				addDataToTable(_representation.initialPageSize, initialChunkSize, knimeTable, dataTable, "knimeDataExplorer");
 			}, 0);
             
+            
             dataTable.on("responsive-display", function(e, datatable, row, showHide, update) {
+                                
                 
-                responsiveOpened = showHide? responsiveOpened+1 : responsiveOpened;
-                
+                //console.log("update: ", update)
                 var textScale = d3.scale.linear()
                     .range([8, 11])
                     .domain([d3.max(histSizes), 16]);
                 
                 var data = row.data()[histCol];
                 
+                if (!update && showHide) {
+                    respOpenedNum.push(data.colIndex);
+                    respOpenedNum.sort();
+                }
+                
                 //when responsive is opened it creates an additional div of the same class right under its original one
-                var bigHist = $(".hist")[data.colIndex % dataTable.page.len() + responsiveOpened];
+                var bigHist = $(".hist")[data.colIndex % dataTable.page.len() + respOpenedNum.indexOf(data.colIndex) + 1];
+
                 //var bigHist = $(".hist")[row[0][0] % _representation.initialPageSize + 1];
                 svgWidth = svgWbig;
                 svgHeight = svgHbig;
@@ -584,7 +792,7 @@ dataExplorerNamespace = function() {
                 var max = data.bins[data.bins.length - 1].def.second;
                 var barWidthValue = (max - min)/data.bins.length;
                 
-                xScale.range([0, svgWidth - margin.left - margin.right])
+                xScale = d3.scale.linear().range([0, svgWidth - margin.left - margin.right])
                     .domain([min, (max + barWidthValue * 0.5)]);
                 yScale.range([svgHeight - 2*margin.top - margin.bottom, 0])
                     .domain([0, data.maxCount]);
@@ -658,7 +866,12 @@ dataExplorerNamespace = function() {
                     .attr("transform", "translate(" + [margin.left, margin.top] + ")")
                     .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
                     .call(yAxis);
-                responsiveOpened = !showHide? responsiveOpened-1 : responsiveOpened;
+                
+                if (!update && !showHide) {
+                    respOpenedNum.splice(respOpenedNum.indexOf(data.colIndex), 1);
+                }
+                
+                //console.log("num responsive: ", showHide, respOpenedNum)
             })
 			
 		} catch (err) {
@@ -860,6 +1073,9 @@ dataExplorerNamespace = function() {
                     dataRow.push(_representation.numericalHistograms[i]);
                     break;
                 case "preview":
+                    break;
+                case "nominal":
+                    dataRow.push(_representation.nominalHistograms[i]);
                     break;
                 default: 
                     break;

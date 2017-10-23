@@ -231,18 +231,17 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         }
         String[] includeColumns = nominalCols.toArray(new String[0]);
         List<Statistic> statistics = new ArrayList<Statistic>();
-        NominalValue nominal = new NominalValue(100, nominalCols.toArray(new String[0]));
+        NominalValue nominal = new NominalValue(m_config.getMaxNominalValues(), nominalCols.toArray(new String[0]));
         statistics.add(nominal);
         MissingValue missing = new MissingValue(includeColumns);
         statistics.add(missing);
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
         calc.evaluate(table, exec.createSubExecutionContext(0.5));
 
-        //HistogramColumn hcol = HistogramColumn.getDefaultInstance();
         List<JSNominalHistogram> histograms = new ArrayList<JSNominalHistogram>();
         JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
         JSNominalHistogram jsHist = null;
-        //int[] indexes = new int[includeColumns.length];
+
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
             List<Object> rowValues = new ArrayList<Object>();
@@ -344,10 +343,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         jTable.setRows(rows);
         jTable.setId("numeric");
 
-        Map<Integer, ? extends HistogramModel<?>> histograms = calculateHistograms(table, exec.createSubExecutionContext(0.5), minMax, mean, includeColumns);
-        List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
-        hList.addAll(histograms.values());
-        getViewRepresentation().setHistograms(hList);
+//        Map<Integer, ? extends HistogramModel<?>> histograms = calculateHistograms(table, exec.createSubExecutionContext(0.5), minMax, mean, includeColumns);
+//        List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
+//        hList.addAll(histograms.values());
+//        getViewRepresentation().setHistograms(hList);
 
         List<JSNumericHistogram> numHist = new ArrayList<JSNumericHistogram>();
         for (int i = 0; i < includeColumns.length; i++) {

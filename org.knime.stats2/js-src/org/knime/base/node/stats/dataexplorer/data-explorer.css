@@ -1,3 +1,7 @@
+.x.nom.axis .tick line {
+	display: none;
+}
+
 .content {
 	margin: 10px;
 	overflow: auto;

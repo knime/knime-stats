@@ -95,6 +95,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     private final JCheckBox m_enableGlobalNumberFormatCheckbox;
     private final JSpinner m_globalNumberFormatDecimalSpinner;
     private final JSpinner m_displayPreviewRowsSpinner;
+    private final JSpinner m_maxNominalValuesSpinner;
 
     /** Creates a new dialog instance */
     public DataExplorerNodeDialog() {
@@ -147,6 +148,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         });
         m_globalNumberFormatDecimalSpinner = new JSpinner(new SpinnerNumberModel(2, 0, null, 1));
         m_displayPreviewRowsSpinner = new JSpinner(new SpinnerNumberModel(1, 1, null, 1));
+        m_maxNominalValuesSpinner = new JSpinner(new SpinnerNumberModel(100, 1,null,5));
 
         addTab("Options", initOptions());
         addTab("Table", initTable());
@@ -248,6 +250,15 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         gbcSo.gridx++;
         sortingPanel.add(m_enableClearSortButtonCheckBox, gbcSo);
 
+        JPanel nominalPanel = new JPanel(new GridBagLayout());
+        nominalPanel.setBorder(new TitledBorder("Nominal Values"));
+        GridBagConstraints gbcNo = createConfiguredGridBagConstraints();
+        nominalPanel.add(new JLabel("Max number of nominal values"), gbcNo);
+        gbcNo.gridx++;
+        m_maxNominalValuesSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+        nominalPanel.add(m_maxNominalValuesSpinner, gbcNo);
+
+
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = createConfiguredGridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -258,6 +269,8 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         panel.add(searchPanel, gbc);
         gbc.gridy++;
         panel.add(sortingPanel, gbc);
+        gbc.gridy++;
+        panel.add(nominalPanel, gbc);
         return panel;
     }
 
@@ -341,6 +354,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         config.setEnableGlobalNumberFormat(m_enableGlobalNumberFormatCheckbox.isSelected());
         config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
         config.setdisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
+        config.setMaxNominalValues((Integer)m_maxNominalValuesSpinner.getValue());
         config.saveSettingsTo(settings);
     }
 
@@ -369,6 +383,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_enableGlobalNumberFormatCheckbox.setSelected(config.getEnableGlobalNumberFormat());
         m_globalNumberFormatDecimalSpinner.setValue(config.getGlobalNumberFormatDecimals());
         m_displayPreviewRowsSpinner.setValue(config.getDisplayRowNumber());
+        m_maxNominalValuesSpinner.setValue(config.getMaxNominalValues());
         enablePagingFields();
         enableSearchFields();
         enableFormatterFields();

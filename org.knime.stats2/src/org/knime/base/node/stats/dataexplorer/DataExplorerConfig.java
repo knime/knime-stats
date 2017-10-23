@@ -164,7 +164,9 @@ public class DataExplorerConfig {
     final static int DEFAULT_DISPLAY_ROW_NUMBER = 10;
     private int m_displayRowNumber = DEFAULT_DISPLAY_ROW_NUMBER;
 
-    //UNIQUE_NUMERICAL
+    final static String CFG_MAX_NOMINAL_VALUES = "maxNominalValues";
+    final static int DEFAULT_MAX_NOMINAL_VALUES = 100;
+    private int m_maxNominalValues = DEFAULT_MAX_NOMINAL_VALUES;
 
     /**
      * @return the hideInWizard
@@ -474,6 +476,20 @@ public class DataExplorerConfig {
         this.m_displayRowNumber = displayRowNumber;
     }
 
+    /**
+     * @return the m_maxNominalValues
+     */
+    public int getMaxNominalValues() {
+        return m_maxNominalValues;
+    }
+
+    /**
+     * @param maxNominalValues the m_maxNominalValues to set
+     */
+    public void setMaxNominalValues(final int maxNominalValues) {
+        this.m_maxNominalValues = maxNominalValues;
+    }
+
     void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addBoolean(CFG_HIDE_IN_WIZARD, m_hideInWizard);
         settings.addBoolean(CFG_SHOW_MEDIAN, m_showMedian);
@@ -497,6 +513,7 @@ public class DataExplorerConfig {
         settings.addBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
         settings.addBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
         settings.addInt(CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
+        settings.addInt(CFG_MAX_NOMINAL_VALUES, m_maxNominalValues);
     }
 
     void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
@@ -522,6 +539,7 @@ public class DataExplorerConfig {
         m_displayFullscreenButton = settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_displayMissingValueAsQuestionMark = settings.getBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
         m_displayRowNumber = settings.getInt(CFG_DISPLAY_ROW_NUMBER, DEFAULT_DISPLAY_ROW_NUMBER);
+        m_maxNominalValues = settings.getInt(CFG_MAX_NOMINAL_VALUES, DEFAULT_MAX_NOMINAL_VALUES);
     }
 
     void loadSettingsForDialog(final NodeSettingsRO settings, final DataTableSpec spec) {
@@ -547,6 +565,7 @@ public class DataExplorerConfig {
         m_displayFullscreenButton = settings.getBoolean(CFG_DISPLAY_FULLSCREEN_BUTTON, DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_displayMissingValueAsQuestionMark = settings.getBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
         m_displayRowNumber = settings.getInt(CFG_DISPLAY_ROW_NUMBER, DEFAULT_DISPLAY_ROW_NUMBER);
+        m_maxNominalValues = settings.getInt(CFG_MAX_NOMINAL_VALUES, DEFAULT_MAX_NOMINAL_VALUES);
     }
 
 
