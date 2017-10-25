@@ -49,6 +49,7 @@
 package org.knime.base.node.stats.dataexplorer;
 
 import org.knime.base.data.statistics.HistogramColumn;
+import org.knime.base.data.statistics.HistogramColumn.BinNumberSelectionStrategy;
 import org.knime.base.data.statistics.HistogramModel;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.property.hilite.HiLiteHandler;
@@ -68,7 +69,8 @@ public class JSNumericHistogram extends JSHistogram {
     JSNumericHistogram(final String colName, final int colIndex, final BufferedDataTable table, final double min,
         final double max, final double mean) {
         super(colName, colIndex);
-        HistogramColumn hCol = HistogramColumn.getDefaultInstance();
+        HistogramColumn hCol = HistogramColumn.getDefaultInstance().withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
+        //.withNumberOfBins(10).withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
         this.m_histogram = hCol.histograms(table, new HiLiteHandler(), new double[]{min}, new double[]{max}, new double[]{mean}, colName).get(0);
         this.m_bins = m_histogram.getBins();
         this.m_maxCount = m_histogram.getMaxCount();

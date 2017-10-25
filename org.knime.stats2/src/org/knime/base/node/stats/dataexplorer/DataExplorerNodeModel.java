@@ -59,7 +59,6 @@ import java.util.Set;
 
 import org.knime.base.data.statistics.HistogramColumn;
 import org.knime.base.data.statistics.HistogramColumn.BinNumberSelectionStrategy;
-import org.knime.base.data.statistics.HistogramColumn.ImageFormats;
 import org.knime.base.data.statistics.HistogramModel;
 import org.knime.base.data.statistics.Statistic;
 import org.knime.base.data.statistics.StatisticCalculator;
@@ -96,7 +95,6 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
-import org.knime.core.node.property.hilite.HiLiteHandler;
 import org.knime.core.node.web.ValidationError;
 import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.JSONDataTable.JSONDataTableRow;
@@ -273,6 +271,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         for (DataColumnSpec columnSpec : spec) {
             if (columnSpec.getType().isCompatible(DoubleValue.class)) {
                 doubleCols.add(columnSpec.getName());
+
             }
         }
         String[] includeColumns = doubleCols.toArray(new String[0]);
@@ -307,6 +306,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         calc.evaluate(table, exec.createSubExecutionContext(0.5));
 
         JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
+        JSONDataTableSpec jSpec = createStatsJSONSpec(includeColumns.length);
+        JSONDataTable jTable = new JSONDataTable();
+        jTable.setSpec(jSpec);
+
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
             List<Object> rowValues = new ArrayList<Object>();
@@ -337,9 +340,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             rowValues.add(spDouble.getNumberNegativeInfiniteValues(col));
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
-        JSONDataTableSpec jSpec = createStatsJSONSpec(includeColumns.length);
-        JSONDataTable jTable = new JSONDataTable();
-        jTable.setSpec(jSpec);
+
         jTable.setRows(rows);
         jTable.setId("numeric");
 
@@ -480,27 +481,27 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         return spec;
     }
 
-   private Map<Integer, ? extends HistogramModel<?>> calculateHistograms(final BufferedDataTable table, final ExecutionContext exec, final MinMax minMax, final Mean mean, final String[] includeColumns) {
-       HistogramColumn hCol = HistogramColumn.getDefaultInstance()
-               .withNumberOfBins(10)
-               .withImageFormat(ImageFormats.SVG)
-               .withHistogramWidth(200)
-               .withHistogramHeight(100)
-               .withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange)
-               .withShowMinMax(true);
-       int noCols = includeColumns.length;
-       double[] mins = new double[noCols];
-       double[] maxs = new double[noCols];
-       double[] means = new double[noCols];
-       for (int i = 0; i < noCols; i++) {
-           DataCell min = minMax.getMin(includeColumns[i]);
-           mins[i] = min.isMissing() ? Double.NaN : ((DoubleValue)min).getDoubleValue();
-           DataCell max = minMax.getMax(includeColumns[i]);
-           maxs[i] = max.isMissing() ? Double.NaN : ((DoubleValue)max).getDoubleValue();
-           means[i] = mean.getResult(includeColumns[i]);
-       }
-       return hCol.histograms(table, new HiLiteHandler(), mins, maxs, means, includeColumns);
-   }
+//   private Map<Integer, ? extends HistogramModel<?>> calculateHistograms(final BufferedDataTable table, final ExecutionContext exec, final MinMax minMax, final Mean mean, final String[] includeColumns) {
+//       HistogramColumn hCol = HistogramColumn.getDefaultInstance()
+//               .withNumberOfBins(10)
+//               .withImageFormat(ImageFormats.SVG)
+//               .withHistogramWidth(200)
+//               .withHistogramHeight(100)
+//               .withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange)
+//               .withShowMinMax(true);
+//       int noCols = includeColumns.length;
+//       double[] mins = new double[noCols];
+//       double[] maxs = new double[noCols];
+//       double[] means = new double[noCols];
+//       for (int i = 0; i < noCols; i++) {
+//           DataCell min = minMax.getMin(includeColumns[i]);
+//           mins[i] = min.isMissing() ? Double.NaN : ((DoubleValue)min).getDoubleValue();
+//           DataCell max = minMax.getMax(includeColumns[i]);
+//           maxs[i] = max.isMissing() ? Double.NaN : ((DoubleValue)max).getDoubleValue();
+//           means[i] = mean.getResult(includeColumns[i]);
+//       }
+//       return hCol.histograms(table, new HiLiteHandler(), mins, maxs, means, includeColumns);
+//   }
 
     private void copyConfigToRepresentation() {
         synchronized(getLock()) {
