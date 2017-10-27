@@ -160,8 +160,8 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         GridBagConstraints gbcG = createConfiguredGridBagConstraints();
         gbcG.gridwidth = 2;
         gbcG.fill = GridBagConstraints.HORIZONTAL;
-        generalPanel.add(m_displayFullscreenButtonCheckBox, gbcG);
-        gbcG.gridy++;
+        //generalPanel.add(m_displayFullscreenButtonCheckBox, gbcG);
+        //gbcG.gridy++;
         generalPanel.add(m_showMedianCheckBox, gbcG);
 
         JPanel titlePanel = new JPanel(new GridBagLayout());

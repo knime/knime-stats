@@ -5,70 +5,101 @@
 	<name>Data Explorer</name>
 
 	<shortDescription>
-        Calculates statistic moments with their distributions as histograms and counts nominal
-        values and their occurrences across all columns.
+        Data Explorer is a exploration tool that allows having an
+        overview on the data and its properties. Exploring the interactive view the node 
+        intends to brings the insights and the understanding of the data.
+        
     </shortDescription>
 
 	<fullDescription>
 		<intro>
-			This node calculates statistical moments such as minimum,
-			maximum, mean,
-			standard deviation, variance, median, overall sum,
-			number of missing
-			values and row count across all numeric columns, and
-			counts all
-			nominal values
-			together with their occurrences. The dialog
-			offers two options for
-			choosing the median and/or nominal values
-			calculations:
+			The node presents the information about the data to explore. It consists of three 
+			tabs: statistical, nominal and preview. The statistical and nominal tabs sum up the information 
+			on each column, and given the information a user can decide in the interactive view which
+			columns to include in the further analysis or exclude.
+			<p><b>Statistical tab</b> shows main statistical parameters of the numerical data, such as 
+			minimum, maximum, mean, median (optional) standard deviation, variance, skewness, kurtosis,
+			overall sum,  number of zero values, number of missing values, number of not an object values,
+			and positive and negative infinity values. 
+			For each column the node also calculates the histogram of value distribution.</p>
+			<p><b>Nominal tab</b>provides an overview on the characteristics of the nominal values, providing 
+			the number of missing values, unique values, and top N most frequent and infrequent values. 
+			Additionally, each data column has a histogram that shows the frequencies of all values used in a
+			data column.</p>
+			<p><b>Data Preview tab</b>shows first several rows of the studying dataset and the values it
+			contains.</p>
 		</intro>
-		<tab name="Settings">
-			<option name="Compute median values">Select this option if for all
-				numeric columns the
-				medians are computed. Note, this
-				computation might be expensive,
-				since it requires to sort all column
-				independently to find the values
-				that divides the distribution into
-				two
-				halves of the same number of
-				values.
+		<tab name="Options">
+			<option name="Show median"> 
+			Enables calculation of median for the statistical tab. 
 			</option>
-			<option name="Column filter">Filter columns for counting all possible
-				values.
+			<option name="Title">
+			Adds title to the interactive view.
 			</option>
-			<option name="Nominal values">Adjusts the number of counts for both,
-				top number
-				of frequent and infrequent occurrences of categorical
-				values per
-				column (displayed in the node view!).
+			<option name="Subtitle">
+			Adds subtitle to the interactive view.
 			</option>
-			<option name="Nominal values in output">Adjusts the maximum number of
-				possible values per
-				column in the nominal output table.
+			<option name="Enable global number format">
+			Enables same number representation for all double values in the table interactive view.
+			</option>
+			<option name="Decimal places">
+			Specifies the number of decimal places for all values in the table interactive view.
 			</option>
 		</tab>
-		<tab name="Histogram">
-			<option name="Histogram format">The histogram cells should be in SVG or PNG
-				format.</option>
-			<option name="Width">The width of the histogram.</option>
-			<option name="Height">The height of the histogram.</option>
-			<option name="Show min/max values">Show or do not show the numeric min/max values on histograms.</option>
+		<tab name="Table">
+			<option name="Enable pagination">
+			Enables exploring the tables split into pages.
+			</option>
+			<option name="Initial page size">
+			The number of rows per page.
+			</option>
+			<option name="Enable page size change control">
+			Enables to change the number of rows per page in the interactive view.
+			</option>
+			<option name="Selectable page sizes">
+			Provides options for different number of rows per page in the preview. Values need to be comma separated.
+			</option>
+			<option name="Add 'All' option to page sizes">
+			Enables "All" option to show all rows at once.
+			</option>
+			<option name="Number of rows for data preview">
+			Selects the number of rows for the Data Preview tab.
+			</option>
+			
+			<option name="Enable selection">
+			Enables selection of the data column to exclude them from the further analysis. 
+			</option>
+			
+			<option name="Enable searching">
+			Enables searching of the values in the data tables.
+			</option>
+			<option name="Enable sorting on columns">
+			Enables column sorting.
+			</option>
+			<option name="Enable 'Clear Sorting' button">
+			Enables "Clear Sorting" button to cancel all applied sorting in the table.
+			</option>
+			<option name="Max number of nominal values">
+			Approximate maximum number of distinct nominal values in a column. If the actual value is higher than the entered in this field, 
+			the interactive view will show an warning.
+			</option>
+			<option name="Number of most frequent/infrequent nominal values">
+			Creates additional columns with the number of most frequent and infrequent values in a nominal column. If the selected number is 
+			equal to the overall number of distinct values in a column, only one column with all values will be created. In all cases values 
+			are represented in the decreasing order of frequency.
+			</option>
 		</tab>
 	</fullDescription>
 	<interactiveView name="Data Explorer View">
-		Displays all statistic moments (for all
-			numeric columns), nominal
-			values (for all selected categorical columns)
-			and the most frequent/infrequent values from the
-			categorical columns (Top/bottom).
+		Displays three tabs for data exploration: Statistical tab with statistical moments of numerical columns, 
+		Nominal tab with characteristics of nominal data, and Data Preview tab with the selected number of rows of original data. 
 	</interactiveView>
 	<ports>
 		<inPort index="0" name="Table">
 			Table from which to compute statistics.
 		</inPort>
 		<outPort index="0" name="Filtered Table">
+			A table with filtered out by user columns, chosen in the interactive view.
 		</outPort>
 		<!-- <outPort index="1" name="Statistics Table">
 			Table with numeric values.

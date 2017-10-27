@@ -165,7 +165,7 @@ public class DataExplorerConfig {
     private int m_displayRowNumber = DEFAULT_DISPLAY_ROW_NUMBER;
 
     final static String CFG_MAX_NOMINAL_VALUES = "maxNominalValues";
-    final static int DEFAULT_MAX_NOMINAL_VALUES = 100;
+    final static int DEFAULT_MAX_NOMINAL_VALUES = 1000;
     private int m_maxNominalValues = DEFAULT_MAX_NOMINAL_VALUES;
 
     /**
