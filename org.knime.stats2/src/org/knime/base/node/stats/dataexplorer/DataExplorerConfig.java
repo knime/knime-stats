@@ -75,6 +75,9 @@ public class DataExplorerConfig {
     static final String N_INFINITY = "No. -∞";
     static final String ZEROS = "No. zeros";
     static final String UNIQUE_NOMINAL = "Unique values";
+    static final String TOP_FREQ_VAL = "Top frequent values";
+    static final String TOP_INFREQ_VAL = "Top infreq values";
+    static final String ALL_NOMINAL_VAL = "All nominal values";
 
     static final String CFG_HIDE_IN_WIZARD = "hideInWizard";
     private static final boolean DEFAULT_HIDE_IN_WIZARD = false;
@@ -167,6 +170,14 @@ public class DataExplorerConfig {
     final static String CFG_MAX_NOMINAL_VALUES = "maxNominalValues";
     final static int DEFAULT_MAX_NOMINAL_VALUES = 1000;
     private int m_maxNominalValues = DEFAULT_MAX_NOMINAL_VALUES;
+
+    final static String CFG_ENABLE_FREQ_VAL_DISPLAY = "enableFreqValDisplay";
+    final static boolean DEFAULT_ENABLE_FREQ_VAL_DISPLAY = true;
+    private boolean m_enableFreqValDisplay = DEFAULT_ENABLE_FREQ_VAL_DISPLAY;
+
+    final static String CFG_FREQ_VALUES = "freqValues";
+    final static int DEFAULT_FREQ_VALUES = 5;
+    private int m_freqValues = DEFAULT_FREQ_VALUES;
 
     /**
      * @return the hideInWizard
@@ -490,6 +501,34 @@ public class DataExplorerConfig {
         this.m_maxNominalValues = maxNominalValues;
     }
 
+    /**
+     * @return the m_enableFreqValDisplay
+     */
+    public boolean getEnableFreqValDisplay() {
+        return m_enableFreqValDisplay;
+    }
+
+    /**
+     * @param m_enableFreqValDisplay the m_enableFreqValDisplay to set
+     */
+    public void setEnableFreqValDisplay(final boolean m_enableFreqValDisplay) {
+        this.m_enableFreqValDisplay = m_enableFreqValDisplay;
+    }
+
+    /**
+     * @return the m_freqValues
+     */
+    public int getFreqValues() {
+        return m_freqValues;
+    }
+
+    /**
+     * @param freqValues the m_freqValues to set
+     */
+    public void setFreqValues(final int freqValues) {
+        this.m_freqValues = freqValues;
+    }
+
     void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addBoolean(CFG_HIDE_IN_WIZARD, m_hideInWizard);
         settings.addBoolean(CFG_SHOW_MEDIAN, m_showMedian);
@@ -514,6 +553,8 @@ public class DataExplorerConfig {
         settings.addBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
         settings.addInt(CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
         settings.addInt(CFG_MAX_NOMINAL_VALUES, m_maxNominalValues);
+        settings.addBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
+        settings.addInt(CFG_FREQ_VALUES, m_freqValues);
     }
 
     void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
@@ -540,6 +581,8 @@ public class DataExplorerConfig {
         m_displayMissingValueAsQuestionMark = settings.getBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
         m_displayRowNumber = settings.getInt(CFG_DISPLAY_ROW_NUMBER, DEFAULT_DISPLAY_ROW_NUMBER);
         m_maxNominalValues = settings.getInt(CFG_MAX_NOMINAL_VALUES, DEFAULT_MAX_NOMINAL_VALUES);
+        m_enableFreqValDisplay = settings.getBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
+        m_freqValues = settings.getInt(CFG_FREQ_VALUES, DEFAULT_FREQ_VALUES);
     }
 
     void loadSettingsForDialog(final NodeSettingsRO settings, final DataTableSpec spec) {
@@ -566,7 +609,11 @@ public class DataExplorerConfig {
         m_displayMissingValueAsQuestionMark = settings.getBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
         m_displayRowNumber = settings.getInt(CFG_DISPLAY_ROW_NUMBER, DEFAULT_DISPLAY_ROW_NUMBER);
         m_maxNominalValues = settings.getInt(CFG_MAX_NOMINAL_VALUES, DEFAULT_MAX_NOMINAL_VALUES);
+        m_enableFreqValDisplay = settings.getBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
+        m_freqValues = settings.getInt(CFG_FREQ_VALUES, DEFAULT_FREQ_VALUES);
     }
+
+
 
 
 

@@ -78,6 +78,12 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private static final String CFG_STATISTICS = "statistics";
     private JSONDataTable m_statistics;
 
+    private static final String CFG_PREVIEW = "preview";
+    private JSONDataTable m_preview;
+
+    private static final String CFG_NOMINAL = "nominal";
+    private JSONDataTable m_nominal;
+
     private boolean m_enablePaging;
     private int m_initialPageSize;
     private boolean m_enablePageSizeChange;
@@ -97,18 +103,15 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private boolean m_enableGlobalNumberFormat;
     private int m_globalNumberFormatDecimals;
     private boolean m_displayMissingValueAsQuestionMark;
-    private List<HistogramModel<?>> m_histograms;
     private int m_displayRowNumber;
+    private boolean m_enableFreqValDisplay;
+    private int m_freqValues;
 
+    private List<HistogramModel<?>> m_histograms;
     private List<JSNominalHistogram> m_nominalHistograms;
-
-    private static final String CFG_PREVIEW = "preview";
-    private JSONDataTable m_preview;
-
-    private static final String CFG_NOMINAL = "nominal";
-    private JSONDataTable m_nominal;
-
     private List<JSNumericHistogram> m_numericalHistograms;
+
+
 
     /**
      * @return the statistics
@@ -462,6 +465,48 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the m_numTest
+     */
+    public List<JSNumericHistogram> getNumericalHistograms() {
+        return m_numericalHistograms;
+    }
+
+    /**
+     * @param m_numHistogram the m_numTest to set
+     */
+    public void setNumericalHistograms(final List<JSNumericHistogram> m_numHistogram) {
+        this.m_numericalHistograms = m_numHistogram;
+    }
+
+    /**
+     * @return the m_enableFreqValDisplay
+     */
+    public boolean getEnableFreqValDisplay() {
+        return m_enableFreqValDisplay;
+    }
+
+    /**
+     * @param enableFreqValDisplay the m_enableFreqValDisplay to set
+     */
+    public void setEnableFreqValDisplay(final boolean enableFreqValDisplay) {
+        this.m_enableFreqValDisplay = enableFreqValDisplay;
+    }
+
+    /**
+     * @return the m_freqValues
+     */
+    public int getFreqValues() {
+        return m_freqValues;
+    }
+
+    /**
+     * @param freqValues the m_freqValues to set
+     */
+    public void setFreqValues(final int freqValues) {
+        this.m_freqValues = freqValues;
+    }
+
+    /**
      * Extracts all mean values from statistics table.
      * @return a double array with all mean values, may be null if operation not possible
      */
@@ -493,6 +538,11 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     public void saveToNodeSettings(final NodeSettingsWO settings) {
         NodeSettingsWO statSettings = settings.addNodeSettings(CFG_STATISTICS);
         m_statistics.saveJSONToNodeSettings(statSettings);
+        NodeSettingsWO prevSettings = settings.addNodeSettings(CFG_PREVIEW);
+        m_preview.saveJSONToNodeSettings(prevSettings);
+        NodeSettingsWO nomSettings = settings.addNodeSettings(CFG_NOMINAL);
+        m_nominal.saveJSONToNodeSettings(nomSettings);
+        // histograms are saved as extra file in DataExplorerNodeModel#saveInternals()
 
         settings.addBoolean(DataExplorerConfig.CFG_ENABLE_PAGING, m_enablePaging);
         settings.addInt(DataExplorerConfig.CFG_INITIAL_PAGE_SIZE, m_initialPageSize);
@@ -514,12 +564,8 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, m_displayFullscreenButton);
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
         settings.addInt(DataExplorerConfig.CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
-
-        NodeSettingsWO prevSettings = settings.addNodeSettings(CFG_PREVIEW);
-        m_preview.saveJSONToNodeSettings(prevSettings);
-        NodeSettingsWO nomSettings = settings.addNodeSettings(CFG_NOMINAL);
-        m_nominal.saveJSONToNodeSettings(nomSettings);
-        // histograms are saved as extra file in DataExplorerNodeModel#saveInternals()
+        settings.addBoolean(DataExplorerConfig.CFG_ENABLE_FREQ_VAL_DISPLAY, m_enableFreqValDisplay);
+        settings.addInt(DataExplorerConfig.CFG_FREQ_VALUES, m_freqValues);
     }
 
     /**
@@ -530,6 +576,11 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         NodeSettingsRO statSettings = settings.getNodeSettings(CFG_STATISTICS);
         m_statistics = JSONDataTable.loadFromNodeSettings(statSettings);
+        NodeSettingsRO prevSettings = settings.getNodeSettings(CFG_PREVIEW);
+        m_preview = JSONDataTable.loadFromNodeSettings(prevSettings);
+        NodeSettingsRO nomSettings = settings.getNodeSettings(CFG_NOMINAL);
+        m_nominal = JSONDataTable.loadFromNodeSettings(nomSettings);
+        // histograms are loaded separately in DataExplorerNodeModel#loadInternals()
 
         m_enablePaging = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_PAGING);
         m_initialPageSize = settings.getInt(DataExplorerConfig.CFG_INITIAL_PAGE_SIZE);
@@ -551,13 +602,9 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_displayFullscreenButton = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_FULLSCREEN_BUTTON, DataExplorerConfig.DEFAULT_DISPLAY_FULLSCREEN_BUTTON);
         m_displayMissingValueAsQuestionMark = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DataExplorerConfig.DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
         m_displayRowNumber = settings.getInt(DataExplorerConfig.CFG_DISPLAY_ROW_NUMBER, DataExplorerConfig.DEFAULT_DISPLAY_ROW_NUMBER);
+        m_enableFreqValDisplay = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_FREQ_VAL_DISPLAY , DataExplorerConfig.DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
+        m_freqValues = settings.getInt(DataExplorerConfig.CFG_FREQ_VALUES, DataExplorerConfig.DEFAULT_FREQ_VALUES);
 
-        NodeSettingsRO prevSettings = settings.getNodeSettings(CFG_PREVIEW);
-        m_preview = JSONDataTable.loadFromNodeSettings(prevSettings);
-
-        NodeSettingsRO nomSettings = settings.getNodeSettings(CFG_NOMINAL);
-        m_nominal = JSONDataTable.loadFromNodeSettings(nomSettings);
-        // histograms are loaded separately in DataExplorerNodeModel#loadInternals()
     }
 
     /**
@@ -603,6 +650,8 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_nominal, other.m_nominal)
                 .append(m_nominalHistograms, other.m_nominalHistograms)
                 .append(m_numericalHistograms, other.m_numericalHistograms)
+                .append(m_enableFreqValDisplay, other.m_enableFreqValDisplay)
+                .append(m_freqValues, other.m_freqValues)
                 .isEquals();
     }
 
@@ -639,21 +688,9 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_nominal)
                 .append(m_nominalHistograms)
                 .append(m_numericalHistograms)
+                .append(m_enableFreqValDisplay)
+                .append(m_freqValues)
                 .toHashCode();
-    }
-
-    /**
-     * @return the m_numTest
-     */
-    public List<JSNumericHistogram> getNumericalHistograms() {
-        return m_numericalHistograms;
-    }
-
-    /**
-     * @param m_numHistogram the m_numTest to set
-     */
-    public void setNumericalHistograms(final List<JSNumericHistogram> m_numHistogram) {
-        this.m_numericalHistograms = m_numHistogram;
     }
 
 }

@@ -145,8 +145,18 @@ dataExplorerNamespace = function() {
 			}
             
             for (var i = 0; i < nominalTable.getColumnNames().length; i++) {
+
+                //check if we need to add last 3 columns of freq values
+
 				var colType = nominalTable.getColumnTypes()[i];
 				var knimeColType = nominalTable.getKnimeColumnTypes()[i];
+                
+                //check if freq columns are included
+                if (colType == "string") {
+                    if (!_representation.enableFreqValDisplay) {
+                        continue;
+                    }
+                }
 				var colDef = {
 					'title': nominalTable.getColumnNames()[i],
 					'orderable' : isColumnSortable(colType),
@@ -155,6 +165,29 @@ dataExplorerNamespace = function() {
 				if (_representation.displayMissingValueAsQuestionMark) {
 					colDef.defaultContent = '<span class="missing-value-cell">?</span>';
 				}
+                
+//                colDef.render = function(data, type, full, meta) { 
+//                    if (colType == 'number' && _representation.enableGlobalNumberFormat) {
+//                        if (nominalTable.getKnimeColumnTypes()[i].indexOf('Number (double)') > -1) {
+//                            if (!$.isNumeric(data)) {
+//								return data;
+//							}
+//							return Number(data).toFixed(_representation.globalNumberFormatDecimals);
+//                        }
+//                    }
+//                    if (colType == "string") {
+//                        if (nominalTable.getKnimeColumnTypes()[i].indexOf('string') > -1) {
+//                            var nomList = '<span> '
+//                            console.log("freqData", data)
+//                            for (var j = 0; j < data.length; j++) {
+//                                nomList.concat(data[j]+" ,")
+//                            }
+//                            nomList.concat("</span>");
+//                            return nomList;
+//                        }
+//                    }
+//                }
+                
 				if (colType == 'number' && _representation.enableGlobalNumberFormat) {
 					if (nominalTable.getKnimeColumnTypes()[i].indexOf('double') > -1) {
 						colDef.render = function(data, type, full, meta) {
@@ -168,6 +201,22 @@ dataExplorerNamespace = function() {
 						}
 					}
 				}
+                
+                if (colType == "string") {
+                    if (nominalTable.getKnimeColumnTypes()[i].indexOf('String') > -1) {
+                        colDef.render = function(data, type, full, meta) {
+                            var nomList = "";
+                            console.log("freqData", data)
+                            for (var j = 0; j < data.length; j++) {
+                                nomList = nomList.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
+                            }
+                            //nomList.concat("</span>");
+                            console.log("Nomlist", nomList);
+                            return $('<div/>').append(nomList).html();
+                        }
+                    }
+                }
+
 				colArray.push(colDef);
 			}
             
@@ -1108,6 +1157,32 @@ dataExplorerNamespace = function() {
 				dataRow.push(string);
 			}
 			var dataRow = dataRow.concat(row.data);
+            
+            if (_representation.enableFreqValDisplay && knTable.getTableId() == "nominal") {
+                var freq = [];
+                var infreq = [];
+                var all = [];
+                if (2*_representation.freqValues < _representation.nominalHistograms[i].bins.length) {
+                    //most and lest freq
+                    for (var j = 0; j < _representation.nominalHistograms[i].bins.length; j++) {
+                        if (j < _representation.freqValues) {
+                            freq.push( _representation.nominalHistograms[i].bins[j].first)
+                        }
+                        if (j >= _representation.nominalHistograms[i].bins.length - _representation.freqValues) {
+                            infreq.push(_representation.nominalHistograms[i].bins[j].first)
+                        }
+                    }
+                } else {
+                    //all
+                    for (var j = 0; j < _representation.nominalHistograms[i].bins.length; j++) {
+                        all.push(_representation.nominalHistograms[i].bins[j].first);
+                    }
+                }
+                dataRow.push(freq);
+                dataRow.push(infreq);
+                dataRow.push(all);
+            }
+            
             switch (knTable.getTableId()) {
                 case "numeric":
                     dataRow.push(_representation.numericalHistograms[i]);

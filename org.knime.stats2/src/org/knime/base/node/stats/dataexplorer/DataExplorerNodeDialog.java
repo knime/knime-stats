@@ -74,6 +74,7 @@ import org.knime.core.node.port.PortObjectSpec;
 /**
  *
  * @author Christian Albrecht, KNIME GmbH, Konstanz, Germany
+ * @author Anastasia Zhukova, KNIME GmbH, Konstanz, Germany
  */
 public class DataExplorerNodeDialog extends NodeDialogPane {
     private static final int TEXT_FIELD_SIZE = 20;
@@ -96,6 +97,8 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     private final JSpinner m_globalNumberFormatDecimalSpinner;
     private final JSpinner m_displayPreviewRowsSpinner;
     private final JSpinner m_maxNominalValuesSpinner;
+    private final JCheckBox m_showFreqValuesCheckbox;
+    private final JSpinner m_freqValuesSpinner;
 
     /** Creates a new dialog instance */
     public DataExplorerNodeDialog() {
@@ -149,6 +152,14 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_globalNumberFormatDecimalSpinner = new JSpinner(new SpinnerNumberModel(2, 0, null, 1));
         m_displayPreviewRowsSpinner = new JSpinner(new SpinnerNumberModel(1, 1, null, 1));
         m_maxNominalValuesSpinner = new JSpinner(new SpinnerNumberModel(100, 1,null,5));
+        m_showFreqValuesCheckbox = new JCheckBox("Show most frequent/infrequent values");
+        m_showFreqValuesCheckbox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                enableFreqValues();
+            }
+        });
+        m_freqValuesSpinner = new JSpinner(new SpinnerNumberModel(5, 1, null, 1));
 
         addTab("Options", initOptions());
         addTab("Table", initTable());
@@ -160,8 +171,19 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         GridBagConstraints gbcG = createConfiguredGridBagConstraints();
         gbcG.gridwidth = 2;
         gbcG.fill = GridBagConstraints.HORIZONTAL;
+        generalPanel.add(m_showFreqValuesCheckbox, gbcG);
+        gbcG.gridy++;
+        gbcG.gridwidth = 1;
+        generalPanel.add(new JLabel("Number of most freq./infreq. values: "), gbcG);
+        gbcG.gridx++;
+
+        m_freqValuesSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+        generalPanel.add(m_freqValuesSpinner, gbcG);
+        gbcG.gridwidth = 2;
+        gbcG.gridx = 0;
         //generalPanel.add(m_displayFullscreenButtonCheckBox, gbcG);
-        //gbcG.gridy++;
+
+        gbcG.gridy++;
         generalPanel.add(m_showMedianCheckBox, gbcG);
 
         JPanel titlePanel = new JPanel(new GridBagLayout());
@@ -308,6 +330,12 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         return allowedPageSizes;
     }
 
+    private void enableFreqValues() {
+        boolean enableFreqVal = m_showFreqValuesCheckbox.isSelected();
+        m_freqValuesSpinner.setEnabled(enableFreqVal);
+
+    }
+
     private void enablePagingFields() {
         boolean enableGlobal = m_enablePagingCheckBox.isSelected();
         boolean enableSizeChange = m_enablePageSizeChangeCheckBox.isSelected();
@@ -355,6 +383,8 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
         config.setdisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
         config.setMaxNominalValues((Integer)m_maxNominalValuesSpinner.getValue());
+        config.setEnableFreqValDisplay(m_showFreqValuesCheckbox.isSelected());
+        config.setFreqValues((Integer)m_freqValuesSpinner.getValue());
         config.saveSettingsTo(settings);
     }
 
@@ -384,6 +414,8 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_globalNumberFormatDecimalSpinner.setValue(config.getGlobalNumberFormatDecimals());
         m_displayPreviewRowsSpinner.setValue(config.getDisplayRowNumber());
         m_maxNominalValuesSpinner.setValue(config.getMaxNominalValues());
+        m_showFreqValuesCheckbox.setSelected(config.getEnableFreqValDisplay());
+        m_freqValuesSpinner.setValue(config.getFreqValues());
         enablePagingFields();
         enableSearchFields();
         enableFormatterFields();

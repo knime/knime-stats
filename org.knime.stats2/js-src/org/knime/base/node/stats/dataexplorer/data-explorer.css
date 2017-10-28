@@ -1,3 +1,7 @@
+span.freqSpan {
+	display: block;
+}
+
 .x.nom.axis .tick line {
 	display: none;
 }
