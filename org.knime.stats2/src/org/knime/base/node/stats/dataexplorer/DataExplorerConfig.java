@@ -179,6 +179,14 @@ public class DataExplorerConfig {
     final static int DEFAULT_FREQ_VALUES = 5;
     private int m_freqValues = DEFAULT_FREQ_VALUES;
 
+    final static String CFG_NOMINAL_COUNT_MEAN = "nominalCountsMean";
+    final static double[] DEFAULT_NOMINAL_COUNT_MEAN = null;
+    private double[] m_nominalCountsMean = DEFAULT_NOMINAL_COUNT_MEAN;
+
+    final static String CFG_NOMINAL_COLUMNS = "nominalColumns";
+    final static String[] DEFAULT_NOMINAL_COLUMNS = null;
+    private String[] m_nominalColumns = DEFAULT_NOMINAL_COLUMNS;
+
     /**
      * @return the hideInWizard
      */
@@ -509,10 +517,10 @@ public class DataExplorerConfig {
     }
 
     /**
-     * @param m_enableFreqValDisplay the m_enableFreqValDisplay to set
+     * @param enableFreqValDisplay the m_enableFreqValDisplay to set
      */
-    public void setEnableFreqValDisplay(final boolean m_enableFreqValDisplay) {
-        this.m_enableFreqValDisplay = m_enableFreqValDisplay;
+    public void setEnableFreqValDisplay(final boolean enableFreqValDisplay) {
+        this.m_enableFreqValDisplay = enableFreqValDisplay;
     }
 
     /**
@@ -528,6 +536,35 @@ public class DataExplorerConfig {
     public void setFreqValues(final int freqValues) {
         this.m_freqValues = freqValues;
     }
+
+    /**
+     * @return the m_nominalCountsMean
+     */
+    public double[] getNominalCountsMean() {
+        return m_nominalCountsMean;
+    }
+
+    /**
+     * @param nominalCountsMean the m_nominalCountsMean to set
+     */
+    public void setNominalCountsMean(final double[] nominalCountsMean) {
+        this.m_nominalCountsMean = nominalCountsMean;
+    }
+
+    /**
+     * @return the m_nominalColumns
+     */
+    public String[] getNominalColumns() {
+        return m_nominalColumns;
+    }
+
+    /**
+     * @param m_nominalColumns the m_nominalColumns to set
+     */
+    public void setNominalColumns(final String[] m_nominalColumns) {
+        this.m_nominalColumns = m_nominalColumns;
+    }
+
 
     void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addBoolean(CFG_HIDE_IN_WIZARD, m_hideInWizard);
@@ -555,6 +592,8 @@ public class DataExplorerConfig {
         settings.addInt(CFG_MAX_NOMINAL_VALUES, m_maxNominalValues);
         settings.addBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, m_enableFreqValDisplay);
         settings.addInt(CFG_FREQ_VALUES, m_freqValues);
+        settings.addDoubleArray(CFG_NOMINAL_COUNT_MEAN, m_nominalCountsMean);
+        settings.addStringArray(CFG_NOMINAL_COLUMNS, m_nominalColumns);
     }
 
     void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
@@ -583,6 +622,8 @@ public class DataExplorerConfig {
         m_maxNominalValues = settings.getInt(CFG_MAX_NOMINAL_VALUES, DEFAULT_MAX_NOMINAL_VALUES);
         m_enableFreqValDisplay = settings.getBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
         m_freqValues = settings.getInt(CFG_FREQ_VALUES, DEFAULT_FREQ_VALUES);
+        m_nominalCountsMean = settings.getDoubleArray(CFG_NOMINAL_COUNT_MEAN, DEFAULT_NOMINAL_COUNT_MEAN);
+        m_nominalColumns = settings.getStringArray(CFG_NOMINAL_COLUMNS, DEFAULT_NOMINAL_COLUMNS);
     }
 
     void loadSettingsForDialog(final NodeSettingsRO settings, final DataTableSpec spec) {
@@ -611,10 +652,8 @@ public class DataExplorerConfig {
         m_maxNominalValues = settings.getInt(CFG_MAX_NOMINAL_VALUES, DEFAULT_MAX_NOMINAL_VALUES);
         m_enableFreqValDisplay = settings.getBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
         m_freqValues = settings.getInt(CFG_FREQ_VALUES, DEFAULT_FREQ_VALUES);
+        m_nominalColumns = settings.getStringArray(CFG_NOMINAL_COLUMNS, DEFAULT_NOMINAL_COLUMNS);
     }
-
-
-
 
 
 }

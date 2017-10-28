@@ -49,7 +49,6 @@
 package org.knime.base.node.stats.dataexplorer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -73,8 +72,22 @@ public class JSNominalHistogram extends JSHistogram {
     JSNominalHistogram(final String colName, final int colIndex, final Map<DataValue, Integer> nomValue) {
         super(colName, colIndex);
         HistogramColumn hcol = HistogramColumn.getDefaultInstance();
-        this.m_maxCount = Collections.max(nomValue.values());
+        //this.m_maxCount = Collections.max(nomValue.values());
         HistogramModel<?> hist = hcol.fromNominalModel(nomValue, colIndex, colName);
+        this.m_maxCount = hist.getMaxCount();
+        this.m_bins = binsUnwrapper(hist);
+    }
+
+    /**
+     *
+     */
+    JSNominalHistogram(final HistogramModel<?> histogram) {
+        super(histogram.getColName(), histogram.getColIndex());
+        this.m_maxCount = histogram.getMaxCount();
+        this.m_bins = binsUnwrapper(histogram);
+    }
+
+    private List<Pair<String, Integer>> binsUnwrapper (final HistogramModel<?> hist) {
         List<Pair<String, Integer>> bins = new ArrayList<Pair<String, Integer>>();
         for (int i = 0; i < hist.getBins().size(); i++) {
             if (hist.getBins().get(i).getDef() instanceof StringCell) {
@@ -83,7 +96,7 @@ public class JSNominalHistogram extends JSHistogram {
                 bins.add(new Pair<String, Integer>("?", hist.getBins().get(i).getCount()));
             }
         }
-        this.m_bins = bins;
+        return bins;
     }
 
 }

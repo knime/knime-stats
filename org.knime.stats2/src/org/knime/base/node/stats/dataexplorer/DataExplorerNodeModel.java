@@ -53,13 +53,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.knime.base.data.statistics.HistogramColumn;
 import org.knime.base.data.statistics.HistogramColumn.BinNumberSelectionStrategy;
-import org.knime.base.data.statistics.HistogramColumn.ImageFormats;
 import org.knime.base.data.statistics.HistogramModel;
 import org.knime.base.data.statistics.Statistic;
 import org.knime.base.data.statistics.StatisticCalculator;
@@ -75,6 +75,8 @@ import org.knime.base.data.statistics.calculation.StandardDeviation;
 import org.knime.base.data.statistics.calculation.Sum;
 import org.knime.base.data.statistics.calculation.Variance;
 import org.knime.base.data.statistics.calculation.ZeroNumber;
+import org.knime.base.node.util.DataArray;
+import org.knime.base.node.util.DefaultDataArray;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
@@ -98,6 +100,7 @@ import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
 import org.knime.core.node.property.hilite.HiLiteHandler;
 import org.knime.core.node.web.ValidationError;
+import org.knime.core.util.Pair;
 import org.knime.js.core.JSONDataTable;
 import org.knime.js.core.JSONDataTable.JSONDataTableRow;
 import org.knime.js.core.JSONDataTableSpec;
@@ -112,6 +115,19 @@ import org.knime.js.core.node.AbstractWizardNodeModel;
 public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerNodeRepresentation, DataExplorerNodeValue> {
 
     private DataExplorerConfig m_config;
+
+    private DataArray m_subTable;
+
+    Map<Integer, HistogramModel<?>> m_hNomMap;
+
+    private Map<Integer, Map<DataValue, Set<RowKey>>> m_nominalKeys =
+            new HashMap<Integer, Map<DataValue, Set<RowKey>>>();
+
+    /// column index -> bucket index -> keys
+    private Map<Integer, Map<Integer, Set<RowKey>>> m_buckets = new HashMap<Integer, Map<Integer, Set<RowKey>>>();
+
+    private List<HistogramModel<?>> m_javaNumericHistograms;
+    private List<HistogramModel<?>> m_javaNominalHistograms;
 
     /**
      * @param viewName
@@ -194,7 +210,11 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     protected PortObject[] performExecute(final PortObject[] inObjects, final ExecutionContext exec) throws Exception {
         BufferedDataTable table = (BufferedDataTable)inObjects[0];
         DataExplorerNodeRepresentation rep = getViewRepresentation();
-        double subProgress = 1.0;
+        double subProgress = 0.8;
+        ExecutionContext projection = exec.createSubExecutionContext(0.2);
+        ColumnRearranger rearranger = new ColumnRearranger(table.getDataTableSpec());
+        m_subTable = new DefaultDataArray(projection.createColumnRearrangeTable(table, rearranger, projection), 1,
+            (int)table.size(), exec.createSubExecutionContext(0.1));
         if (rep.getStatistics() == null) {
             subProgress = 0.1;
             rep.setStatistics(calculateStatistics((BufferedDataTable)inObjects[0], exec.createSubExecutionContext(0.8)));
@@ -209,7 +229,6 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         BufferedDataTable result = table;
         String[] filterCols = val.getSelection();
         if (filterCols != null && filterCols.length > 0) {
-            ColumnRearranger rearranger = new ColumnRearranger(table.getDataTableSpec());
             rearranger.remove(filterCols);
             result = exec.createColumnRearrangeTable(table, rearranger, exec.createSubProgress(subProgress));
         }
@@ -238,9 +257,9 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
         calc.evaluate(table, exec.createSubExecutionContext(0.5));
 
-        List<JSNominalHistogram> histograms = new ArrayList<JSNominalHistogram>();
+        List<JSNominalHistogram> jsHistograms = new ArrayList<JSNominalHistogram>();
+        m_javaNominalHistograms = new ArrayList<HistogramModel<?>>();
         JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
-        JSNominalHistogram jsHist = null;
 
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
@@ -249,10 +268,12 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
 
             Map<DataValue, Integer> nomValue = nominal.getNominalValues(i);
             rowValues.add(nomValue.size());
-            //histograms.add(hcol.fromNominalModel(nomValue, i, col));
 
-            jsHist = new JSNominalHistogram(col, i, nomValue);
-            histograms.add(jsHist);
+            m_javaNominalHistograms.add(calculateNominalHistograms(nomValue, i, col));
+            jsHistograms.add(new JSNominalHistogram(col, i, nomValue));
+//            for (int j = 0; j < jsHistograms.get(i).getBins(); j++) {
+//
+//            }
 
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
@@ -262,8 +283,32 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         jTable.setRows(rows);
         jTable.setId("nominal");
 
-        //histograms.get(0).getBins().get(0);
-        getViewRepresentation().setNominalHistograms(histograms);
+        getViewRepresentation().setJsNominalHistograms(jsHistograms);
+        //getViewRepresentation().setJavaNominalHistograms(javaHistograms);
+
+        m_hNomMap = new HashMap<Integer, HistogramModel<?>>();
+        for (HistogramModel<?> histogramModel : m_javaNominalHistograms) {
+            m_hNomMap.put(histogramModel.getColIndex(), histogramModel);
+        }
+
+        final Pair<Map<Integer, Map<Integer, Set<RowKey>>>, Map<Integer, Map<DataValue, Set<RowKey>>>> bucketsAndNominals =
+                HistogramColumn.constructNominal(m_hNomMap, table, new HashSet<String>(nominalCols));
+        m_buckets = bucketsAndNominals.getFirst();
+        m_nominalKeys = bucketsAndNominals.getSecond();
+        getViewRepresentation().setNominalColumns(includeColumns);
+        double[] nominalSizeMean = new double[includeColumns.length];
+        int i = 0;
+        if (nominalSizeMean.length == m_nominalKeys.size()) {
+            for (Map<DataValue, Set<RowKey>> histValues : m_nominalKeys.values()) {
+                double sum = 0;
+                for (Set<RowKey> rowValues : histValues.values()) {
+                    sum += rowValues.size();
+                }
+                nominalSizeMean[i] = sum/histValues.size();
+                i++;
+            }
+            getViewRepresentation().setNominalCountsMean(nominalSizeMean);
+        }
         return jTable;
     }
 
@@ -273,7 +318,6 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         for (DataColumnSpec columnSpec : spec) {
             if (columnSpec.getType().isCompatible(DoubleValue.class)) {
                 doubleCols.add(columnSpec.getName());
-
             }
         }
         String[] includeColumns = doubleCols.toArray(new String[0]);
@@ -303,7 +347,6 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             statistics.add(median);
         }
 
-        //statistics.add(nominal);
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
         calc.evaluate(table, exec.createSubExecutionContext(0.5));
 
@@ -346,39 +389,18 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         jTable.setRows(rows);
         jTable.setId("numeric");
 
-        Map<Integer, ? extends HistogramModel<?>> histograms = calculateHistograms(table, exec.createSubExecutionContext(0.5), minMax, mean, includeColumns);
-        List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
-        hList.addAll(histograms.values());
-        getViewRepresentation().setHistograms(hList);
+        Map<Integer, ? extends HistogramModel<?>> javaHistograms = calculateNumericHistograms(table, exec.createSubExecutionContext(0.5), minMax, mean, includeColumns);
+        m_javaNumericHistograms = new ArrayList<HistogramModel<?>>();
+        m_javaNumericHistograms.addAll(javaHistograms.values());
+        //m_javaNumericHistograms = hList;
 
-        List<JSNumericHistogram> numHist = new ArrayList<JSNumericHistogram>();
+        List<JSNumericHistogram> jsHistograms = new ArrayList<JSNumericHistogram>();
         for (int i = 0; i < includeColumns.length; i++) {
             JSNumericHistogram histTest = new JSNumericHistogram(includeColumns[i], i, table,  ((DoubleValue)minMax.getMin(includeColumns[i])).getDoubleValue(),
                 ((DoubleValue)minMax.getMax(includeColumns[i])).getDoubleValue(),  mean.getResult(includeColumns[i]));
-            numHist.add(histTest);
+            jsHistograms.add(histTest);
         }
-
-        getViewRepresentation().setNumericalHistograms(numHist);
-
-        /*ObjectMapper mapper = new ObjectMapper();
-        try {
-            String json = mapper.writeValueAsString(histograms);
-        } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-        }
-        for (HistogramModel<?> hModel : histograms.values()) {
-            for (Bin<?> bin : hModel.getBins()) {
-                int count = bin.getCount();
-                Object def = bin.getDef();
-                if (def instanceof Pair) {
-                    @SuppressWarnings("unchecked")
-                    Pair<Double, Double> nDef = (Pair<Double, Double>)def;
-                    double min = nDef.getFirst();
-                    double max = nDef.getSecond();
-                }
-            }
-        }*/
-
+        getViewRepresentation().setJsNumericHistograms(jsHistograms);
         return jTable;
     }
 
@@ -399,8 +421,6 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
                     rowValues.add(((DoubleValue)cell).getDoubleValue());
                 } else if (cell instanceof StringValue) {
                     rowValues.add(((StringValue)cell).getStringValue());
-//                } else if (cell instanceof IntCell) {
-//                    rowValues.add(((IntCell)cell).getIntValue());
                 } else {
                     rowValues.add(null);
                 }
@@ -415,7 +435,6 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     }
 
     private JSONDataTableSpec createStatsJSONSpecNominal(final int numColumns) {
-        //String knimeDouble = ((ExtensibleUtilityFactory)DoubleValue.UTILITY).getName();
         String knimeInt = ((ExtensibleUtilityFactory)LongValue.UTILITY).getName();
         String knimeString = ((ExtensibleUtilityFactory)StringValue.UTILITY).getName();
         JSONDataTableSpec spec = new JSONDataTableSpec();
@@ -440,7 +459,6 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
                 colTypes[i] = JSTypes.STRING;
             }
         }
-        //Arrays.fill(colTypes, JSTypes.NUMBER);
         spec.setNumColumns(colNames.size());
         spec.setColNames(colNames.toArray(new String[0]));
         spec.setColTypes(colTypes);
@@ -497,14 +515,16 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         return spec;
     }
 
-   private Map<Integer, ? extends HistogramModel<?>> calculateHistograms(final BufferedDataTable table, final ExecutionContext exec, final MinMax minMax, final Mean mean, final String[] includeColumns) {
+   private HistogramModel<?> calculateNominalHistograms(final Map<? extends DataValue, Integer> counts, final int colIndex,
+       final String colName) {
+       HistogramColumn hCol = HistogramColumn.getDefaultInstance();
+       return hCol.fromNominalModel(counts, colIndex, colName);
+   }
+
+   private Map<Integer, ? extends HistogramModel<?>> calculateNumericHistograms(final BufferedDataTable table, final ExecutionContext exec, final MinMax minMax, final Mean mean, final String[] includeColumns) {
        HistogramColumn hCol = HistogramColumn.getDefaultInstance()
                .withNumberOfBins(10)
-               .withImageFormat(ImageFormats.SVG)
-               .withHistogramWidth(200)
-               .withHistogramHeight(100)
-               .withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange)
-               .withShowMinMax(true);
+               .withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
        int noCols = includeColumns.length;
        double[] mins = new double[noCols];
        double[] maxs = new double[noCols];
@@ -595,33 +615,41 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
         super.saveInternals(nodeInternDir, exec);
-        File hFile = new File(nodeInternDir, "histograms.xml.gz");
-        List<HistogramModel<?>> hList = getViewRepresentation().getHistograms();
-        List<JSNumericHistogram> numHist = getViewRepresentation().getNumericalHistograms();
-        List<JSNominalHistogram> nomHist = getViewRepresentation().getNominalHistograms();
-        if (hList != null) {
+        File hNumFile = new File(nodeInternDir, "numericHistograms.xml.gz");
+        File hNomFile = new File(nodeInternDir, "nominalHistograms.xml.gz");
+        File hNomFileSub = new File(nodeInternDir, "nominalHistogramsSub.xml.gz");
+//        List<HistogramModel<?>> hNumList = getViewRepresentation().getJavaNumericHistograms();
+//        List<HistogramModel<?>> hNomList = getViewRepresentation().getJavaNominalHistograms();
+        if (m_javaNumericHistograms != null) {
             Map<Integer, HistogramModel<?>> hMap = new HashMap<Integer, HistogramModel<?>>();
-            for (HistogramModel<?> histogramModel : getViewRepresentation().getHistograms()) {
+            for (HistogramModel<?> histogramModel : m_javaNumericHistograms) {
                 hMap.put(histogramModel.getColIndex(), histogramModel);
             }
-            HistogramColumn.saveHistogramData(hMap, hFile);
+            HistogramColumn.saveHistogramData(hMap, hNumFile);
         }
 
-        if (numHist != null) {
-            Map<Integer, JSNumericHistogram> hNumMap = new HashMap<Integer, JSNumericHistogram>();
-            for (JSNumericHistogram histogramModel : getViewRepresentation().getNumericalHistograms()) {
-                hNumMap.put(histogramModel.getColIndex(), histogramModel);
-            }
-            HistogramColumn.saveHistogramData(hNumMap, hFile);
+        if (m_javaNominalHistograms != null) {
+            HistogramColumn.saveHistograms(m_hNomMap, m_buckets, m_nominalKeys, hNomFile,
+                m_subTable, hNomFileSub, exec);
+
+//            HistogramColumn.saveHistogramData(hMap, hNomFile);
         }
 
-        if (nomHist != null) {
-            Map<Integer, JSNominalHistogram> hNomMap = new HashMap<Integer, JSNominalHistogram>();
-            for (JSNominalHistogram histogramModel : getViewRepresentation().getNominalHistograms()) {
-                hNomMap.put(histogramModel.getColIndex(), histogramModel);
-            }
-            HistogramColumn.saveHistogramData(hNomMap, hFile);
-        }
+//        if (numHist != null) {
+//            Map<Integer, JSNumericHistogram> hNumMap = new HashMap<Integer, JSNumericHistogram>();
+//            for (JSNumericHistogram histogramModel : getViewRepresentation().getNumericalHistograms()) {
+//                hNumMap.put(histogramModel.getColIndex(), histogramModel);
+//            }
+//            HistogramColumn.saveHistogramData(hNumMap, hFile);
+//        }
+//
+//        if (nomHist != null) {
+//            Map<Integer, JSNominalHistogram> hNomMap = new HashMap<Integer, JSNominalHistogram>();
+//            for (JSNominalHistogram histogramModel : getViewRepresentation().getNominalHistograms()) {
+//                hNomMap.put(histogramModel.getColIndex(), histogramModel);
+//            }
+//            HistogramColumn.saveHistogramData(hNomMap, hFile);
+//        }
     }
 
     /**
@@ -631,28 +659,51 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
         super.loadInternals(nodeInternDir, exec);
-        File hFile = new File(nodeInternDir, "histograms.xml.gz");
-        if (hFile.exists()) {
-            double[] means = getViewRepresentation().getMeans();
+        File hNumFile = new File(nodeInternDir, "numericHistograms.xml.gz");
+        File hNomFile = new File(nodeInternDir, "nominalHistograms.xml.gz");
+        File hNomFileSub = new File(nodeInternDir, "nominalHistogramsSub.xml.gz");
+        DataExplorerNodeRepresentation rep = getViewRepresentation();
+        if (hNumFile.exists()) {
+            double[] means = rep.getMeans();
             if (means == null) {
                 throw new IOException("Means could not be retrieved from representation.");
             }
             try {
-                Map<Integer, ? extends HistogramModel<?>> histograms = HistogramColumn.loadHistograms(hFile, new HashMap<Integer, Map<Integer, Set<RowKey>>>(), BinNumberSelectionStrategy.DecimalRange, means);
+                Map<Integer, ? extends HistogramModel<?>> numHistograms = HistogramColumn.loadHistograms(hNumFile, new HashMap<Integer, Map<Integer, Set<RowKey>>>(), BinNumberSelectionStrategy.DecimalRange, means);
                 List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
-                hList.addAll(histograms.values());
-                getViewRepresentation().setHistograms(hList);
-//
-//                Map<Integer, ? extends HistogramModel<?>> histNum = HistogramColumn.loadHistograms(hFile, new HashMap<Integer, Map<Integer, Set<RowKey>>>(), BinNumberSelectionStrategy.DecimalRange, means);
-//                List<HistogramModel<?>> hList = new ArrayList<HistogramModel<?>>();
-//                hList.addAll(histograms.values());
-//                getViewRepresentation().setHistograms(hList);
+                hList.addAll(numHistograms.values());
+                //rep.setJavaNumericHistograms(hList);
 
+                List<JSNumericHistogram> jsNumHist = new ArrayList<JSNumericHistogram>();
+                for (int i = 0; i < hList.size(); i++) {
+                    jsNumHist.add(new JSNumericHistogram(hList.get(i)));
+                }
+                rep.setJsNumericHistograms(jsNumHist);
 
             } catch (InvalidSettingsException e) {
                 throw new IOException(e);
             }
         }
+        if (hNomFile.exists()) {
+            try {
+                Pair<Pair<Map<Integer, ? extends HistogramModel<?>>, Map<Integer, Map<Integer, Set<RowKey>>>>, Map<Integer, Map<DataValue, Set<RowKey>>>> ppair =
+                        HistogramColumn.loadHistograms(hNomFile, hNomFileSub, new HashSet<String>(Arrays.asList(rep.getNominalColumns())),
+                            BinNumberSelectionStrategy.DecimalRange, rep.getNominalCountsMean());
+                Map<Integer, ? extends HistogramModel<?>> nomHistograms = ppair.getFirst().getFirst();
+                m_buckets = ppair.getFirst().getSecond();
+                m_nominalKeys = ppair.getSecond();
+
+                List<JSNominalHistogram> jsNomHist = new ArrayList<JSNominalHistogram>();
+                for (HistogramModel<?> hist : nomHistograms.values()) {
+                    jsNomHist.add(new JSNominalHistogram(hist));
+                }
+                rep.setJsNominalHistograms(jsNomHist);
+
+            } catch (InvalidSettingsException e) {
+                throw new IOException(e);
+            }
+        }
+
     }
 
 }

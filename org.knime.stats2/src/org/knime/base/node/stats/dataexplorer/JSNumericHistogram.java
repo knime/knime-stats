@@ -76,4 +76,13 @@ public class JSNumericHistogram extends JSHistogram {
         this.m_maxCount = m_histogram.getMaxCount();
     }
 
+    /**
+     * @param javaHistogram
+     *
+     */
+    public JSNumericHistogram(final HistogramModel<?> javaHistogram) {
+        super(javaHistogram.getColName(), javaHistogram.getColIndex());
+        this.m_bins = javaHistogram.getBins();
+        this.m_maxCount = javaHistogram.getMaxCount();
+    }
 }

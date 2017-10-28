@@ -102,8 +102,8 @@ dataExplorerNamespace = function() {
 			var table = $('<table id="knimeNominal" class="table table-striped table-bordered" width="100%">');
 			wrapper.append(table);
             
-            for (var i = 0; i < _representation.nominalHistograms.length; i++) {
-                _representation.nominalHistograms[i].bins.sort(function(x,y){
+            for (var i = 0; i < _representation.jsNominalHistograms.length; i++) {
+                _representation.jsNominalHistograms[i].bins.sort(function(x,y){
                     return d3.descending(x.second, y.second);
                 })
             }
@@ -222,7 +222,7 @@ dataExplorerNamespace = function() {
             
             xScaleNom = d3.scale.ordinal(), 
             yScale = d3.scale.linear(),
-            _representation.nominalHistograms.forEach(function(d) {histNomSizes.push(d.bins.length)});
+            _representation.jsNominalHistograms.forEach(function(d) {histNomSizes.push(d.bins.length)});
             
             var colDef = {
                 'title' :"Histogram",
@@ -623,7 +623,7 @@ dataExplorerNamespace = function() {
             
             xScale = d3.scale.linear(), 
             yScale = d3.scale.linear(),
-            _representation.numericalHistograms.forEach(function(d) {histSizes.push(d.bins.length)});
+            _representation.jsNumericHistograms.forEach(function(d) {histSizes.push(d.bins.length)});
             
             var colDef = {
                 'title' :"Histogram",
@@ -1162,20 +1162,20 @@ dataExplorerNamespace = function() {
                 var freq = [];
                 var infreq = [];
                 var all = [];
-                if (2*_representation.freqValues < _representation.nominalHistograms[i].bins.length) {
+                if (2*_representation.freqValues < _representation.jsNominalHistograms[i].bins.length) {
                     //most and lest freq
-                    for (var j = 0; j < _representation.nominalHistograms[i].bins.length; j++) {
+                    for (var j = 0; j < _representation.jsNominalHistograms[i].bins.length; j++) {
                         if (j < _representation.freqValues) {
-                            freq.push( _representation.nominalHistograms[i].bins[j].first)
+                            freq.push( _representation.jsNominalHistograms[i].bins[j].first)
                         }
-                        if (j >= _representation.nominalHistograms[i].bins.length - _representation.freqValues) {
-                            infreq.push(_representation.nominalHistograms[i].bins[j].first)
+                        if (j >= _representation.jsNominalHistograms[i].bins.length - _representation.freqValues) {
+                            infreq.push(_representation.jsNominalHistograms[i].bins[j].first)
                         }
                     }
                 } else {
                     //all
-                    for (var j = 0; j < _representation.nominalHistograms[i].bins.length; j++) {
-                        all.push(_representation.nominalHistograms[i].bins[j].first);
+                    for (var j = 0; j < _representation.jsNominalHistograms[i].bins.length; j++) {
+                        all.push(_representation.jsNominalHistograms[i].bins[j].first);
                     }
                 }
                 dataRow.push(freq);
@@ -1185,12 +1185,12 @@ dataExplorerNamespace = function() {
             
             switch (knTable.getTableId()) {
                 case "numeric":
-                    dataRow.push(_representation.numericalHistograms[i]);
+                    dataRow.push(_representation.jsNumericHistograms[i]);
                     break;
                 case "preview":
                     break;
                 case "nominal":
-                    dataRow.push(_representation.nominalHistograms[i]);
+                    dataRow.push(_representation.jsNominalHistograms[i]);
                     break;
                 default: 
                     break;
