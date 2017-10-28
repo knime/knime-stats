@@ -97,7 +97,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     private final JSpinner m_globalNumberFormatDecimalSpinner;
     private final JSpinner m_displayPreviewRowsSpinner;
     private final JSpinner m_maxNominalValuesSpinner;
-    private final JCheckBox m_showFreqValuesCheckbox;
+    private final JCheckBox m_enableFreqValDisplayCheckbox;
     private final JSpinner m_freqValuesSpinner;
 
     /** Creates a new dialog instance */
@@ -152,8 +152,8 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_globalNumberFormatDecimalSpinner = new JSpinner(new SpinnerNumberModel(2, 0, null, 1));
         m_displayPreviewRowsSpinner = new JSpinner(new SpinnerNumberModel(1, 1, null, 1));
         m_maxNominalValuesSpinner = new JSpinner(new SpinnerNumberModel(100, 1,null,5));
-        m_showFreqValuesCheckbox = new JCheckBox("Show most frequent/infrequent values");
-        m_showFreqValuesCheckbox.addChangeListener(new ChangeListener() {
+        m_enableFreqValDisplayCheckbox = new JCheckBox("Show most frequent/infrequent values");
+        m_enableFreqValDisplayCheckbox.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(final ChangeEvent e) {
                 enableFreqValues();
@@ -171,7 +171,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         GridBagConstraints gbcG = createConfiguredGridBagConstraints();
         gbcG.gridwidth = 2;
         gbcG.fill = GridBagConstraints.HORIZONTAL;
-        generalPanel.add(m_showFreqValuesCheckbox, gbcG);
+        generalPanel.add(m_enableFreqValDisplayCheckbox, gbcG);
         gbcG.gridy++;
         gbcG.gridwidth = 1;
         generalPanel.add(new JLabel("Number of most freq./infreq. values: "), gbcG);
@@ -331,7 +331,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     }
 
     private void enableFreqValues() {
-        boolean enableFreqVal = m_showFreqValuesCheckbox.isSelected();
+        boolean enableFreqVal = m_enableFreqValDisplayCheckbox.isSelected();
         m_freqValuesSpinner.setEnabled(enableFreqVal);
 
     }
@@ -383,7 +383,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
         config.setdisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
         config.setMaxNominalValues((Integer)m_maxNominalValuesSpinner.getValue());
-        config.setEnableFreqValDisplay(m_showFreqValuesCheckbox.isSelected());
+        config.setEnableFreqValDisplay(m_enableFreqValDisplayCheckbox.isSelected());
         config.setFreqValues((Integer)m_freqValuesSpinner.getValue());
         config.saveSettingsTo(settings);
     }
@@ -414,12 +414,13 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_globalNumberFormatDecimalSpinner.setValue(config.getGlobalNumberFormatDecimals());
         m_displayPreviewRowsSpinner.setValue(config.getDisplayRowNumber());
         m_maxNominalValuesSpinner.setValue(config.getMaxNominalValues());
-        m_showFreqValuesCheckbox.setSelected(config.getEnableFreqValDisplay());
+        m_enableFreqValDisplayCheckbox.setSelected(config.getEnableFreqValDisplay());
         m_freqValuesSpinner.setValue(config.getFreqValues());
         enablePagingFields();
         enableSearchFields();
         enableFormatterFields();
         enableSortingFields();
+        enableFreqValues();
     }
 
 }

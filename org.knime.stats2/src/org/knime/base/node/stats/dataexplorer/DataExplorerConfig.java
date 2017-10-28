@@ -76,7 +76,7 @@ public class DataExplorerConfig {
     static final String ZEROS = "No. zeros";
     static final String UNIQUE_NOMINAL = "Unique values";
     static final String TOP_FREQ_VAL = "Top frequent values";
-    static final String TOP_INFREQ_VAL = "Top infreq values";
+    static final String TOP_INFREQ_VAL = "Top infrequent values";
     static final String ALL_NOMINAL_VAL = "All nominal values";
 
     static final String CFG_HIDE_IN_WIZARD = "hideInWizard";
@@ -553,7 +553,7 @@ public class DataExplorerConfig {
         settings.addBoolean(CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
         settings.addInt(CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
         settings.addInt(CFG_MAX_NOMINAL_VALUES, m_maxNominalValues);
-        settings.addBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
+        settings.addBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, m_enableFreqValDisplay);
         settings.addInt(CFG_FREQ_VALUES, m_freqValues);
     }
 
