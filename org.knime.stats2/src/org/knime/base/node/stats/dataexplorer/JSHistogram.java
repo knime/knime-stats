@@ -48,17 +48,7 @@
  */
 package org.knime.base.node.stats.dataexplorer;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPOutputStream;
-
-import org.knime.core.node.NodeSettings;
-import org.knime.core.node.config.Config;
 
 
 /**
@@ -74,12 +64,6 @@ public abstract class JSHistogram {
     List<?> m_bins;
 
     int m_maxCount;
-
-    private static final String HISTOGRAMS = "Histograms";
-
-    private static final String HISTOGRAM = "histogram";
-
-    private static final String NUMERIC_COLUMNS = "numeric column indices";
 
     JSHistogram(final String colName, final int colIndex) {
         this.m_colIndex = colIndex;
@@ -113,118 +97,5 @@ public abstract class JSHistogram {
     public int getMaxCount() {
         return m_maxCount;
     }
-
-    /**
-     * @param histograms
-     * @param histogramsFile
-     * @throws IOException
-     */
-    public static void saveHistograms(final Map<Integer, ?> histograms, final File histogramsFile)
-            throws IOException {
-        Config histogramData = new NodeSettings(HISTOGRAMS);
-        final FileOutputStream os = new FileOutputStream(histogramsFile);
-        final GZIPOutputStream dataOS = new GZIPOutputStream(os);
-        List<Integer> colIndices = new ArrayList<Integer>(histograms.keySet());
-        Collections.sort(colIndices);
-        int[] numericColumnIndices = new int[colIndices.size()];
-        for (int i = colIndices.size(); i-- > 0;) {
-            numericColumnIndices[i] = colIndices.get(i).intValue();
-        }
-        histogramData.addIntArray(NUMERIC_COLUMNS, numericColumnIndices);
-
-        for (Integer colIdx : colIndices) {
-            Object object = histograms.get(colIdx);
-            if (object instanceof JSHistogram) {
-                //common part
-                if (object instanceof JSNumericHistogram) {
-
-                }
-
-                if (object instanceof JSNominalHistogram) {
-
-                }
-            }
-         }
-        histogramData.saveToXML(dataOS);
-    }
-
-//    public static void saveHistogramData(final Map<Integer, ?> histograms, final File histogramsFile)
-//            throws IOException {
-//            Config histogramData = new NodeSettings(HISTOGRAMS);
-//            final FileOutputStream os = new FileOutputStream(histogramsFile);
-//            final GZIPOutputStream dataOS = new GZIPOutputStream(os);
-//
-//            List<Integer> colIndices = new ArrayList<Integer>(histograms.keySet());
-//            Collections.sort(colIndices);
-//            int[] numericColumnIndices = new int[colIndices.size()];
-//            for (int i = colIndices.size(); i-- > 0;) {
-//                numericColumnIndices[i] = colIndices.get(i).intValue();
-//            }
-//            histogramData.addIntArray(NUMERIC_COLUMNS, numericColumnIndices);
-//            for (Integer colIdx : colIndices) {
-//                Object object = histograms.get(colIdx);
-//                if (object instanceof HistogramNumericModel) {
-//                    HistogramNumericModel hd = (HistogramNumericModel)object;
-//                    assert hd.getColIndex() == colIdx.intValue() : "colIdx: " + colIdx + ", but: " + hd.getColIndex();
-//                    Config h = histogramData.addConfig(HISTOGRAM + colIdx);
-//                    h.addDouble(MIN, hd.m_min);
-//                    h.addDouble(MAX, hd.m_max);
-//                    h.addDouble(WIDTH, hd.m_width);
-//                    h.addInt(MAX_COUNT, hd.getMaxCount());
-//                    h.addInt(ROW_COUNT, hd.getRowCount());
-//                    h.addInt(COL_INDEX, hd.getColIndex());
-//                    h.addString(COL_NAME, hd.getColName());
-//                    double[] minValues = new double[hd.getBins().size()], maxValues = new double[hd.getBins().size()];
-//                    int[] counts = new int[hd.getBins().size()];
-//                    for (int c = 0; c < hd.getBins().size(); c++) {
-//                        HistogramNumericModel.NumericBin bin = (HistogramNumericModel.NumericBin)hd.getBins().get(c);
-//                        minValues[c] = bin.getDef().getFirst().doubleValue();
-//                        maxValues[c] = bin.getDef().getSecond().doubleValue();
-//                        counts[c] = bin.getCount();
-//                    }
-//                    h.addDoubleArray(BIN_MINS, minValues);
-//                    h.addDoubleArray(BIN_MAXES, maxValues);
-//                    h.addIntArray(BIN_COUNTS, counts);
-//                } else {
-//                    throw new IllegalStateException("Illegal argument: " + colIdx + ": " + object.getClass() + "\n   "
-//                        + object);
-//                }
-//            }
-//            histogramData.saveToXML(dataOS);
-//        }
-
-
-//    private static Map<Integer, HistogramNumericModel> loadHistogramsPrivate(final File histogramsGz,
-//        final Map<Integer, Map<Integer, Set<RowKey>>> numericKeys, final BinNumberSelectionStrategy strategy,
-//        final double[] means) throws IOException, InvalidSettingsException {
-//        final FileInputStream is = new FileInputStream(histogramsGz);
-//        final GZIPInputStream inData = new GZIPInputStream(is);
-//        final ConfigRO config = NodeSettings.loadFromXML(inData);
-//        Map<Integer, HistogramNumericModel> histograms = new HashMap<Integer, HistogramNumericModel>();
-//        ConfigRO hs = config;//.getConfig(HISTOGRAMS);
-//        int[] numColumnIndices = config.getIntArray(NUMERIC_COLUMNS);
-//        for (int colIdx : numColumnIndices) {
-//            Config h = hs.getConfig(HISTOGRAM + colIdx);
-//            double min = h.getDouble(MIN), max = h.getDouble(MAX), width = h.getDouble(WIDTH);
-//            int maxCount = h.getInt(MAX_COUNT);
-//            int rowCount = h.getInt(ROW_COUNT);
-//            String colName = h.getString(COL_NAME);
-//            double[] binMins = h.getDoubleArray(BIN_MINS), binMaxes = h.getDoubleArray(BIN_MAXES);
-//            int[] binCounts = h.getIntArray(BIN_COUNTS);
-//            double mean = means[colIdx];
-//            HistogramNumericModel histogramData =
-//                new HistogramNumericModel(min, max, binMins.length, colIdx, colName, min, max, mean);
-//            for (int i = binMins.length; i-- > 0;) {
-//                histogramData.getBins().set(i, histogramData.new NumericBin(binMins[i], binMaxes[i]));
-//                histogramData.getBins().get(i).setCount(binCounts[i]);
-//            }
-//            histogramData.setMaxCount(maxCount);
-//            histogramData.setRowCount(rowCount);
-//            assert Math.abs(histogramData.m_width - width) < 1e-9: "histogram data width: " + histogramData.m_width + " width: " + width;
-//            histograms.put(colIdx, histogramData);
-//            numericKeys.put(colIdx, new HashMap<Integer, Set<RowKey>>());
-//        }
-//        return histograms;
-//    }
 
 }

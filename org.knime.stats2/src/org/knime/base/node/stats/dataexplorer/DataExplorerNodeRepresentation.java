@@ -105,11 +105,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private int m_displayRowNumber;
     private boolean m_enableFreqValDisplay;
     private int m_freqValues;
-    private double[] m_nominalCountsMean;
-    private String[] m_nominalColumns;
 
-//    private List<HistogramModel<?>> m_javaNumericHistograms;
-//    private List<HistogramModel<?>> m_javaNominalHistograms;
     private List<JSNominalHistogram> m_jsNominalHistograms;
     private List<JSNumericHistogram> m_jsNumericHistograms;
 
@@ -395,20 +391,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_displayMissingValueAsQuestionMark = displayMissingValueAsQuestionMark;
     }
 
-//    /**
-//     * @return the histograms
-//     */
-//    public List<HistogramModel<?>> getJavaNumericHistograms() {
-//        return m_javaNumericHistograms;
-//    }
-//
-//    /**
-//     * @param histograms the histograms to set
-//     */
-//    public void setJavaNumericHistograms(final List<HistogramModel<?>> histograms) {
-//        m_javaNumericHistograms = histograms;
-//    }
-
     /**
      * @return the preview
      */
@@ -508,20 +490,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         this.m_freqValues = freqValues;
     }
 
-//    /**
-//     * @return the m_JavaNominalHistograms
-//     */
-//    public List<HistogramModel<?>> getJavaNominalHistograms() {
-//        return m_javaNominalHistograms;
-//    }
-//
-//    /**
-//     * @param m_JavaNominalHistograms the m_JavaNominalHistograms to set
-//     */
-//    public void setJavaNominalHistograms(final List<HistogramModel<?>> m_JavaNominalHistograms) {
-//        this.m_javaNominalHistograms = m_JavaNominalHistograms;
-//    }
-
     /**
      * Extracts all mean values from statistics table.
      * @return a double array with all mean values, may be null if operation not possible
@@ -546,35 +514,31 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         return null;
     }
 
-
     /**
-     * @param nominalCountsMean
+     * Extracts the number of unique nominal values in each columns in nominal table.
+     * @return an int array with the numbers of unique nominal values in each column,
+     *  may be null if operation is not possible
      */
-    public void setNominalCountsMean(final double[] nominalCountsMean) {
-        m_nominalCountsMean = nominalCountsMean;
+    @JsonIgnore
+    int[] getNominalValuesSize() {
+        if (m_nominal != null) {
+            JSONDataTableSpec spec = m_nominal.getSpec();
+            List<String> colNames = Arrays.asList(spec.getColNames());
+            if (!colNames.contains(DataExplorerConfig.UNIQUE_NOMINAL)) {
+                return null;
+            }
+            int[] uniqueNom = new int[m_nominal.getSpec().getNumRows()];
+            int nomIndex = colNames.indexOf(DataExplorerConfig.UNIQUE_NOMINAL);
+            JSONDataTableRow[] rows = m_nominal.getRows();
+            for (int i = 0; i < rows.length; i++) {
+                JSONDataTableRow row = rows[i];
+                uniqueNom[i] = (int)row.getData()[nomIndex];
+            }
+            return uniqueNom;
+        }
+        return null;
     }
 
-    /**
-     * @return mean values in each nominal column
-     */
-    public double[] getNominalCountsMean () {
-        return m_nominalCountsMean;
-    }
-
-
-    /**
-     * @param nominalColumns
-     */
-    public void setNominalColumns(final String[] nominalColumns) {
-        m_nominalColumns = nominalColumns;
-    }
-
-    /**
-     * @return nominal column names
-     */
-    public String[] getNominalColumns() {
-        return m_nominalColumns;
-    }
 
     /**
      * {@inheritDoc}
@@ -612,8 +576,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         settings.addInt(DataExplorerConfig.CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
         settings.addBoolean(DataExplorerConfig.CFG_ENABLE_FREQ_VAL_DISPLAY, m_enableFreqValDisplay);
         settings.addInt(DataExplorerConfig.CFG_FREQ_VALUES, m_freqValues);
-        settings.addDoubleArray(DataExplorerConfig.CFG_NOMINAL_COUNT_MEAN, m_nominalCountsMean);
-        settings.addStringArray(DataExplorerConfig.CFG_NOMINAL_COLUMNS, m_nominalColumns);
     }
 
     /**
@@ -652,8 +614,6 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_displayRowNumber = settings.getInt(DataExplorerConfig.CFG_DISPLAY_ROW_NUMBER, DataExplorerConfig.DEFAULT_DISPLAY_ROW_NUMBER);
         m_enableFreqValDisplay = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_FREQ_VAL_DISPLAY , DataExplorerConfig.DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
         m_freqValues = settings.getInt(DataExplorerConfig.CFG_FREQ_VALUES, DataExplorerConfig.DEFAULT_FREQ_VALUES);
-        m_nominalCountsMean = settings.getDoubleArray(DataExplorerConfig.CFG_NOMINAL_COUNT_MEAN, DataExplorerConfig.DEFAULT_NOMINAL_COUNT_MEAN);
-        m_nominalColumns = settings.getStringArray(DataExplorerConfig.CFG_NOMINAL_COLUMNS, DataExplorerConfig.DEFAULT_NOMINAL_COLUMNS);
     }
 
     /**
@@ -694,16 +654,12 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_globalNumberFormatDecimals, other.m_globalNumberFormatDecimals)
                 .append(m_displayMissingValueAsQuestionMark, other.m_displayMissingValueAsQuestionMark)
                 .append(m_displayRowNumber, other.m_displayRowNumber)
-//                .append(m_javaNumericHistograms, other.m_javaNumericHistograms)
-//                .append(m_javaNominalHistograms, other.m_javaNominalHistograms)
                 .append(m_preview, other.m_preview)
                 .append(m_nominal, other.m_nominal)
                 .append(m_jsNominalHistograms, other.m_jsNominalHistograms)
                 .append(m_jsNumericHistograms, other.m_jsNumericHistograms)
                 .append(m_enableFreqValDisplay, other.m_enableFreqValDisplay)
                 .append(m_freqValues, other.m_freqValues)
-                .append(m_nominalCountsMean, other.m_nominalCountsMean)
-                .append(m_nominalColumns, other.m_nominalColumns)
                 .isEquals();
     }
 
@@ -735,16 +691,12 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_globalNumberFormatDecimals)
                 .append(m_displayMissingValueAsQuestionMark)
                 .append(m_displayRowNumber)
-//                .append(m_javaNumericHistograms)
-//                .append(m_javaNominalHistograms)
                 .append(m_preview)
                 .append(m_nominal)
                 .append(m_jsNominalHistograms)
                 .append(m_jsNumericHistograms)
                 .append(m_enableFreqValDisplay)
                 .append(m_freqValues)
-                .append(m_nominalCountsMean)
-                .append(m_nominalColumns)
                 .toHashCode();
     }
 

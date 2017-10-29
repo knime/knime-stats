@@ -64,22 +64,20 @@ import org.knime.core.util.Pair;
  */
 public class JSNominalHistogram extends JSHistogram {
 
-
     /**
-     * @param colName
-     * @param colIndex
+     * @param colName Name of the column.
+     * @param colIndex Index of the column.
      */
     JSNominalHistogram(final String colName, final int colIndex, final Map<DataValue, Integer> nomValue) {
         super(colName, colIndex);
         HistogramColumn hcol = HistogramColumn.getDefaultInstance();
-        //this.m_maxCount = Collections.max(nomValue.values());
         HistogramModel<?> hist = hcol.fromNominalModel(nomValue, colIndex, colName);
         this.m_maxCount = hist.getMaxCount();
         this.m_bins = binsUnwrapper(hist);
     }
 
     /**
-     *
+     * @param javaHistogram HistogramNominalModel histogram to convert into JSNominalHistogram.
      */
     JSNominalHistogram(final HistogramModel<?> histogram) {
         super(histogram.getColName(), histogram.getColIndex());
@@ -98,5 +96,4 @@ public class JSNominalHistogram extends JSHistogram {
         }
         return bins;
     }
-
 }

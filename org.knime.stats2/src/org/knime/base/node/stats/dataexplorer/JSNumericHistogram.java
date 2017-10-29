@@ -60,27 +60,24 @@ import org.knime.core.node.property.hilite.HiLiteHandler;
  */
 public class JSNumericHistogram extends JSHistogram {
 
-    HistogramModel<?> m_histogram;
-
     /**
-     * @param colName
-     * @param colIndex
+     * @param colName Name of the column.
+     * @param colIndex Index of the column.
      */
     JSNumericHistogram(final String colName, final int colIndex, final BufferedDataTable table, final double min,
         final double max, final double mean) {
         super(colName, colIndex);
         HistogramColumn hCol = HistogramColumn.getDefaultInstance().withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
         //.withNumberOfBins(10).withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
-        this.m_histogram = hCol.histograms(table, new HiLiteHandler(), new double[]{min}, new double[]{max}, new double[]{mean}, colName).get(0);
-        this.m_bins = m_histogram.getBins();
-        this.m_maxCount = m_histogram.getMaxCount();
+        HistogramModel<?> histogram = hCol.histograms(table, new HiLiteHandler(), new double[]{min}, new double[]{max}, new double[]{mean}, colName).get(0);
+        this.m_bins = histogram.getBins();
+        this.m_maxCount = histogram.getMaxCount();
     }
 
     /**
-     * @param javaHistogram
-     *
+     * @param javaHistogram HistogramNumericModel histogram to convert into JSNumericHistogram.
      */
-    public JSNumericHistogram(final HistogramModel<?> javaHistogram) {
+    JSNumericHistogram(final HistogramModel<?> javaHistogram) {
         super(javaHistogram.getColName(), javaHistogram.getColIndex());
         this.m_bins = javaHistogram.getBins();
         this.m_maxCount = javaHistogram.getMaxCount();
