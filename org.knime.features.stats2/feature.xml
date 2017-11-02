@@ -3,7 +3,7 @@
       id="org.knime.features.stats2"
       label="KNIME Statistics Nodes (Labs)"
       version="3.5.0.qualifier"
-      provider-name="KNIME GmbH, Konstanz, Germany"
+      provider-name="KNIME AG, Zurich, Switzerland"
       plugin="org.knime.stats2">
 
    <description>
@@ -17,7 +17,7 @@ Mann-Whitney-Wilcoxon
    </description>
 
    <copyright url="http://www.example.com/copyright">
-      Copyright by KNIME GmbH, Konstanz, Germany
+      Copyright by KNIME AG, Zurich, Switzerland
    </copyright>
 
    <license>

@@ -4,7 +4,7 @@ Bundle-Name: KNIME Statistic Nodes (Labs)
 Bundle-SymbolicName: org.knime.stats2;singleton:=true
 Bundle-Version: 3.5.0.qualifier
 Bundle-ClassPath: .
-Bundle-Vendor: KNIME GmbH, Konstanz, Germany
+Bundle-Vendor: KNIME AG, Zurich, Switzerland
 Export-Package: org.knime.base.node.stats.contingencytable
 Require-Bundle: org.knime.base;bundle-version="[3.0.0,4.0.0)",
  org.apache.commons.math3;bundle-version="[3.2.0,4.0.0)",
