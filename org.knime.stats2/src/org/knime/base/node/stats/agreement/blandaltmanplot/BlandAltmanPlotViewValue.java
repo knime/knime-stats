@@ -1,9 +1,7 @@
 /*
  * ------------------------------------------------------------------------
  *
- *  Copyright (C) 2003 - 2013
- *  University of Konstanz, Germany and
- *  KNIME GmbH, Konstanz, Germany
+ *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.org; Email: contact@knime.org
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -46,7 +44,7 @@
  * ------------------------------------------------------------------------
  *
  * History
- *   13.05.2014 (Christian Albrecht, KNIME.com AG, Zurich, Switzerland): created
+ *   13.05.2014 (Christian Albrecht, KNIME AG, Zurich, Switzerland): created
  */
 package org.knime.base.node.stats.agreement.blandaltmanplot;
 
@@ -61,7 +59,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * @author Christian Albrecht, KNIME.com AG, Zurich, Switzerland, University of Konstanz
+ * @author Christian Albrecht, KNIME AG, Zurich, Switzerland, University of Konstanz
  * @author Patrick Winter, University of Konstanz, Germany
  */
 @JsonAutoDetect
