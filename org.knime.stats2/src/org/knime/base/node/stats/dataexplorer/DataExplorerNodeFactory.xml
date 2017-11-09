@@ -5,94 +5,82 @@
 	<name>Data Explorer</name>
 
 	<shortDescription>
-        Data Explorer is a exploration tool that allows having an
-        overview on the data and its properties. Exploring the interactive view the node 
-        intends to brings the insights and the understanding of the data.
-        
-    </shortDescription>
+		The Data Explorer node offers a range of options for displaying properties of the input data in an interactive view.
+	</shortDescription>
 
 	<fullDescription>
 		<intro>
-			The node presents the information about the data to explore. It consists of three 
-			tabs: statistical, nominal and preview. The statistical and nominal tabs sum up the information 
-			on each column, and given the information a user can decide in the interactive view which
-			columns to include in the further analysis or exclude.
-			<p><b>Statistical tab</b> shows main statistical parameters of the numerical data, such as 
-			minimum, maximum, mean, median (optional) standard deviation, variance, skewness, kurtosis,
-			overall sum,  number of zero values, number of missing values, number of not an object values,
-			and positive and negative infinity values. 
-			For each column the node also calculates the histogram of value distribution.</p>
-			<p><b>Nominal tab</b>provides an overview on the characteristics of the nominal values, providing 
-			the number of missing values, unique values, and top N most frequent and infrequent values. 
-			Additionally, each data column has a histogram that shows the frequencies of all values used in a
-			data column.</p>
-			<p><b>Data Preview tab</b>shows first several rows of the studying dataset and the values it
-			contains.</p>
+			The Data Explorer node offers a range of options for displaying properties of the input data in an interactive view.
 		</intro>
 		<tab name="Options">
+			<option name="Show most frequent/infrequent values"> 
+			If you check this option, the Nominal tab of the interactive view will create a column with the n most frequent nominal values and another column with the n most infrequent nominal values, for some number n that you select.
+			If the selected number is equal to the total number of distinct values in a column, only one column with all values will be created. In all cases values 
+			are listed in decreasing order of frequency.
+			</option>
+			<option name="Number of most freq./infreq. values">
+			For any number n you select, the Nominal tab of the interactive view will list the n most frequent and the n most infrequent nominal values in separate columns.</option>
 			<option name="Show median"> 
-			Enables calculation of median for the statistical tab. 
+			If you check this option, the interactive view will show the median of the numerical values in the input data set.
 			</option>
 			<option name="Title">
-			Adds title to the interactive view.
+			Adds a title to the interactive view.
 			</option>
 			<option name="Subtitle">
-			Adds subtitle to the interactive view.
+			Adds a subtitle to the interactive view.
 			</option>
 			<option name="Enable global number format">
-			Enables same number representation for all double values in the table interactive view.
+			Enables the same number format for all double values in the interactive view.
 			</option>
 			<option name="Decimal places">
-			Specifies the number of decimal places for all values in the table interactive view.
+			Specifies the number of decimal places for all values in the interactive view.
 			</option>
 		</tab>
 		<tab name="Table">
 			<option name="Enable pagination">
-			Enables exploring the tables split into pages.
+			Enables spreading the table over several pages of the interactive view.
 			</option>
 			<option name="Initial page size">
-			The number of rows per page.
+			Determines the number of rows per page in the interactive view.
 			</option>
 			<option name="Enable page size change control">
-			Enables to change the number of rows per page in the interactive view.
+			Enables changing the number of rows per page in the interactive view.
 			</option>
 			<option name="Selectable page sizes">
-			Provides options for different number of rows per page in the preview. Values need to be comma separated.
+			Determines the page sizes you can select in the interactive view. Values need to be comma-separated.
 			</option>
 			<option name="Add 'All' option to page sizes">
-			Enables "All" option to show all rows at once.
+			Adds the option of having all rows on one page to the page sizes you can select in the interactive view.
 			</option>
 			<option name="Number of rows for data preview">
-			Selects the number of rows for the Data Preview tab.
+			Determines the total number of rows displayed on the Data Preview tab of the interactive view.
 			</option>
-			
 			<option name="Enable selection">
-			Enables selection of the data column to exclude them from the further analysis. 
+			Enables selection of the data columns to be excluded from further analysis. 
 			</option>
-			
 			<option name="Enable searching">
-			Enables searching of the values in the data tables.
+			Enables searching the data table.
 			</option>
 			<option name="Enable sorting on columns">
-			Enables column sorting.
+			Enables sorting of columns.
 			</option>
 			<option name="Enable 'Clear Sorting' button">
-			Enables "Clear Sorting" button to cancel all applied sorting in the table.
+			Enables undoing any sorting by clicking on the "Clear Sorting" button.
 			</option>
 			<option name="Max number of nominal values">
-			Approximate maximum number of distinct nominal values in a column. If the actual value is higher than the entered in this field, 
-			the interactive view will show an warning.
-			</option>
-			<option name="Number of most frequent/infrequent nominal values">
-			Creates additional columns with the number of most frequent and infrequent values in a nominal column. If the selected number is 
-			equal to the overall number of distinct values in a column, only one column with all values will be created. In all cases values 
-			are represented in the decreasing order of frequency.
+			Maximum number of distinct nominal values per column. If the actual value is higher than the number entered in this field, 
+			the interactive view will show a warning.
 			</option>
 		</tab>
 	</fullDescription>
 	<interactiveView name="Data Explorer View">
-		Displays three tabs for data exploration: Statistical tab with statistical moments of numerical columns, 
-		Nominal tab with characteristics of nominal data, and Data Preview tab with the selected number of rows of original data. 
+	<p>The interactive view consists of three tabs: a Data Preview tab, a Statistics tab, and a Nominal tab.  The Statistics and Nominal tabs sum up the information in each column. The user can then decide which columns to include in further analysis.</p>
+	
+	<p>The <b>Data Preview</b> tab shows the data selected for preview.</p>
+	
+	<p>The <b>Statistics</b> tab shows the main statistical properties of the numerical data, such as minimum, maximum, median (optional), standard deviation, variance, skewness, kurtosis, overall sum, number of zero values, number of missing values, number of not-an-object values, as well as positive and negative infinity values.  For each column, the node also calculates a histogram showing the value distribution.</p>
+	 
+	<p>The <b>Nominal</b> tab lists the main properties of the nominal values, such as the number of missing values, unique values, and top n most frequent and infrequent values.  In addition, for each data column there is a histogram showing the frequencies with which values occur in this column.</p>
 	</interactiveView>
 	<ports>
 		<inPort index="0" name="Table">
