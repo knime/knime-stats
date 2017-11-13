@@ -154,6 +154,14 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
         final DataTableSpec inputSpec = (DataTableSpec)inSpecs[0];
 
+        if (m_config.getDisplayRowNumber() == 0) {
+            throw new InvalidSettingsException("Number of rows for data preview must be greater than 0!");
+        }
+
+        if (m_config.getInitialPageSize() == 0) {
+            throw new InvalidSettingsException("Number initial page size must be greater than 0!");
+        }
+
         PortObjectSpec[] out = new PortObjectSpec[]{inputSpec};
         return out;
     }
