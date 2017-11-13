@@ -52,7 +52,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,9 +86,11 @@ import org.knime.core.data.DataValue;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.ExtensibleUtilityFactory;
 import org.knime.core.data.LongValue;
+import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
 import org.knime.core.data.container.ColumnRearranger;
+import org.knime.core.data.def.StringCell;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -115,6 +121,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     private List<HistogramModel<?>> m_javaNumericHistograms;
     private List<HistogramModel<?>> m_javaNominalHistograms;
 
+    private String MISSING_VALUE_STRING = "?";
 
     /**
      * @param viewName
@@ -236,11 +243,28 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         MissingValue missing = new MissingValue(includeColumns);
         statistics.add(missing);
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
-        calc.evaluate(table, exec.createSubExecutionContext(0.5));
+
+        //if some columns exceeded the set number of max unique values, prepare an array of such columns
+        //String test = calc.evaluate(table, exec.createSubExecutionContext(0.5));
+        String nominalEvaluationResults = calc.evaluate(table, exec.createSubExecutionContext(0.5));
+        if (nominalEvaluationResults != null) {
+            String[] errors = nominalEvaluationResults.split(":");
+            String[] errorsClean = errors[errors.length - 1].replaceAll("('\"|\"'|\"| |\\n)", "").split(",");
+            getViewRepresentation().setMaxNomValueReached(errorsClean);
+        } else {
+            getViewRepresentation().setMaxNomValueReached(null);
+        }
+
 
         List<JSNominalHistogram> jsHistograms = new ArrayList<JSNominalHistogram>();
         m_javaNominalHistograms = new ArrayList<HistogramModel<?>>();
         JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
+
+        //if values in nom column don't have 2*freqNumber values, then put them in all
+
+        DataValue[] freq = null;
+        DataValue[] infreq = null;
+        DataValue[] all = null;
 
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
@@ -249,10 +273,42 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             rowValues.add(missing.getNumberMissingValues(col));
 
             Map<DataValue, Integer> nomValue = nominal.getNominalValues(i);
-            rowValues.add(nomValue.size());
+            //rowValues.add(nomValue.size());
 
-            m_javaNominalHistograms.add(calculateNominalHistograms(nomValue, i, col));
-            jsHistograms.add(new JSNominalHistogram(col, i, nomValue));
+            //exclude missing values for most freq values calculation
+            Map<DataValue, Integer> nomValueMissingExcl = new HashMap<DataValue, Integer>(nomValue);
+            Set<DataValue> keySet = nomValueMissingExcl.keySet();
+            if (keySet.contains(new MissingCell("?"))) {
+                nomValueMissingExcl.remove(new MissingCell("?"));
+            }
+            //number of unique values excludes missing value
+            rowValues.add(nomValueMissingExcl.size());
+
+            //now sort values by freq
+            Map<DataValue, Integer> sortedNomValuesMissingExcl = sortByValue(nomValueMissingExcl);
+
+            all = new DataValue[Math.min(2 * m_config.getFreqValuesNumber() - 1, sortedNomValuesMissingExcl.size())];
+            freq = new DataValue[m_config.getFreqValuesNumber()];
+            infreq = new DataValue[m_config.getFreqValuesNumber()];
+
+            if (nomValueMissingExcl.keySet().size() > all.length) {
+                System.arraycopy(sortedNomValuesMissingExcl.keySet().toArray(new DataValue[0]), 0, freq, 0, freq.length);
+                System.arraycopy(sortedNomValuesMissingExcl.keySet().toArray(new DataValue[0]), sortedNomValuesMissingExcl.keySet().size() - freq.length, infreq, 0, infreq.length);
+            } else {
+                System.arraycopy(sortedNomValuesMissingExcl.keySet().toArray(new DataValue[0]), 0, all, 0, all.length);
+            }
+            rowValues.add(unwrapDataValueArray(freq));
+            rowValues.add(unwrapDataValueArray(infreq));
+            rowValues.add(unwrapDataValueArray(all));
+
+            //if we want to include missing values, than do it on the whole set of nominals
+            if (m_config.getMissingValuesInHist()) {
+                m_javaNominalHistograms.add(calculateNominalHistograms(nomValue, i, col));
+                jsHistograms.add(new JSNominalHistogram(col, i, nomValue));
+            } else {
+                m_javaNominalHistograms.add(calculateNominalHistograms(nomValueMissingExcl, i, col));
+                jsHistograms.add(new JSNominalHistogram(col, i, nomValueMissingExcl));
+            }
 
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
@@ -264,6 +320,50 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
 
         getViewRepresentation().setJsNominalHistograms(jsHistograms);
         return jTable;
+    }
+
+    //adopted from https://www.mkyong.com/java/how-to-sort-a-map-in-java/
+    private static Map<DataValue, Integer> sortByValue(final Map<DataValue, Integer> unsortMap) {
+
+        // 1. Convert Map to List of Map
+        List<Map.Entry<DataValue, Integer>> list =
+                new LinkedList<Map.Entry<DataValue, Integer>>(unsortMap.entrySet());
+
+        // 2. Sort list with Collections.sort(), provide a custom Comparator
+        //    Try switch the o1 o2 position for a different order
+        Collections.sort(list, new Comparator<Map.Entry<DataValue, Integer>>() {
+            @Override
+            public int compare(final Map.Entry<DataValue, Integer> o1,
+                               final Map.Entry<DataValue, Integer> o2) {
+                return (o2.getValue()).compareTo(o1.getValue());
+            }
+        });
+
+        // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
+        Map<DataValue, Integer> sortedMap = new LinkedHashMap<DataValue, Integer>();
+        for (Map.Entry<DataValue, Integer> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+        return sortedMap;
+    }
+
+    private String[] unwrapDataValueArray (final DataValue[] dataValueArray) {
+        String[] output = new String[dataValueArray.length];
+        for (int i = 0; i < dataValueArray.length; i++) {
+            if (dataValueArray[i] == null) {
+                return new String[0];
+            }
+            output[i] = dataValueToString(dataValueArray[i]);
+        }
+        return output;
+    }
+
+    private String dataValueToString (final DataValue dataValue) {
+        if (dataValue instanceof StringCell) {
+            return ((StringCell)dataValue).getStringValue();
+        }
+        return MISSING_VALUE_STRING;
     }
 
     private JSONDataTable calculateStatistics(final BufferedDataTable table, final ExecutionContext exec) throws InvalidSettingsException, CanceledExecutionException {
@@ -350,7 +450,8 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         List<JSNumericHistogram> jsHistograms = new ArrayList<JSNumericHistogram>();
         for (int i = 0; i < includeColumns.length; i++) {
             JSNumericHistogram histTest = new JSNumericHistogram(includeColumns[i], i, table,  ((DoubleValue)minMax.getMin(includeColumns[i])).getDoubleValue(),
-                ((DoubleValue)minMax.getMax(includeColumns[i])).getDoubleValue(),  mean.getResult(includeColumns[i]));
+                ((DoubleValue)minMax.getMax(includeColumns[i])).getDoubleValue(),  mean.getResult(includeColumns[i]), m_config.getNumberOfHistogramBars(),
+                m_config.getAdaptNumberOfHistogramBars());
             jsHistograms.add(histTest);
         }
         getViewRepresentation().setJsNumericHistograms(jsHistograms);
@@ -476,8 +577,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
 
    private Map<Integer, ? extends HistogramModel<?>> calculateNumericHistograms(final BufferedDataTable table, final ExecutionContext exec, final MinMax minMax, final Mean mean, final String[] includeColumns) {
        HistogramColumn hCol = HistogramColumn.getDefaultInstance()
-               .withNumberOfBins(10)
-               .withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
+               .withNumberOfBins(m_config.getNumberOfHistogramBars());
+       if (m_config.getAdaptNumberOfHistogramBars()) {
+           hCol = HistogramColumn.getDefaultInstance().withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
+       }
        int noCols = includeColumns.length;
        double[] mins = new double[noCols];
        double[] maxs = new double[noCols];
@@ -516,7 +619,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             viewRepresentation.setDisplayMissingValueAsQuestionMark(m_config.getDisplayMissingValueAsQuestionMark());
             viewRepresentation.setDisplayRowNumber(m_config.getDisplayRowNumber());
             viewRepresentation.setEnableFreqValDisplay(m_config.getEnableFreqValDisplay());
-            viewRepresentation.setFreqValues(m_config.getFreqValues());
+            viewRepresentation.setFreqValues(m_config.getFreqValuesNumber());
         }
     }
 
@@ -622,7 +725,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         }
         if (hNomFile.exists()) {
             try {
-                Map<Integer, ? extends HistogramModel<?>> nomHistograms =HistogramColumn.loadNominalHistograms(hNomFile, rep.getNominalValuesSize());
+                Map<Integer, ? extends HistogramModel<?>> nomHistograms = HistogramColumn.loadNominalHistograms(hNomFile, rep.getNominalValuesSize());
 
                 List<JSNominalHistogram> jsNomHist = new ArrayList<JSNominalHistogram>();
                 for (HistogramModel<?> hist : nomHistograms.values()) {

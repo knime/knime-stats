@@ -175,9 +175,25 @@ public class DataExplorerConfig {
     final static boolean DEFAULT_ENABLE_FREQ_VAL_DISPLAY = true;
     private boolean m_enableFreqValDisplay = DEFAULT_ENABLE_FREQ_VAL_DISPLAY;
 
-    final static String CFG_FREQ_VALUES = "freqValues";
-    final static int DEFAULT_FREQ_VALUES = 5;
-    private int m_freqValues = DEFAULT_FREQ_VALUES;
+    final static String CFG_FREQ_VALUES_NUMBER = "freqValuesNumber";
+    final static int DEFAULT_FREQ_VALUES_NUMBER = 5;
+    private int m_freqValuesNumber = DEFAULT_FREQ_VALUES_NUMBER;
+
+    final static String CFG_MISSING_VALUES_IN_HIST = "missingValuesInHist";
+    final static boolean DEFAULT_MISSING_VALUES_IN_HIST = false;
+    private boolean m_missingValuesInHist = DEFAULT_MISSING_VALUES_IN_HIST;
+
+    final static String CFG_NUMBER_OF_HISTOGRAM_BARS = "numberOfHistogramBars";
+    final static int DEFAULT_NUMBER_OF_HISTOGRAM_BARS = 10;
+    private int m_numberOfHistogramBars = DEFAULT_NUMBER_OF_HISTOGRAM_BARS;
+
+    final static String CFG_ADAPT_NUMBER_OF_HISTOGRAM_BARS = "adaptNumberOfHistogramBars";
+    final static boolean DEFAULT_ADAPT_NUMBER_OF_HISTOGRAM_BARS = false;
+    private boolean m_adaptNumberOfHistogramBars = DEFAULT_ADAPT_NUMBER_OF_HISTOGRAM_BARS;
+
+    final static String CFG_MAX_NOMINAL_VALUE_REACHED = "maxNomValueReached";
+    final static String[] DEFAULT_MAX_NOMINAL_VALUE_REACHED = null;
+    private String[] m_maxNomValueReached = DEFAULT_MAX_NOMINAL_VALUE_REACHED;
 
     /**
      * @return the hideInWizard
@@ -518,16 +534,73 @@ public class DataExplorerConfig {
     /**
      * @return the m_freqValues
      */
-    public int getFreqValues() {
-        return m_freqValues;
+    public int getFreqValuesNumber() {
+        return m_freqValuesNumber;
     }
 
     /**
-     * @param freqValues the m_freqValues to set
+     * @param freqValuesNumber the m_freqValues to set
      */
-    public void setFreqValues(final int freqValues) {
-        this.m_freqValues = freqValues;
+    public void setFreqValuesNumber(final int freqValuesNumber) {
+        this.m_freqValuesNumber = freqValuesNumber;
     }
+
+    /**
+     * @return the m_missingValuesInHist
+     */
+    public boolean getMissingValuesInHist() {
+        return m_missingValuesInHist;
+    }
+
+    /**
+     * @param missingValuesInHist the m_missingValuesInHist to set
+     */
+    public void setMissingValuesInHist(final boolean missingValuesInHist) {
+        this.m_missingValuesInHist = missingValuesInHist;
+    }
+
+    /**
+     * @return the m_numberOfHistogramBars
+     */
+    public int getNumberOfHistogramBars() {
+        return m_numberOfHistogramBars;
+    }
+
+    /**
+     * @param numberOfHistogramBars the m_numberOfHistogramBars to set
+     */
+    public void setNumberOfHistogramBars(final int numberOfHistogramBars) {
+        this.m_numberOfHistogramBars = numberOfHistogramBars;
+    }
+
+    /**
+     * @return the m_adaptNumberOfHistogramBars
+     */
+    public boolean getAdaptNumberOfHistogramBars() {
+        return m_adaptNumberOfHistogramBars;
+    }
+
+    /**
+     * @param adaptNumberOfHistogramBars the m_adaptNumberOfHistogramBars to set
+     */
+    public void setAdaptNumberOfHistogramBars(final boolean adaptNumberOfHistogramBars) {
+        this.m_adaptNumberOfHistogramBars = adaptNumberOfHistogramBars;
+    }
+
+    /**
+     * @return the m_maxNomValueReached
+     */
+    public String[] getMaxNomValueReached() {
+        return m_maxNomValueReached;
+    }
+
+    /**
+     * @param maxNomValueReached the m_maxNomValueReached to set
+     */
+    public void setMaxNomValueReached(final String[] maxNomValueReached) {
+        this.m_maxNomValueReached = maxNomValueReached;
+    }
+
 
     void saveSettingsTo(final NodeSettingsWO settings) {
         settings.addBoolean(CFG_HIDE_IN_WIZARD, m_hideInWizard);
@@ -554,7 +627,11 @@ public class DataExplorerConfig {
         settings.addInt(CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
         settings.addInt(CFG_MAX_NOMINAL_VALUES, m_maxNominalValues);
         settings.addBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, m_enableFreqValDisplay);
-        settings.addInt(CFG_FREQ_VALUES, m_freqValues);
+        settings.addInt(CFG_FREQ_VALUES_NUMBER, m_freqValuesNumber);
+        settings.addBoolean(CFG_MISSING_VALUES_IN_HIST, m_missingValuesInHist);
+        settings.addInt(CFG_NUMBER_OF_HISTOGRAM_BARS, m_numberOfHistogramBars);
+        settings.addBoolean(CFG_ADAPT_NUMBER_OF_HISTOGRAM_BARS, m_adaptNumberOfHistogramBars);
+        settings.addStringArray(CFG_MAX_NOMINAL_VALUE_REACHED, m_maxNomValueReached);
     }
 
     void loadSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
@@ -582,7 +659,11 @@ public class DataExplorerConfig {
         m_displayRowNumber = settings.getInt(CFG_DISPLAY_ROW_NUMBER, DEFAULT_DISPLAY_ROW_NUMBER);
         m_maxNominalValues = settings.getInt(CFG_MAX_NOMINAL_VALUES, DEFAULT_MAX_NOMINAL_VALUES);
         m_enableFreqValDisplay = settings.getBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
-        m_freqValues = settings.getInt(CFG_FREQ_VALUES, DEFAULT_FREQ_VALUES);
+        m_freqValuesNumber = settings.getInt(CFG_FREQ_VALUES_NUMBER, DEFAULT_FREQ_VALUES_NUMBER);
+        m_missingValuesInHist = settings.getBoolean(CFG_MISSING_VALUES_IN_HIST, DEFAULT_MISSING_VALUES_IN_HIST);
+        m_numberOfHistogramBars = settings.getInt(CFG_NUMBER_OF_HISTOGRAM_BARS, DEFAULT_NUMBER_OF_HISTOGRAM_BARS);
+        m_adaptNumberOfHistogramBars = settings.getBoolean(CFG_ADAPT_NUMBER_OF_HISTOGRAM_BARS, DEFAULT_ADAPT_NUMBER_OF_HISTOGRAM_BARS);
+        m_maxNomValueReached = settings.getStringArray(CFG_MAX_NOMINAL_VALUE_REACHED, DEFAULT_MAX_NOMINAL_VALUE_REACHED);
     }
 
     void loadSettingsForDialog(final NodeSettingsRO settings, final DataTableSpec spec) {
@@ -610,7 +691,11 @@ public class DataExplorerConfig {
         m_displayRowNumber = settings.getInt(CFG_DISPLAY_ROW_NUMBER, DEFAULT_DISPLAY_ROW_NUMBER);
         m_maxNominalValues = settings.getInt(CFG_MAX_NOMINAL_VALUES, DEFAULT_MAX_NOMINAL_VALUES);
         m_enableFreqValDisplay = settings.getBoolean(CFG_ENABLE_FREQ_VAL_DISPLAY, DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
-        m_freqValues = settings.getInt(CFG_FREQ_VALUES, DEFAULT_FREQ_VALUES);
+        m_freqValuesNumber = settings.getInt(CFG_FREQ_VALUES_NUMBER, DEFAULT_FREQ_VALUES_NUMBER);
+        m_missingValuesInHist = settings.getBoolean(CFG_MISSING_VALUES_IN_HIST, DEFAULT_MISSING_VALUES_IN_HIST);
+        m_numberOfHistogramBars = settings.getInt(CFG_NUMBER_OF_HISTOGRAM_BARS, DEFAULT_NUMBER_OF_HISTOGRAM_BARS);
+        m_adaptNumberOfHistogramBars = settings.getBoolean(CFG_ADAPT_NUMBER_OF_HISTOGRAM_BARS, DEFAULT_ADAPT_NUMBER_OF_HISTOGRAM_BARS);
+        m_maxNomValueReached = settings.getStringArray(CFG_MAX_NOMINAL_VALUE_REACHED, DEFAULT_MAX_NOMINAL_VALUE_REACHED);
     }
 
 
