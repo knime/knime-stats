@@ -104,12 +104,15 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private boolean m_displayMissingValueAsQuestionMark;
     private int m_displayRowNumber;
     private boolean m_enableFreqValDisplay;
-    private int m_freqValues;
+    private int m_freqValuesNumber;
+    private String[] m_maxNomValueReached;
 
     private List<JSNominalHistogram> m_jsNominalHistograms;
     private List<JSNumericHistogram> m_jsNumericHistograms;
 
-
+//    private String[] m_allNominalValues;
+//    private String[] m_freqNominalValues;
+//    private String[] m_infreqNominalValues;
 
     /**
      * @return the statistics
@@ -480,15 +483,72 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
      * @return the m_freqValues
      */
     public int getFreqValues() {
-        return m_freqValues;
+        return m_freqValuesNumber;
     }
 
     /**
      * @param freqValues the m_freqValues to set
      */
     public void setFreqValues(final int freqValues) {
-        this.m_freqValues = freqValues;
+        this.m_freqValuesNumber = freqValues;
     }
+
+    /**
+     * @return the m_maxNomValueReached
+     */
+    public String[] getMaxNomValueReached() {
+        return m_maxNomValueReached;
+    }
+
+    /**
+     * @param maxNomValueReached the m_maxNomValueReached to set
+     */
+    public void setMaxNomValueReached(final String[] maxNomValueReached) {
+        this.m_maxNomValueReached = maxNomValueReached;
+    }
+
+
+//    /**
+//     * @return the m_allNominalValues
+//     */
+//    public String[] getAllNominalValues() {
+//        return m_allNominalValues;
+//    }
+//
+//    /**
+//     * @param allNominalValues the m_allNominalValues to set
+//     */
+//    public void setAllNominalValues(final String[] allNominalValues) {
+//        this.m_allNominalValues = allNominalValues;
+//    }
+//
+//    /**
+//     * @return the m_freqNominalValues
+//     */
+//    public String[] getFreqNominalValues() {
+//        return m_freqNominalValues;
+//    }
+//
+//    /**
+//     * @param freqNominalValues the m_freqNominalValues to set
+//     */
+//    public void setFreqNominalValues(final String[] freqNominalValues) {
+//        this.m_freqNominalValues = freqNominalValues;
+//    }
+//
+//    /**
+//     * @return the m_infreqNominalValues
+//     */
+//    public String[] getInfreqNominalValues() {
+//        return m_infreqNominalValues;
+//    }
+//
+//    /**
+//     * @param infreqNominalValues the m_infreqNominalValues to set
+//     */
+//    public void setInfreqNominalValues(final String[] infreqNominalValues) {
+//        this.m_infreqNominalValues = infreqNominalValues;
+//    }
 
     /**
      * Extracts all mean values from statistics table.
@@ -575,7 +635,11 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         settings.addBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, m_displayMissingValueAsQuestionMark);
         settings.addInt(DataExplorerConfig.CFG_DISPLAY_ROW_NUMBER, m_displayRowNumber);
         settings.addBoolean(DataExplorerConfig.CFG_ENABLE_FREQ_VAL_DISPLAY, m_enableFreqValDisplay);
-        settings.addInt(DataExplorerConfig.CFG_FREQ_VALUES, m_freqValues);
+        settings.addInt(DataExplorerConfig.CFG_FREQ_VALUES_NUMBER, m_freqValuesNumber);
+        settings.addStringArray(DataExplorerConfig.CFG_MAX_NOMINAL_VALUE_REACHED, m_maxNomValueReached);
+//        settings.addStringArray(DataExplorerConfig.CFG_ALL_NOMINAL_VALUES, m_allNominalValues);
+//        settings.addStringArray(DataExplorerConfig.CFG_FREQ_NOMINAL_VALUES, m_freqNominalValues);
+//        settings.addStringArray(DataExplorerConfig.CFG_INFREQ_NOMINAL_VALUES, m_infreqNominalValues);
     }
 
     /**
@@ -613,7 +677,11 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_displayMissingValueAsQuestionMark = settings.getBoolean(DataExplorerConfig.CFG_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK, DataExplorerConfig.DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK);
         m_displayRowNumber = settings.getInt(DataExplorerConfig.CFG_DISPLAY_ROW_NUMBER, DataExplorerConfig.DEFAULT_DISPLAY_ROW_NUMBER);
         m_enableFreqValDisplay = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_FREQ_VAL_DISPLAY , DataExplorerConfig.DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
-        m_freqValues = settings.getInt(DataExplorerConfig.CFG_FREQ_VALUES, DataExplorerConfig.DEFAULT_FREQ_VALUES);
+        m_freqValuesNumber = settings.getInt(DataExplorerConfig.CFG_FREQ_VALUES_NUMBER, DataExplorerConfig.DEFAULT_FREQ_VALUES_NUMBER);
+        m_maxNomValueReached = settings.getStringArray(DataExplorerConfig.CFG_MAX_NOMINAL_VALUE_REACHED, DataExplorerConfig.DEFAULT_MAX_NOMINAL_VALUE_REACHED);
+//        m_allNominalValues = settings.getStringArray(DataExplorerConfig.CFG_ALL_NOMINAL_VALUES, DataExplorerConfig.DEFAULT_ALL_NOMINAL_VALUES);
+//        m_freqNominalValues = settings.getStringArray(DataExplorerConfig.CFG_FREQ_NOMINAL_VALUES, DataExplorerConfig.DEFAULT_FREQ_NOMINAL_VALUES);
+//        m_infreqNominalValues = settings.getStringArray(DataExplorerConfig.CFG_INFREQ_NOMINAL_VALUES, DataExplorerConfig.DEFAULT_INFREQ_NOMINAL_VALUES);
     }
 
     /**
@@ -659,7 +727,11 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_jsNominalHistograms, other.m_jsNominalHistograms)
                 .append(m_jsNumericHistograms, other.m_jsNumericHistograms)
                 .append(m_enableFreqValDisplay, other.m_enableFreqValDisplay)
-                .append(m_freqValues, other.m_freqValues)
+                .append(m_freqValuesNumber, other.m_freqValuesNumber)
+                .append(m_maxNomValueReached, other.m_maxNomValueReached)
+//                .append(m_allNominalValues, other.m_allNominalValues)
+//                .append(m_freqNominalValues, other.m_freqNominalValues)
+//                .append(m_infreqNominalValues, other.m_infreqNominalValues)
                 .isEquals();
     }
 
@@ -696,8 +768,15 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_jsNominalHistograms)
                 .append(m_jsNumericHistograms)
                 .append(m_enableFreqValDisplay)
-                .append(m_freqValues)
+                .append(m_freqValuesNumber)
+                .append(m_maxNomValueReached)
+//                .append(m_allNominalValues)
+//                .append(m_freqNominalValues)
+//                .append(m_infreqNominalValues)
                 .toHashCode();
     }
+
+
+
 
 }

@@ -65,9 +65,12 @@ public class JSNumericHistogram extends JSHistogram {
      * @param colIndex Index of the column.
      */
     JSNumericHistogram(final String colName, final int colIndex, final BufferedDataTable table, final double min,
-        final double max, final double mean) {
+        final double max, final double mean, final int numberOfBins, final boolean adaptBarsNumber) {
         super(colName, colIndex);
-        HistogramColumn hCol = HistogramColumn.getDefaultInstance().withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
+        HistogramColumn hCol = HistogramColumn.getDefaultInstance().withNumberOfBins(numberOfBins);
+        if (adaptBarsNumber) {
+            hCol = HistogramColumn.getDefaultInstance().withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
+        }
         //.withNumberOfBins(10).withBinSelectionStrategy(BinNumberSelectionStrategy.DecimalRange);
         HistogramModel<?> histogram = hCol.histograms(table, new HiLiteHandler(), new double[]{min}, new double[]{max}, new double[]{mean}, colName).get(0);
         this.m_bins = histogram.getBins();

@@ -99,6 +99,9 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     private final JSpinner m_maxNominalValuesSpinner;
     private final JCheckBox m_enableFreqValDisplayCheckbox;
     private final JSpinner m_freqValuesSpinner;
+    private final JCheckBox m_missingValuesInHist;
+    private final JSpinner m_numberOfHistogramBars;
+    private final JCheckBox m_adaptNumberOfHistogramBars;
 
     /** Creates a new dialog instance */
     public DataExplorerNodeDialog() {
@@ -152,7 +155,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_globalNumberFormatDecimalSpinner = new JSpinner(new SpinnerNumberModel(2, 0, null, 1));
         m_displayPreviewRowsSpinner = new JSpinner(new SpinnerNumberModel(1, 1, null, 1));
         m_maxNominalValuesSpinner = new JSpinner(new SpinnerNumberModel(100, 1,null,5));
-        m_enableFreqValDisplayCheckbox = new JCheckBox("Show most frequent/infrequent values");
+        m_enableFreqValDisplayCheckbox = new JCheckBox("Show most frequent/infrequent nominal values");
         m_enableFreqValDisplayCheckbox.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(final ChangeEvent e) {
@@ -161,13 +164,23 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         });
         m_freqValuesSpinner = new JSpinner(new SpinnerNumberModel(5, 1, null, 1));
 
+        m_missingValuesInHist = new JCheckBox("Show missing values in histograms");
+        m_numberOfHistogramBars = new JSpinner(new SpinnerNumberModel(10, 1, null, 1));
+        m_adaptNumberOfHistogramBars = new JCheckBox("Enable automatic number of histogram bars");
+        m_adaptNumberOfHistogramBars.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                enableBarNumber();
+            }
+        });
+
         addTab("Options", initOptions());
         addTab("Table", initTable());
     }
 
     private JPanel initOptions() {
         JPanel generalPanel = new JPanel(new GridBagLayout());
-        generalPanel.setBorder(new TitledBorder("General Options"));
+        generalPanel.setBorder(new TitledBorder("Columns"));
         GridBagConstraints gbcG = createConfiguredGridBagConstraints();
         gbcG.gridwidth = 2;
         gbcG.fill = GridBagConstraints.HORIZONTAL;
@@ -176,15 +189,33 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         gbcG.gridwidth = 1;
         generalPanel.add(new JLabel("Number of most freq./infreq. values: "), gbcG);
         gbcG.gridx++;
-
         m_freqValuesSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
         generalPanel.add(m_freqValuesSpinner, gbcG);
         gbcG.gridwidth = 2;
         gbcG.gridx = 0;
         //generalPanel.add(m_displayFullscreenButtonCheckBox, gbcG);
-
         gbcG.gridy++;
         generalPanel.add(m_showMedianCheckBox, gbcG);
+        //gbcG.gridy++;
+
+        JPanel histPanel = new JPanel(new GridBagLayout());
+        histPanel.setBorder(new TitledBorder("Histograms"));
+        GridBagConstraints gbcH = createConfiguredGridBagConstraints();
+        gbcH.gridwidth = 2;
+        gbcH.fill = GridBagConstraints.HORIZONTAL;
+//        gbcH.gridy = 0;
+//        gbcH.gridx = 0;
+        histPanel.add(m_missingValuesInHist, gbcH);
+        gbcH.gridy++;
+        histPanel.add(m_adaptNumberOfHistogramBars, gbcH);
+        gbcH.gridy++;
+        gbcH.gridwidth = 1;
+        histPanel.add(new JLabel("Number of numeric histogram bars: "), gbcH);
+        gbcH.gridx++;
+        m_numberOfHistogramBars.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+        histPanel.add(m_numberOfHistogramBars, gbcH);
+        //gbcH.gridx = 0;
+
 
         JPanel titlePanel = new JPanel(new GridBagLayout());
         titlePanel.setBorder(new TitledBorder("Titles"));
@@ -210,14 +241,26 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_globalNumberFormatDecimalSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
         numberPanel.add(m_globalNumberFormatDecimalSpinner, gbcN);
 
+        JPanel nominalPanel = new JPanel(new GridBagLayout());
+        nominalPanel.setBorder(new TitledBorder("Nominal Values"));
+        GridBagConstraints gbcNo = createConfiguredGridBagConstraints();
+        nominalPanel.add(new JLabel("Max number of nominal values"), gbcNo);
+        gbcNo.gridx++;
+        m_maxNominalValuesSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+        nominalPanel.add(m_maxNominalValuesSpinner, gbcNo);
+
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = createConfiguredGridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         panel.add(generalPanel, gbc);
         gbc.gridy++;
+        panel.add(histPanel, gbc);
+        gbc.gridy++;
         panel.add(titlePanel, gbc);
         gbc.gridy++;
         panel.add(numberPanel, gbc);
+        gbc.gridy++;
+        panel.add(nominalPanel, gbc);
         return panel;
     }
 
@@ -272,13 +315,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         gbcSo.gridx++;
         sortingPanel.add(m_enableClearSortButtonCheckBox, gbcSo);
 
-        JPanel nominalPanel = new JPanel(new GridBagLayout());
-        nominalPanel.setBorder(new TitledBorder("Nominal Values"));
-        GridBagConstraints gbcNo = createConfiguredGridBagConstraints();
-        nominalPanel.add(new JLabel("Max number of nominal values"), gbcNo);
-        gbcNo.gridx++;
-        m_maxNominalValuesSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
-        nominalPanel.add(m_maxNominalValuesSpinner, gbcNo);
+
 
 
         JPanel panel = new JPanel(new GridBagLayout());
@@ -291,8 +328,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         panel.add(searchPanel, gbc);
         gbc.gridy++;
         panel.add(sortingPanel, gbc);
-        gbc.gridy++;
-        panel.add(nominalPanel, gbc);
+
         return panel;
     }
 
@@ -355,6 +391,10 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_enableClearSortButtonCheckBox.setEnabled(m_enableSortingCheckBox.isSelected());
     }
 
+    private void enableBarNumber() {
+        m_numberOfHistogramBars.setEnabled(!m_adaptNumberOfHistogramBars.isSelected());
+    }
+
     private void enableSearchFields() {
         /* nothing so far */
     }
@@ -384,7 +424,10 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         config.setdisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
         config.setMaxNominalValues((Integer)m_maxNominalValuesSpinner.getValue());
         config.setEnableFreqValDisplay(m_enableFreqValDisplayCheckbox.isSelected());
-        config.setFreqValues((Integer)m_freqValuesSpinner.getValue());
+        config.setFreqValuesNumber((Integer)m_freqValuesSpinner.getValue());
+        config.setMissingValuesInHist(m_missingValuesInHist.isSelected());
+        config.setNumberOfHistogramBars((Integer)m_numberOfHistogramBars.getValue());
+        config.setAdaptNumberOfHistogramBars(m_adaptNumberOfHistogramBars.isSelected());
         config.saveSettingsTo(settings);
     }
 
@@ -415,12 +458,16 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_displayPreviewRowsSpinner.setValue(config.getDisplayRowNumber());
         m_maxNominalValuesSpinner.setValue(config.getMaxNominalValues());
         m_enableFreqValDisplayCheckbox.setSelected(config.getEnableFreqValDisplay());
-        m_freqValuesSpinner.setValue(config.getFreqValues());
+        m_freqValuesSpinner.setValue(config.getFreqValuesNumber());
+        m_missingValuesInHist.setSelected(config.getMissingValuesInHist());
+        m_numberOfHistogramBars.setValue(config.getNumberOfHistogramBars());
+        m_adaptNumberOfHistogramBars.setSelected(config.getAdaptNumberOfHistogramBars());
         enablePagingFields();
         enableSearchFields();
         enableFormatterFields();
         enableSortingFields();
         enableFreqValues();
+        enableBarNumber();
     }
 
 }
