@@ -106,13 +106,10 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private boolean m_enableFreqValDisplay;
     private int m_freqValuesNumber;
     private String[] m_maxNomValueReached;
+    private String m_otherErrorValuesNotation = DataExplorerConfig.DEFAULT_OTHER_ERROR_VALUES_NOTATION;
 
     private List<JSNominalHistogram> m_jsNominalHistograms;
     private List<JSNumericHistogram> m_jsNumericHistograms;
-
-//    private String[] m_allNominalValues;
-//    private String[] m_freqNominalValues;
-//    private String[] m_infreqNominalValues;
 
     /**
      * @return the statistics
@@ -508,47 +505,12 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     }
 
 
-//    /**
-//     * @return the m_allNominalValues
-//     */
-//    public String[] getAllNominalValues() {
-//        return m_allNominalValues;
-//    }
-//
-//    /**
-//     * @param allNominalValues the m_allNominalValues to set
-//     */
-//    public void setAllNominalValues(final String[] allNominalValues) {
-//        this.m_allNominalValues = allNominalValues;
-//    }
-//
-//    /**
-//     * @return the m_freqNominalValues
-//     */
-//    public String[] getFreqNominalValues() {
-//        return m_freqNominalValues;
-//    }
-//
-//    /**
-//     * @param freqNominalValues the m_freqNominalValues to set
-//     */
-//    public void setFreqNominalValues(final String[] freqNominalValues) {
-//        this.m_freqNominalValues = freqNominalValues;
-//    }
-//
-//    /**
-//     * @return the m_infreqNominalValues
-//     */
-//    public String[] getInfreqNominalValues() {
-//        return m_infreqNominalValues;
-//    }
-//
-//    /**
-//     * @param infreqNominalValues the m_infreqNominalValues to set
-//     */
-//    public void setInfreqNominalValues(final String[] infreqNominalValues) {
-//        this.m_infreqNominalValues = infreqNominalValues;
-//    }
+    /**
+     * @return the m_otherErrorValuesNotation
+     */
+    public String getOtherErrorValuesNotation() {
+        return m_otherErrorValuesNotation;
+    }
 
     /**
      * Extracts all mean values from statistics table.
@@ -637,9 +599,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         settings.addBoolean(DataExplorerConfig.CFG_ENABLE_FREQ_VAL_DISPLAY, m_enableFreqValDisplay);
         settings.addInt(DataExplorerConfig.CFG_FREQ_VALUES_NUMBER, m_freqValuesNumber);
         settings.addStringArray(DataExplorerConfig.CFG_MAX_NOMINAL_VALUE_REACHED, m_maxNomValueReached);
-//        settings.addStringArray(DataExplorerConfig.CFG_ALL_NOMINAL_VALUES, m_allNominalValues);
-//        settings.addStringArray(DataExplorerConfig.CFG_FREQ_NOMINAL_VALUES, m_freqNominalValues);
-//        settings.addStringArray(DataExplorerConfig.CFG_INFREQ_NOMINAL_VALUES, m_infreqNominalValues);
+        settings.addString(DataExplorerConfig.OTHER_ERROR_VALUES_NOTATION, m_otherErrorValuesNotation);
     }
 
     /**
@@ -679,9 +639,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_enableFreqValDisplay = settings.getBoolean(DataExplorerConfig.CFG_ENABLE_FREQ_VAL_DISPLAY , DataExplorerConfig.DEFAULT_ENABLE_FREQ_VAL_DISPLAY);
         m_freqValuesNumber = settings.getInt(DataExplorerConfig.CFG_FREQ_VALUES_NUMBER, DataExplorerConfig.DEFAULT_FREQ_VALUES_NUMBER);
         m_maxNomValueReached = settings.getStringArray(DataExplorerConfig.CFG_MAX_NOMINAL_VALUE_REACHED, DataExplorerConfig.DEFAULT_MAX_NOMINAL_VALUE_REACHED);
-//        m_allNominalValues = settings.getStringArray(DataExplorerConfig.CFG_ALL_NOMINAL_VALUES, DataExplorerConfig.DEFAULT_ALL_NOMINAL_VALUES);
-//        m_freqNominalValues = settings.getStringArray(DataExplorerConfig.CFG_FREQ_NOMINAL_VALUES, DataExplorerConfig.DEFAULT_FREQ_NOMINAL_VALUES);
-//        m_infreqNominalValues = settings.getStringArray(DataExplorerConfig.CFG_INFREQ_NOMINAL_VALUES, DataExplorerConfig.DEFAULT_INFREQ_NOMINAL_VALUES);
+        m_otherErrorValuesNotation = DataExplorerConfig.DEFAULT_OTHER_ERROR_VALUES_NOTATION;
     }
 
     /**
@@ -729,9 +687,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_enableFreqValDisplay, other.m_enableFreqValDisplay)
                 .append(m_freqValuesNumber, other.m_freqValuesNumber)
                 .append(m_maxNomValueReached, other.m_maxNomValueReached)
-//                .append(m_allNominalValues, other.m_allNominalValues)
-//                .append(m_freqNominalValues, other.m_freqNominalValues)
-//                .append(m_infreqNominalValues, other.m_infreqNominalValues)
+                .append(m_otherErrorValuesNotation, other.m_otherErrorValuesNotation)
                 .isEquals();
     }
 
@@ -770,11 +726,10 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_enableFreqValDisplay)
                 .append(m_freqValuesNumber)
                 .append(m_maxNomValueReached)
-//                .append(m_allNominalValues)
-//                .append(m_freqNominalValues)
-//                .append(m_infreqNominalValues)
+                .append(m_otherErrorValuesNotation)
                 .toHashCode();
     }
+
 
 
 
