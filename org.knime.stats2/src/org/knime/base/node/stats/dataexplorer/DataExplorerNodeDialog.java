@@ -102,6 +102,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     private final JCheckBox m_missingValuesInHist;
     private final JSpinner m_numberOfHistogramBars;
     private final JCheckBox m_adaptNumberOfHistogramBars;
+    private final JCheckBox m_displayRowIds;
 
     /** Creates a new dialog instance */
     public DataExplorerNodeDialog() {
@@ -173,6 +174,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
                 enableBarNumber();
             }
         });
+        m_displayRowIds = new JCheckBox("Display Row ID in Data Preview");
 
         addTab("Options", initOptions());
         addTab("Table", initTable());
@@ -193,10 +195,10 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         generalPanel.add(m_freqValuesSpinner, gbcG);
         gbcG.gridwidth = 2;
         gbcG.gridx = 0;
-        //generalPanel.add(m_displayFullscreenButtonCheckBox, gbcG);
         gbcG.gridy++;
         generalPanel.add(m_showMedianCheckBox, gbcG);
-        //gbcG.gridy++;
+        gbcG.gridy++;
+        generalPanel.add(m_displayRowIds, gbcG);
 
         JPanel histPanel = new JPanel(new GridBagLayout());
         histPanel.setBorder(new TitledBorder("Histograms"));
@@ -265,6 +267,18 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
     }
 
     private JPanel initTable() {
+        JPanel generalPanel = new JPanel(new GridBagLayout());
+        generalPanel.setBorder(new TitledBorder("General"));
+        GridBagConstraints gbcG = createConfiguredGridBagConstraints();
+        gbcG.gridwidth = 2;
+        generalPanel.add(m_displayFullscreenButtonCheckBox, gbcG);
+        gbcG.gridy++;
+        gbcG.gridwidth = 1;
+        generalPanel.add(new JLabel("Number of rows for data preview: "), gbcG);
+        gbcG.gridx++;
+        m_displayPreviewRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+        generalPanel.add(m_displayPreviewRowsSpinner, gbcG);
+
         JPanel pagingPanel = new JPanel(new GridBagLayout());
         pagingPanel.setBorder(new TitledBorder("Paging"));
         GridBagConstraints gbcP = createConfiguredGridBagConstraints();
@@ -288,13 +302,12 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         gbcP.gridy++;
         gbcP.gridwidth = 2;
         pagingPanel.add(m_enableShowAllCheckBox, gbcP);
-
-        gbcP.gridy++;
-        gbcP.gridwidth = 1;
-        pagingPanel.add(new JLabel("Number of rows for data preview: "), gbcP);
-        gbcP.gridx++;
-        m_displayPreviewRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
-        pagingPanel.add(m_displayPreviewRowsSpinner, gbcP);
+        //gbcP.gridy++;
+//        gbcP.gridwidth = 1;
+//        pagingPanel.add(new JLabel("Number of rows for data preview: "), gbcP);
+//        gbcP.gridx++;
+//        m_displayPreviewRowsSpinner.setPreferredSize(new Dimension(100, TEXT_FIELD_SIZE));
+//        pagingPanel.add(m_displayPreviewRowsSpinner, gbcP);
         //gbcP.gridy++;
         //pagingPanel.add(m_enableJumpToPageCheckBox, gbcP);
 
@@ -321,6 +334,8 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = createConfiguredGridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(generalPanel, gbc);
+        gbc.gridy++;
         panel.add(pagingPanel, gbc);
         gbc.gridy++;
         panel.add(selectionPanel, gbc);
@@ -428,6 +443,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         config.setMissingValuesInHist(m_missingValuesInHist.isSelected());
         config.setNumberOfHistogramBars((Integer)m_numberOfHistogramBars.getValue());
         config.setAdaptNumberOfHistogramBars(m_adaptNumberOfHistogramBars.isSelected());
+        config.setDisplayRowIds(m_displayRowIds.isSelected());
         config.saveSettingsTo(settings);
     }
 
@@ -462,6 +478,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         m_missingValuesInHist.setSelected(config.getMissingValuesInHist());
         m_numberOfHistogramBars.setValue(config.getNumberOfHistogramBars());
         m_adaptNumberOfHistogramBars.setSelected(config.getAdaptNumberOfHistogramBars());
+        m_displayRowIds.setSelected(config.getDisplayRowIds());
         enablePagingFields();
         enableSearchFields();
         enableFormatterFields();

@@ -19,7 +19,7 @@ dataExplorerNamespace = function() {
     var svgHbig = 300;
     var xScale, yScale, xScaleNom;
     var xAxis, yAxis, barsScale;
-    var margin = {top:0.7*svgHeight, left: 0.5*svgWidth, bottom: 0.7*svgHeight, right:0.2*svgHeight};
+    var margin = {top:0.8*svgHeight, left: 0.5*svgWidth, bottom: 0.7*svgHeight, right:0.2*svgHeight};
     var content;
     var hideUnselected = false;
     var histSizes = [];
@@ -33,6 +33,7 @@ dataExplorerNamespace = function() {
     var respOpenedNum = [];
     var respOpenedNom = [];
     var showWarningMessage = true;
+    var warningMessageCutOffValues = "Some nominal values were cut off by the number of unique nominal values. Change settings in the dialog window.";
     
     
 	
@@ -66,11 +67,11 @@ dataExplorerNamespace = function() {
                 content = $('<div />').attr('class', 'tab-content').appendTo(tabs);
                 
                 $('<li class="active"><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="true">' + 'Numeric' + '</a></li>').appendTo(listOfTabNames);
+                
+                $('<li class=""><a href="#tabs-knimeNominalContainer" data-toggle="tab" aria-expanded="false">' + 'Nominal' + '</a></li>').appendTo(listOfTabNames);
 
                 $('<li class=""><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="false">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
                 
-                
-                $('<li class=""><a href="#tabs-knimeNominalContainer" data-toggle="tab" aria-expanded="false">' + 'Nominal' + '</a></li>').appendTo(listOfTabNames);
                 
 				drawNumericTable();
                 drawDataPreviewTable();
@@ -80,14 +81,14 @@ dataExplorerNamespace = function() {
                     $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust().responsive.recalc();
                     //console.log(responsiveOpened);
                     //if one of the columns was cut by number of unique nom values, show this message
-                    if ($.fn.dataTable.tables( {visible: true, api: true} ).settings()[0].sTableId == "knimeNominal") {
-                        if (showWarningMessage) {
-                            if (_representation.maxNomValueReached != null) {
-                                $.fn.dataTable.tables( {visible: true, api: true} ).buttons.info( 'Not all values are correct', 'Some nominal values were cut off by the number of unique nominal values. Change settings in the dialog window.', 4000 );
-                                showWarningMessage = false;
-                            }
-                        }
-                    }
+//                    if ($.fn.dataTable.tables( {visible: true, api: true} ).settings()[0].sTableId == "knimeNominal") {
+//                        if (showWarningMessage) {
+//                            if (_representation.maxNomValueReached != null) {
+//                                $.fn.dataTable.tables( {visible: true, api: true} ).buttons.info( 'Not all values are correct', 'Some nominal values were cut off by the number of unique nominal values. Change settings in the dialog window.', 4000 );
+//                                showWarningMessage = false;
+//                            }
+//                        }
+//                    }
                 } );
                 
             });
@@ -122,19 +123,29 @@ dataExplorerNamespace = function() {
 			var colArray = [];
 			var colDefs = [];
             
-            if (_representation.displayRowIds || true) {
-				var title = _representation.displayRowIds ? 'Column' : '';
-				var orderable = _representation.displayRowIds;
-				colArray.push({
-					'title': title, 
-					'orderable': orderable,
-					'className': 'no-break'
-				});
-			}
+//            if (_representation.displayRowIds || true) {
+//				var title = _representation.displayRowIds ? 'Column' : '';
+//				var orderable = _representation.displayRowIds;
+//				colArray.push({
+//					'title': title, 
+//					'orderable': orderable,
+//					'className': 'no-break'
+//				});
+//			}
+
+            //column names
+            colArray.push({
+                'title': 'Column', 
+                'orderable': true,
+                'className': 'no-break'
+            });
+
             
             if (_representation.enableSelection) {
 				var all = _value.selectAll;
-				colArray.push({'title': /*'<input name="select_all" value="1" id="checkbox-select-all" type="checkbox"' + (all ? ' checked' : '')  + ' />'*/ 'Exclude Column'})
+				colArray.push({'title': 
+                               /*'<input name="select_all" value="1" id="checkbox-select-all" type="checkbox"' + (all ? ' checked' : '')  + ' />'*/
+                               'Exclude Column'})
 				colDefs.push({
 					'targets': 1,
 					'searchable':false,
@@ -173,6 +184,42 @@ dataExplorerNamespace = function() {
 					'orderable' : isColumnSortable(colType),
 					'searchable': isColumnSearchable(colType)					
 				}
+                
+                if ( _representation.maxNomValueReached != []) {
+                    // && _representation.maxNomValueReached.indexOf(oData[0]) > -1
+                    colDefs.push({
+                        "targets": 3,
+                        "createdCell": function (cell, cellData, rowData, rowIndex, colIndex) {
+                            if (_representation.maxNomValueReached.indexOf(rowData[0]) > -1) {
+                                $(cell).css('backgroundColor', '#f2c4c4')
+                            }
+                        }, 
+                        'render': function (data, type, full, meta) {
+                            if (_representation.maxNomValueReached.indexOf(full[0]) > -1) {
+                                return ">"+data;
+                            }
+                            return data;
+                        }
+                    })
+                }
+                
+                if (_representation.enableFreqValDisplay && _representation.maxNomValueReached != []) {
+                    colDefs.push({
+                        "targets" : 4,
+                        "createdCell": function (cell, cellData, rowData, rowIndex, colIndex) {
+                            if (cellData.indexOf(_representation.otherErrorValuesNotation) > -1) {
+                                $(cell).tooltip({ position: "bottom left", opacity: 0.7});                    
+                            }
+                        }
+                    })
+                }
+                
+//                if (data[j] == _representation.otherErrorValuesNotation) {
+//                    nomList = nomList.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
+//                } else { 
+//                    nomList = nomList.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
+//                }
+                
 				if (_representation.displayMissingValueAsQuestionMark) {
 					colDef.defaultContent = '<span class="missing-value-cell">?</span>';
 				}
@@ -191,13 +238,52 @@ dataExplorerNamespace = function() {
                 if (colType == "string") {
                     if (nominalTable.getKnimeColumnTypes()[i].indexOf('String') > -1) {
                         colDef.render = function(data, type, full, meta) {
-                            var nomList = "";
-                            console.log("freqData", data)
+                            var nomList1 = "";
+                            var nomList2 = "";
+                            var switchToList2 = false;
+                            var comma = ''
+                                
                             for (var j = 0; j < data.length; j++) {
-                                nomList = nomList.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
+                                if (data[j] == _representation.otherErrorValuesNotation) {
+                                    switchToList2 = true;
+                                    continue;
+                                }
+                                if (switchToList2) {
+                                    nomList2 = nomList2.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
+                                } else {
+                                    nomList1 = nomList1.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
+                                }
+                                
                             }
-                            console.log("Nomlist", nomList);
-                            return $('<div/>').append(nomList).html();
+                            var testDiv = document.createElement("div");
+                            var testsvg = d3.select(testDiv).attr("class", "testDiv")
+                                .append("svg")
+                                .attr("height", 20)
+                                .attr("width", 30)
+
+                            testsvg.append("text")
+                                .attr("x", 2)
+                                .attr("y", 14)
+                                .style("fill", "red")
+                                .text(function() {
+                                    if (nomList2 != '') {
+                                        comma = ", ";
+                                    }
+                                    return _representation.otherErrorValuesNotation + comma;
+                                })
+                            
+                            testsvg.append("rect")
+                                .attr("height", 20)
+                                .attr("width", 27)
+                                .attr("fill", "white")
+                                .attr("opacity", 0.01)
+                                .append("title")
+                                .text(warningMessageCutOffValues)
+                            
+                            if (switchToList2) {
+                                return $('<div/>').append(nomList1).append(testDiv).append(nomList2).html();
+                            }
+                            return $('<div/>').append(nomList1).html();
                         }
                     }
                 }
@@ -218,7 +304,6 @@ dataExplorerNamespace = function() {
             }
 
             colDef.render = function(data, type, full, meta) {
-                //console.log("data", data)
                 svgHeight = svgHsmall + margin.top;
                 svgWidth = svgWsmall;
                 
@@ -227,7 +312,6 @@ dataExplorerNamespace = function() {
                 yScale.range([svgHsmall, 0])
                     .domain([0, full[histColNom].maxCount]);
                 
-//                //var fill = colorScale(data.colIndex);
                 var histDiv = document.createElement("div");
 
                 var svg = d3.select(histDiv).attr("class", "histNom")
@@ -236,12 +320,10 @@ dataExplorerNamespace = function() {
                     .attr("width", svgWidth)
                     .attr("class", "svg_hist_nom")
                     .attr("id", "svgNom"+full[histColNom].colIndex);
-                    //.attr("id", "svg"+meta.row);
                 
                 var bar_group = svg.append("g")
                     .attr("transform", "translate(" + [0 , margin.top] + ")")
                     .attr("class", "bars")
-                    //.attr("id", "id"+data.colIndex);
                     .attr("id", "svgNom"+meta.row);
                 
                 var bars = bar_group.selectAll("rect")
@@ -249,7 +331,6 @@ dataExplorerNamespace = function() {
                         .enter()
                     .append("rect")
                     .attr("class", "rect"+full[histColNom].colIndex)
-                    //.attr("class", "rect"+meta.row)
                     .attr("x", function (d) {return xScaleNom(d.first);})
                     .attr("y", function(d) {return yScale(d.second);})
                     .attr("width", function(d) {return xScaleNom.rangeBand()})
@@ -309,15 +390,7 @@ dataExplorerNamespace = function() {
 					if (searchEnabled && !_representation.enableSearching) {
 						$('#knimeDataExplorer_filter').remove();
 					}
-				},
-                'aoColumnDefs': [ {
-                      "aTargets": [3],
-                      "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-                        if ( _representation.maxNomValueReached.indexOf(oData[0]) > -1) {
-                          $(nTd).css('backgroundColor', '#f2c4c4')
-                        }
-                      }
-                } ]
+                }
 			});
             
             drawControls("knimeNominal", nominalTable, nominalDataTable);
@@ -498,14 +571,10 @@ dataExplorerNamespace = function() {
                     .style("font-size", Math.round(Math.min(svgHeight/15, 12))+"px")
                     .call(yAxis);
                 
-                //responsiveOpened = !showHide? responsiveOpened-1 : responsiveOpened;
-                //console.log("showHide: ", responsiveOpened)
-                //console.log("index: ",respOpenedNom.indexOf(data.colIndex))
                 if (!update && !showHide) {
                     respOpenedNom.splice(respOpenedNom.indexOf(data.colIndex), 1);
                 }
-                
-                //console.log("showHide: ",showHide, respOpenedNom)
+
             })
             
         } catch (err) {
@@ -542,15 +611,23 @@ dataExplorerNamespace = function() {
 			var colArray = [];
 			var colDefs = [];
             
-            if (_representation.displayRowIds || true) {
-				var title = _representation.displayRowIds ? 'Column' : '';
-				var orderable = _representation.displayRowIds;
-				colArray.push({
-					'title': title, 
-					'orderable': orderable,
-					'className': 'no-break'
-				});
-			}
+//            if (_representation.displayRowIds || true) {
+//				var title = _representation.displayRowIds ? 'Column' : '';
+//				var orderable = _representation.displayRowIds;
+//				colArray.push({
+//					'title': title, 
+//					'orderable': orderable,
+//					'className': 'no-break'
+//				});
+//			}
+            
+            //column names
+            colArray.push({
+                'title': 'Column', 
+                'orderable': true,
+                'className': 'no-break'
+            });
+            
 			if (_representation.enableSelection) {
 				var all = _value.selectAll;
 				colArray.push({'title': /*'<input name="select_all" value="1" id="checkbox-select-all" type="checkbox"' + (all ? ' checked' : '')  + ' />'*/ 'Exclude Column'})
@@ -562,7 +639,7 @@ dataExplorerNamespace = function() {
 					'render': function (data, type, full, meta) {
 						//var selected = selection[data] ? !all : all;
 						setTimeout(function(){
-							var el = $('#checkbox-select-all').get(0);
+							var el0 = $('#checkbox-select-all').get(0);
 							/*if (all && selection[data] && el && ('indeterminate' in el)) {
 								el.indeterminate = true;
 							}*/
@@ -735,32 +812,6 @@ dataExplorerNamespace = function() {
             
             drawControls("knimeDataExplorer", knimeTable, dataTable);
 			
-			//Clear sorting button placement and enable/disable on order change
-//			if (_representation.enableSorting && _representation.enableClearSortButton) {
-//				dataTable.buttons().container().appendTo('#knimeDataExplorer_wrapper .col-sm-6:eq(0)');
-//				$('#knimeDataExplorer_length').css({'display': 'inline-block', 'margin-right': '10px'});
-//				dataTable.on('order.dt', function () {
-//					var order = dataTable.order();
-//					dataTable.button(0).enable(order.length > 0);
-//				});
-//			}
-//			
-//			$('#knimeDataExplorer_paginate').css('display', 'none');
-//
-//			$('#knimeDataExplorer_info').html(
-//				'<strong>Loading data</strong> - Displaying '
-//				+ 1 + ' to ' + Math.min(knimeTable.getNumRows(), _representation.initialPageSize)
-//				+ ' of ' + knimeTable.getNumRows() + ' entries.');
-//			
-//			if (knimeService) {
-//				if (_representation.enableSearching && !_representation.title) {
-//					knimeService.floatingHeader(false);
-//				}
-//				if (_representation.displayFullscreenButton) {
-//					knimeService.allowFullscreen();
-//				}
-//			}
-			
 			if (_representation.enableSelection) {
 				// Handle click on "Select all" control
 				var selectAllCheckbox = $('#checkbox-select-all').get(0);
@@ -901,10 +952,35 @@ dataExplorerNamespace = function() {
                     //.tickFormat(d3.format(".0e"))
                     .ticks(5);
                 
-                if (data.bins.length < 15 && max < 1000) {
-                    xAxis.tickFormat(d3.format(".1f"));
+                if (data.bins.length < 15 && max < 10000) {
+                    if (!isInt(max) || !isInt(min))  {
+                        xAxis.tickFormat(d3.format(".1f"));
+                    }
                 } else {
-                    xAxis.tickFormat(d3.format(".1e"))
+                    //add if statements for 0.1, 0.01
+                    if (max < 1000) {
+                         if (!isInt(max) || !isInt(min)) {
+                             xAxis.tickFormat(d3.format(".1f"));
+                         } else {
+                             xAxis.tickFormat(d3.format(".0f"));
+                         }
+                    } else {
+                        if (!isInt(max) || !isInt(min)) {
+                             xAxis.tickFormat(d3.format(".1e"));
+                         } else {
+                             if (max >= 10000) {
+                                 xAxis.tickFormat(d3.format(".1e"));
+                             } else {
+                                 xAxis.tickFormat(d3.format(".0f"));
+                             }
+                         }
+                        //xAxis.tickFormat(d3.format(".1e"))
+                    }
+                    
+                    //if statement for int
+//                    if (isInt(max)) {
+//                        xAxis.tickFormat(d3.format(".0e"));
+//                    }
                 }
                 
                 if (data.maxCount < 10000) {
@@ -924,9 +1000,9 @@ dataExplorerNamespace = function() {
                     axisX.selectAll("text")
                         .style("font-size", "12px");
                 } else {
-                    axisX.attr("class", "x nom axis").selectAll("text")
+                    axisX.attr("class", "x axis").selectAll("text")
                         .attr("y", -barWidthScale/10)
-                        .attr("x", -2)
+                        .attr("x", -7)
                         .attr("transform", "rotate(-90)")
                         .style("text-anchor", "end")
                         .style("font-size", textScale(data.bins.length)+"px");
@@ -978,6 +1054,9 @@ dataExplorerNamespace = function() {
             if (_representation.displayFullscreenButton) {
                 knimeService.allowFullscreen();
             }
+            if (_representation.maxNomValueReached != []) {
+                knimeService.setWarningMessage(warningMessageCutOffValues);
+            }
         }
     }
     
@@ -994,8 +1073,8 @@ dataExplorerNamespace = function() {
 			var colArray = [];
 			var colDefs = [];
             
-            if (_representation.displayRowIds || true) {
-				var title = _representation.displayRowIds ? 'Row ID' : '';
+            if (_representation.displayRowIds) {
+				var title = 'Row ID';
 				var orderable = _representation.displayRowIds;
 				colArray.push({
 					'title': title, 
@@ -1135,19 +1214,41 @@ dataExplorerNamespace = function() {
             
 //			if (_representation.displayRowIndex) {
 //				dataRow.push(i);
-//			}
+//			
             
-			if (_representation.displayRowIds) {
-				var string = '';
-				if (_representation.displayRowIds) {
-					string += '<span class="rowKey">' + row.rowKey + '</span>';
-				}
-				dataRow.push(string);
-			}
+            switch (knTable.getTableId()) {
+                case "numeric":
+                    dataRow.push('<span class="rowKey">' + row.rowKey + '</span>');
+                    break;
+                case "preview":
+                    if (_representation.displayRowIds) {
+                        dataRow.push('<span class="rowKey">' + row.rowKey + '</span>');
+                    }
+                    break;
+                case "nominal":
+                    dataRow.push('<span class="rowKey">' + row.rowKey + '</span>');
+                    break;
+                default: 
+                    break;
+            }
+            
+//			if (_representation.displayRowIds) {
+//				var string = '<span class="rowKey">' + row.rowKey + '</span>';
+//				dataRow.push('<span class="rowKey">' + row.rowKey + '</span>');
+//			}
             
             if (knTable.getTableId() == "nominal") {
                 var numericPart = row.data.slice(knTable.getColumnTypes().indexOf("number"), knTable.getColumnTypes().indexOf("string"));
                 var nominalPart = row.data.slice(knTable.getColumnTypes().indexOf("string"), knTable.getColumnTypes().length);
+                var nominalPartArrays = [];
+                var nominalPartPlain = [];
+                for (var j = 0; j < nominalPart.length; j++) {
+                    if (nominalPart[j] instanceof Array) {
+                        nominalPartArrays.push(nominalPart[j]);
+                    } else {
+                        nominalPartPlain.push(nominalPart[j]);
+                    }
+                }
                 var dataRow = dataRow.concat(numericPart);
             } else {
                 dataRow = dataRow.concat(row.data)
@@ -1155,7 +1256,7 @@ dataExplorerNamespace = function() {
 
             
             if (_representation.enableFreqValDisplay && knTable.getTableId() == "nominal") {
-                var dataRow = dataRow.concat(nominalPart);
+                var dataRow = dataRow.concat(nominalPartArrays);
             }
             
             switch (knTable.getTableId()) {

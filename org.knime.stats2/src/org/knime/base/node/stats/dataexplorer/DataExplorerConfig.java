@@ -79,6 +79,12 @@ public class DataExplorerConfig {
     static final String TOP_INFREQ_VAL = "Top infrequent values";
     static final String ALL_NOMINAL_VAL = "All nominal values";
 
+    static final String OTHER_VALUES_NOTATION = "otherValuesNotation";
+    static final String DEFAULT_OTHER_VALUES_NOTATION = "[...]";
+
+    static final String OTHER_ERROR_VALUES_NOTATION = "otherErrorValuesNotation";
+    static final String DEFAULT_OTHER_ERROR_VALUES_NOTATION = "[...]!";
+
     static final String CFG_HIDE_IN_WIZARD = "hideInWizard";
     private static final boolean DEFAULT_HIDE_IN_WIZARD = false;
     private boolean m_hideInWizard = DEFAULT_HIDE_IN_WIZARD;
@@ -192,7 +198,7 @@ public class DataExplorerConfig {
     private boolean m_adaptNumberOfHistogramBars = DEFAULT_ADAPT_NUMBER_OF_HISTOGRAM_BARS;
 
     final static String CFG_MAX_NOMINAL_VALUE_REACHED = "maxNomValueReached";
-    final static String[] DEFAULT_MAX_NOMINAL_VALUE_REACHED = null;
+    final static String[] DEFAULT_MAX_NOMINAL_VALUE_REACHED = new String[0];
     private String[] m_maxNomValueReached = DEFAULT_MAX_NOMINAL_VALUE_REACHED;
 
     /**

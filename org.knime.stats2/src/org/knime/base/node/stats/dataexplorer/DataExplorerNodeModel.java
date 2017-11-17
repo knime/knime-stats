@@ -260,7 +260,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             String[] errorsClean = errors[errors.length - 1].replaceAll("('\"|\"'|\"| |\\n)", "").split(",");
             getViewRepresentation().setMaxNomValueReached(errorsClean);
         } else {
-            getViewRepresentation().setMaxNomValueReached(null);
+            getViewRepresentation().setMaxNomValueReached(new String[0]);
         }
 
 
@@ -273,6 +273,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         DataValue[] freq = null;
         DataValue[] infreq = null;
         DataValue[] all = null;
+        List<String> outputAllValues = null;
 
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
@@ -305,9 +306,17 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             } else {
                 System.arraycopy(sortedNomValuesMissingExcl.keySet().toArray(new DataValue[0]), 0, all, 0, all.length);
             }
-            rowValues.add(unwrapDataValueArray(freq));
-            rowValues.add(unwrapDataValueArray(infreq));
-            rowValues.add(unwrapDataValueArray(all));
+
+            //create an output list
+            outputAllValues = new ArrayList<String>();
+            if (Arrays.asList(getViewRepresentation().getMaxNomValueReached()).contains(col)) {
+                //normal case
+                outputAllValues = formAllValuesColumn(freq, infreq, all, DataExplorerConfig.DEFAULT_OTHER_ERROR_VALUES_NOTATION, null);
+            } else {
+                //abnormal case
+                outputAllValues = formAllValuesColumn(freq, infreq, all, DataExplorerConfig.DEFAULT_OTHER_VALUES_NOTATION, col);
+            }
+            rowValues.add(outputAllValues.toArray());
 
             //if we want to include missing values, than do it on the whole set of nominals
             if (m_config.getMissingValuesInHist()) {
@@ -330,15 +339,25 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         return jTable;
     }
 
+    private List<String> formAllValuesColumn (final DataValue[] freq, final DataValue[] infreq, final DataValue[] all, final String infoMessage, final String col) {
+        List<String> output = new ArrayList<String>();
+        if (unwrapDataValueArray(all).length != 0) {
+            output.addAll(Arrays.asList(unwrapDataValueArray(all)));
+            if (infoMessage == DataExplorerConfig.DEFAULT_OTHER_ERROR_VALUES_NOTATION) {
+                output.add(infoMessage);
+            }
+        } else {
+            output.addAll(Arrays.asList(unwrapDataValueArray(freq)));
+            output.add(infoMessage);
+            output.addAll(Arrays.asList(unwrapDataValueArray(freq)));
+        }
+        return output;
+    }
+
     //adopted from https://www.mkyong.com/java/how-to-sort-a-map-in-java/
     private static Map<DataValue, Integer> sortByValue(final Map<DataValue, Integer> unsortMap) {
-
-        // 1. Convert Map to List of Map
         List<Map.Entry<DataValue, Integer>> list =
                 new LinkedList<Map.Entry<DataValue, Integer>>(unsortMap.entrySet());
-
-        // 2. Sort list with Collections.sort(), provide a custom Comparator
-        //    Try switch the o1 o2 position for a different order
         Collections.sort(list, new Comparator<Map.Entry<DataValue, Integer>>() {
             @Override
             public int compare(final Map.Entry<DataValue, Integer> o1,
@@ -346,13 +365,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
                 return (o2.getValue()).compareTo(o1.getValue());
             }
         });
-
-        // 3. Loop the sorted list and put it into a new insertion order Map LinkedHashMap
         Map<DataValue, Integer> sortedMap = new LinkedHashMap<DataValue, Integer>();
         for (Map.Entry<DataValue, Integer> entry : list) {
             sortedMap.put(entry.getKey(), entry.getValue());
         }
-
         return sortedMap;
     }
 
@@ -506,10 +522,6 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         knimeTypes.add(knimeInt);
         colNames.add(DataExplorerConfig.UNIQUE_NOMINAL);
         knimeTypes.add(knimeInt);
-        colNames.add(DataExplorerConfig.TOP_FREQ_VAL);
-        knimeTypes.add(knimeString);
-        colNames.add(DataExplorerConfig.TOP_INFREQ_VAL);
-        knimeTypes.add(knimeString);
         colNames.add(DataExplorerConfig.ALL_NOMINAL_VAL);
         knimeTypes.add(knimeString);
 
