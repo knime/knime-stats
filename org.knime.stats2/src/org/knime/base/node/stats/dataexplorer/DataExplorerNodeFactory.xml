@@ -2,7 +2,7 @@
 <knimeNode icon="./data_explorer.png" type="Visualizer"
 	xmlns="http://knime.org/node/v2.12" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://knime.org/node/v2.12 http://knime.org/node/v2.12.xsd">
-	<name>Data Explorer</name>
+	<name>Data Explorer (JavaScript)</name>
 
 	<shortDescription>
 		The Data Explorer node offers a range of options for displaying properties of the input data in an interactive view.

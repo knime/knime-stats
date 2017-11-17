@@ -68,7 +68,7 @@
             factory-class="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory">
       </node>
       <node
-            category-path="/labs/statistics"
+            category-path="/labs/js-views"
             deprecated="false"
             factory-class="org.knime.base.node.stats.dataexplorer.DataExplorerNodeFactory">
       </node>
