@@ -58,9 +58,10 @@ dataExplorerNamespace = function() {
 		_representation = representation;
 	    _value = value;
 	    if (parent && parent.KnimePageLoader) {
-			drawTable();
+			_init();
 		} else {
 			$(document).ready(function() {
+<<<<<<< HEAD
                 
                 var tabs = $('<div />').attr('id', 'tabs').appendTo('body');
                 var listOfTabNames = $('<ul />').attr("class", "nav nav-tabs").attr('role', 'tabList').appendTo(tabs);
@@ -91,9 +92,42 @@ dataExplorerNamespace = function() {
 //                    }
                 } );
                 
+=======
+                _init();
+>>>>>>> d4cb1bcec3846a236c33a0d221aa47be5c12f734
             });
 		}
+	}
+	
+	_init = function() {
+		var tabs = $('<div />').attr('id', 'tabs').appendTo('body');
+        var listOfTabNames = $('<ul />').attr("class", "nav nav-tabs").attr('role', 'tabList').appendTo(tabs);
+        content = $('<div />').attr('class', 'tab-content').appendTo(tabs);
         
+        $('<li class="active"><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="true">' + 'Numeric' + '</a></li>').appendTo(listOfTabNames);
+        
+        $('<li class=""><a href="#tabs-knimeNominalContainer" data-toggle="tab" aria-expanded="false">' + 'Nominal' + '</a></li>').appendTo(listOfTabNames);
+
+        $('<li class=""><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="false">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
+        
+        
+		drawNumericTable();
+        drawDataPreviewTable();
+        drawNominalTable();
+        
+        $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
+            $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust().responsive.recalc();
+            //console.log(responsiveOpened);
+            //if one of the columns was cut by number of unique nom values, show this message
+//            if ($.fn.dataTable.tables( {visible: true, api: true} ).settings()[0].sTableId == "knimeNominal") {
+//                if (showWarningMessage) {
+//                    if (_representation.maxNomValueReached != null) {
+//                        $.fn.dataTable.tables( {visible: true, api: true} ).buttons.info( 'Not all values are correct', 'Some nominal values were cut off by the number of unique nominal values. Change settings in the dialog window.', 4000 );
+//                        showWarningMessage = false;
+//                    }
+//                }
+//            }
+        });
 	}
     
     drawNominalTable = function() {
