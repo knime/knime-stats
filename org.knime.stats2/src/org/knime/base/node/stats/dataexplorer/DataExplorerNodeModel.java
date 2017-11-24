@@ -55,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,6 +97,7 @@ import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
@@ -122,6 +124,23 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     private List<HistogramModel<?>> m_javaNominalHistograms;
 
     private String MISSING_VALUE_STRING = "?";
+
+    private enum TableId {
+        NUMERIC ("numeric"),
+        NOMINAL ("nominal"),
+        PREVIEW ("preview");
+
+        private final String name;
+
+        private TableId(final String s) {
+            name = s;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+         }
+    }
 
     /**
      * @param viewName
@@ -155,11 +174,15 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         final DataTableSpec inputSpec = (DataTableSpec)inSpecs[0];
 
         if (m_config.getDisplayRowNumber() == 0) {
-            throw new InvalidSettingsException("Number of rows for data preview must be greater than 0!");
+            //throw new InvalidSetting();
+            NodeLogger.getLogger(getClass()).warn("Number of rows for data preview must be greater than 0! The default value of 10 is set instead of 0.");
+            m_config.setdisplayRowNumber(10);
         }
 
         if (m_config.getInitialPageSize() == 0) {
-            throw new InvalidSettingsException("Number initial page size must be greater than 0!");
+            //throw new InvalidSettingsException("Number initial page size must be greater than 0!");
+            NodeLogger.getLogger(getClass()).warn("Number initial page size must be greater than 0! The default value of 10 is set instead of 0.");
+            m_config.setInitialPageSize(10);
         }
 
         PortObjectSpec[] out = new PortObjectSpec[]{inputSpec};
@@ -232,6 +255,34 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         return new PortObject[]{result};
     }
 
+    private JSONDataTable createJSONTable(final TableId tID, final JSONDataTableRow[] tableRows, final BufferedDataTable table){
+        JSONDataTable jTable = new JSONDataTable();
+
+        switch(tID) {
+            case NUMERIC:
+                jTable.setSpec(createStatsJSONSpecNumeric(tableRows.length));
+                if (tableRows.length == 0) {
+                    getViewRepresentation().setJsNumericHistograms(new ArrayList<JSNumericHistogram>(0));
+                }
+                break;
+            case NOMINAL:
+                jTable.setSpec(createStatsJSONSpecNominal(tableRows.length));
+                if (tableRows.length == 0) {
+                    getViewRepresentation().setMaxNomValueReached(new String[0]);
+                    getViewRepresentation().setJsNominalHistograms(new ArrayList<JSNominalHistogram>(0));
+                }
+                break;
+            case PREVIEW:
+                jTable.setSpec(createStatsJSONSpecPreview(table));
+                //jTable.getSpec().
+                break;
+        }
+        jTable.setId(tID.toString());
+        jTable.setRows(tableRows);
+
+        return jTable;
+    }
+
     /**
      * @param bufferedDataTable
      * @return
@@ -240,11 +291,15 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         DataTableSpec spec = table.getSpec();
         List<String> nominalCols = new ArrayList<String>();
         for (DataColumnSpec columnSpec : spec) {
-            if (columnSpec.getType().isCompatible(StringValue.class)) {
+            if (columnSpec.getType().isCompatible(StringCell.class)) {
                 nominalCols.add(columnSpec.getName());
             }
         }
+
         String[] includeColumns = nominalCols.toArray(new String[0]);
+        if (includeColumns.length == 0) {
+            return createJSONTable(TableId.NOMINAL, new JSONDataTableRow[includeColumns.length],  null);
+        }
         List<Statistic> statistics = new ArrayList<Statistic>();
         NominalValue nominal = new NominalValue(m_config.getMaxNominalValues(), nominalCols.toArray(new String[0]));
         statistics.add(nominal);
@@ -329,14 +384,15 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
 
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
-        JSONDataTableSpec jSpec = createStatsJSONSpecNominal(includeColumns.length);
-        JSONDataTable jTable = new JSONDataTable();
-        jTable.setSpec(jSpec);
-        jTable.setRows(rows);
-        jTable.setId("nominal");
+//        JSONDataTableSpec jSpec = createStatsJSONSpecNominal(includeColumns.length);
+//        JSONDataTable jTable = new JSONDataTable();
+//        jTable.setSpec(jSpec);
+//        jTable.setRows(rows);
+//        jTable.setId("nominal");
 
         getViewRepresentation().setJsNominalHistograms(jsHistograms);
-        return jTable;
+
+        return createJSONTable(TableId.NOMINAL, rows, null);
     }
 
     private List<String> formAllValuesColumn (final DataValue[] freq, final DataValue[] infreq, final DataValue[] all, final String infoMessage, final String col) {
@@ -399,6 +455,9 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             }
         }
         String[] includeColumns = doubleCols.toArray(new String[0]);
+        if (includeColumns.length == 0) {
+            return createJSONTable(TableId.NUMERIC, new JSONDataTableRow[includeColumns.length],  null);
+        }
         List<Statistic> statistics = new ArrayList<Statistic>();
         MinMax minMax = new MinMax(includeColumns);
         statistics.add(minMax);
@@ -429,9 +488,9 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         calc.evaluate(table, exec.createSubExecutionContext(0.5));
 
         JSONDataTableRow[] rows = new JSONDataTableRow[includeColumns.length];
-        JSONDataTableSpec jSpec = createStatsJSONSpec(includeColumns.length);
-        JSONDataTable jTable = new JSONDataTable();
-        jTable.setSpec(jSpec);
+        //JSONDataTableSpec jSpec = createStatsJSONSpecNumeric(includeColumns.length);
+        //JSONDataTable jTable = new JSONDataTable();
+        //jTable.setSpec(jSpec);
 
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
@@ -464,8 +523,8 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
 
-        jTable.setRows(rows);
-        jTable.setId("numeric");
+        //jTable.setRows(rows);
+        //jTable.setId("numeric");
 
         Map<Integer, ? extends HistogramModel<?>> javaHistograms = calculateNumericHistograms(table, exec.createSubExecutionContext(0.5), minMax, mean, includeColumns);
         m_javaNumericHistograms = new ArrayList<HistogramModel<?>>();
@@ -479,13 +538,13 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             jsHistograms.add(histTest);
         }
         getViewRepresentation().setJsNumericHistograms(jsHistograms);
-        return jTable;
+        return createJSONTable(TableId.NUMERIC, rows,  null);
     }
 
     private JSONDataTable calculatePreview (final BufferedDataTable table) {
-        JSONDataTable jTable = new JSONDataTable();
-        JSONDataTableSpec jSpec = new JSONDataTableSpec(table.getDataTableSpec(), m_config.getDisplayRowNumber());
+
         JSONDataTableRow[] rows = new JSONDataTableRow[m_config.getDisplayRowNumber()];
+        Set<String> warningMessage = new HashSet<String>();
         int numCol = table.getDataTableSpec().getNumColumns();
         int i = 0;
         for (DataRow row : table) {
@@ -497,19 +556,34 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
                 DataCell cell = row.getCell(j);
                 if (cell instanceof DoubleValue) {
                     rowValues.add(((DoubleValue)cell).getDoubleValue());
-                } else if (cell instanceof StringValue) {
+                } else if (cell instanceof StringCell) {
                     rowValues.add(((StringValue)cell).getStringValue());
                 } else {
-                    rowValues.add(null);
+                    rowValues.add("Non-generic type");
+                    warningMessage.add(table.getDataTableSpec().getColumnSpec(j).getName());
                 }
             }
+
             rows[i] = new JSONDataTableRow(row.getKey().getString(), rowValues.toArray(new Object[0]));
             i++;
         }
-        jTable.setSpec(jSpec);
-        jTable.setRows(rows);
-        jTable.setId("preview");
-        return jTable;
+        if (!warningMessage.isEmpty()) {
+            NodeLogger.getLogger(getClass()).warn("The following columns have non-generic type and will be excluded from  calculation: \n"+ warningMessage.toString());
+        }
+
+//        JSONDataTable jTable = new JSONDataTable();
+//        JSONDataTableSpec jSpec = createStatsJSONSpecPreview(table);
+//        jTable.setSpec(jSpec);
+//        jTable.setRows(rows);
+//        jTable.setId("preview");
+        return createJSONTable(TableId.PREVIEW, rows, table);
+    }
+
+    private JSONDataTableSpec createStatsJSONSpecPreview (final BufferedDataTable table) throws IllegalArgumentException {
+        if (table == null) {
+            throw new IllegalArgumentException("DataTable is null: can't extract spec for JS Preview table.");
+        }
+        return new JSONDataTableSpec(table.getDataTableSpec(), m_config.getDisplayRowNumber());
     }
 
     private JSONDataTableSpec createStatsJSONSpecNominal(final int numColumns) {
@@ -541,7 +615,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         return spec;
     }
 
-    private JSONDataTableSpec createStatsJSONSpec(final int numColumns) {
+    private JSONDataTableSpec createStatsJSONSpecNumeric(final int numColumns) {
         String knimeDouble = ((ExtensibleUtilityFactory)DoubleValue.UTILITY).getName();
         String knimeInt = ((ExtensibleUtilityFactory)LongValue.UTILITY).getName();
         JSONDataTableSpec spec = new JSONDataTableSpec();

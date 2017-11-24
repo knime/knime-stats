@@ -61,40 +61,7 @@ dataExplorerNamespace = function() {
 			_init();
 		} else {
 			$(document).ready(function() {
-<<<<<<< HEAD
-                
-                var tabs = $('<div />').attr('id', 'tabs').appendTo('body');
-                var listOfTabNames = $('<ul />').attr("class", "nav nav-tabs").attr('role', 'tabList').appendTo(tabs);
-                content = $('<div />').attr('class', 'tab-content').appendTo(tabs);
-                
-                $('<li class="active"><a href="#tabs-knimeDataExplorerContainer" data-toggle="tab" aria-expanded="true">' + 'Numeric' + '</a></li>').appendTo(listOfTabNames);
-                
-                $('<li class=""><a href="#tabs-knimeNominalContainer" data-toggle="tab" aria-expanded="false">' + 'Nominal' + '</a></li>').appendTo(listOfTabNames);
-
-                $('<li class=""><a href="#tabs-knimePreviewContainer" data-toggle="tab" aria-expanded="false">' + 'Data Preview' + '</a></li>').appendTo(listOfTabNames);
-                
-                
-				drawNumericTable();
-                drawDataPreviewTable();
-                drawNominalTable();
-                
-                $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
-                    $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust().responsive.recalc();
-                    //console.log(responsiveOpened);
-                    //if one of the columns was cut by number of unique nom values, show this message
-//                    if ($.fn.dataTable.tables( {visible: true, api: true} ).settings()[0].sTableId == "knimeNominal") {
-//                        if (showWarningMessage) {
-//                            if (_representation.maxNomValueReached != null) {
-//                                $.fn.dataTable.tables( {visible: true, api: true} ).buttons.info( 'Not all values are correct', 'Some nominal values were cut off by the number of unique nominal values. Change settings in the dialog window.', 4000 );
-//                                showWarningMessage = false;
-//                            }
-//                        }
-//                    }
-                } );
-                
-=======
                 _init();
->>>>>>> d4cb1bcec3846a236c33a0d221aa47be5c12f734
             });
 		}
 	}
@@ -117,16 +84,6 @@ dataExplorerNamespace = function() {
         
         $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
             $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust().responsive.recalc();
-            //console.log(responsiveOpened);
-            //if one of the columns was cut by number of unique nom values, show this message
-//            if ($.fn.dataTable.tables( {visible: true, api: true} ).settings()[0].sTableId == "knimeNominal") {
-//                if (showWarningMessage) {
-//                    if (_representation.maxNomValueReached != null) {
-//                        $.fn.dataTable.tables( {visible: true, api: true} ).buttons.info( 'Not all values are correct', 'Some nominal values were cut off by the number of unique nominal values. Change settings in the dialog window.', 4000 );
-//                        showWarningMessage = false;
-//                    }
-//                }
-//            }
         });
 	}
     
@@ -156,16 +113,6 @@ dataExplorerNamespace = function() {
             
 			var colArray = [];
 			var colDefs = [];
-            
-//            if (_representation.displayRowIds || true) {
-//				var title = _representation.displayRowIds ? 'Column' : '';
-//				var orderable = _representation.displayRowIds;
-//				colArray.push({
-//					'title': title, 
-//					'orderable': orderable,
-//					'className': 'no-break'
-//				});
-//			}
 
             //column names
             colArray.push({
@@ -219,8 +166,7 @@ dataExplorerNamespace = function() {
 					'searchable': isColumnSearchable(colType)					
 				}
                 
-                if ( _representation.maxNomValueReached != []) {
-                    // && _representation.maxNomValueReached.indexOf(oData[0]) > -1
+                if ( _representation.maxNomValueReached.length != 0) {
                     colDefs.push({
                         "targets": 3,
                         "createdCell": function (cell, cellData, rowData, rowIndex, colIndex) {
@@ -237,7 +183,7 @@ dataExplorerNamespace = function() {
                     })
                 }
                 
-                if (_representation.enableFreqValDisplay && _representation.maxNomValueReached != []) {
+                if (_representation.enableFreqValDisplay && _representation.maxNomValueReached.length != 0) {
                     colDefs.push({
                         "targets" : 4,
                         "createdCell": function (cell, cellData, rowData, rowIndex, colIndex) {
@@ -419,13 +365,14 @@ dataExplorerNamespace = function() {
                 'scrollX':false,
 				'fnDrawCallback': function() {
 					if (!_representation.displayColumnHeaders) {
-						$("#knimeDataExplorer thead").remove();
+						$("#knimeNominal thead").remove();
 				  	}
 					if (searchEnabled && !_representation.enableSearching) {
-						$('#knimeDataExplorer_filter').remove();
+						$('#knimeNominal_filter').remove();
 					}
                 }
 			});
+            
             
             drawControls("knimeNominal", nominalTable, nominalDataTable);
             
@@ -1088,7 +1035,7 @@ dataExplorerNamespace = function() {
             if (_representation.displayFullscreenButton) {
                 knimeService.allowFullscreen();
             }
-            if (_representation.maxNomValueReached != []) {
+            if (_representation.maxNomValueReached.length != 0) {
                 knimeService.setWarningMessage(warningMessageCutOffValues);
             }
         }
@@ -1143,6 +1090,9 @@ dataExplorerNamespace = function() {
             
             var dataPreview = []
             for (var i = 0; i < previewTable.getRows().length; i++) {
+                if (previewTable.getRow(i) == null) {
+                    continue;
+                }
                 dataPreview.push(previewTable.getRow(i).data);
             }
             
@@ -1216,7 +1166,7 @@ dataExplorerNamespace = function() {
 			$('#' + tableName + '_paginate').css('display', 'block');
 			applyViewValue(jsDataTable);
 			jsDataTable.draw();
-            if (knTable.getNumRows == "numeric") {
+            if (knTable.getTableId() == "numeric") {
                 finishInit(jsDataTable);
             }
 		}
@@ -1229,6 +1179,9 @@ dataExplorerNamespace = function() {
 		var data = [];
 		for (var i = start; i < Math.min(end, knTable.getNumRows()); i++) {
 			var row = knTable.getRows()[i];
+            if (row == null) {
+                continue;
+            }
 			var dataRow = [];
             
 			if (_representation.enableSelection) {

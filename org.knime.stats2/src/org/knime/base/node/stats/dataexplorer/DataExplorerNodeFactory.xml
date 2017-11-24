@@ -23,6 +23,16 @@
 			<option name="Show median"> 
 			If you check this option, the interactive view will show the median of the numerical values in the input data set.
 			</option>
+			<option name="Display Row ID in Data Preview tab"> 
+			If you check this option, the Data Preview tab of the interactive view will create a column with Row ID of the data values.
+			</option>
+			<option name="Show missing values in histograms"> 
+			If you check this option, the Nominal tab of the interactive view will show missing values as an additional bar in the histograms.
+			</option>
+			<option name="Enable automatic number of histogram bars"> 
+			If you check this option, the Numeric tab of the interactive view will adjust the number of histogram bar of each numeric data column depending on the values occurring in the column. 
+			If you uncheck this option, you will be able to enter a number of histogram bars used for all columns.
+			</option>
 			<option name="Title">
 			Adds a title to the interactive view.
 			</option>
@@ -35,8 +45,17 @@
 			<option name="Decimal places">
 			Specifies the number of decimal places for all values in the interactive view.
 			</option>
+			<option name="Max number of nominal values"> 
+			Specifies the maximum number of unique values considered in one nominal column.
+			</option>
 		</tab>
 		<tab name="Table">
+			<option name="Display fullscreen button"> 
+			If you check this option, the interactive view will enable option to enlarge the interactive view.
+			</option>
+			<option name="Number of rows for data preview">
+			Determines the total number of rows displayed on the Data Preview tab of the interactive view.
+			</option>
 			<option name="Enable pagination">
 			Enables spreading the table over several pages of the interactive view.
 			</option>
@@ -51,9 +70,6 @@
 			</option>
 			<option name="Add 'All' option to page sizes">
 			Adds the option of having all rows on one page to the page sizes you can select in the interactive view.
-			</option>
-			<option name="Number of rows for data preview">
-			Determines the total number of rows displayed on the Data Preview tab of the interactive view.
 			</option>
 			<option name="Enable selection">
 			Enables selection of the data columns to be excluded from further analysis. 
@@ -74,13 +90,13 @@
 		</tab>
 	</fullDescription>
 	<interactiveView name="Data Explorer View">
-	<p>The interactive view consists of three tabs: a Data Preview tab, a Statistics tab, and a Nominal tab.  The Statistics and Nominal tabs sum up the information in each column. The user can then decide which columns to include in further analysis.</p>
-	
-	<p>The <b>Data Preview</b> tab shows the data selected for preview.</p>
-	
+	<p>The interactive view consists of three tabs: a Statistics tab, a Nominal tab, and a Data Preview tab.  The Statistics and Nominal tabs sum up the information in each column. The user can then decide which columns to include in further analysis.</p>
+
 	<p>The <b>Statistics</b> tab shows the main statistical properties of the numerical data, such as minimum, maximum, median (optional), standard deviation, variance, skewness, kurtosis, overall sum, number of zero values, number of missing values, number of not-an-object values, as well as positive and negative infinity values.  For each column, the node also calculates a histogram showing the value distribution.</p>
 	 
 	<p>The <b>Nominal</b> tab lists the main properties of the nominal values, such as the number of missing values, unique values, and top n most frequent and infrequent values.  In addition, for each data column there is a histogram showing the frequencies with which values occur in this column.</p>
+	
+	<p>The <b>Data Preview</b> tab shows the data selected for preview.</p>
 	</interactiveView>
 	<ports>
 		<inPort index="0" name="Table">
