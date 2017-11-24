@@ -291,7 +291,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         DataTableSpec spec = table.getSpec();
         List<String> nominalCols = new ArrayList<String>();
         for (DataColumnSpec columnSpec : spec) {
-            if (columnSpec.getType().isCompatible(StringCell.class)) {
+            if (columnSpec.getType().isCompatible(org.knime.core.data.NominalValue.class)) {
                 nominalCols.add(columnSpec.getName());
             }
         }
@@ -556,11 +556,15 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
                 DataCell cell = row.getCell(j);
                 if (cell instanceof DoubleValue) {
                     rowValues.add(((DoubleValue)cell).getDoubleValue());
-                } else if (cell instanceof StringCell) {
+                } else if (cell instanceof org.knime.core.data.NominalValue) {
                     rowValues.add(((StringValue)cell).getStringValue());
                 } else {
-                    rowValues.add("Non-generic type");
-                    warningMessage.add(table.getDataTableSpec().getColumnSpec(j).getName());
+                    if (cell instanceof MissingCell) {
+                        rowValues.add(null);
+                    } else {
+                        rowValues.add("Non-generic");
+                        warningMessage.add(table.getDataTableSpec().getColumnSpec(j).getName());
+                    }
                 }
             }
 

@@ -83,7 +83,11 @@ dataExplorerNamespace = function() {
         drawNominalTable();
         
         $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
-            $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust().responsive.recalc();
+            var table = $.fn.dataTable.tables( {visible: true, api: true} );
+            table.columns.adjust().responsive.recalc();
+            if (table.rows()[0].length == 0) {
+                table.order([0, 'asc']).draw(true);
+            }
         });
 	}
     
