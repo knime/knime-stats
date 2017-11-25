@@ -718,6 +718,7 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             viewRepresentation.setDisplayRowNumber(m_config.getDisplayRowNumber());
             viewRepresentation.setEnableFreqValDisplay(m_config.getEnableFreqValDisplay());
             viewRepresentation.setFreqValues(m_config.getFreqValuesNumber());
+            viewRepresentation.setMissingValuesInHist(m_config.getMissingValuesInHist());
         }
     }
 

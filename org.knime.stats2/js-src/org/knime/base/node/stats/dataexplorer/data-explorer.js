@@ -85,6 +85,8 @@ dataExplorerNamespace = function() {
         $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
             var table = $.fn.dataTable.tables( {visible: true, api: true} );
             table.columns.adjust().responsive.recalc();
+            
+            //artificial action of the empty table to represent that no data avaliable in the table correctly
             if (table.rows()[0].length == 0) {
                 table.order([0, 'asc']).draw(true);
             }
@@ -109,12 +111,14 @@ dataExplorerNamespace = function() {
 			var table = $('<table id="knimeNominal" class="table table-striped table-bordered" width="100%">');
 			wrapper.append(table);
             
-            for (var i = 0; i < _representation.jsNominalHistograms.length; i++) {
-                _representation.jsNominalHistograms[i].bins.sort(function(x,y){
-                    return d3.descending(x.second, y.second);
-                })
+            if (_representation.jsNominalHistograms != null) {
+                for (var i = 0; i < _representation.jsNominalHistograms.length; i++) {
+                    _representation.jsNominalHistograms[i].bins.sort(function(x,y){
+                        return d3.descending(x.second, y.second);
+                    })
+                }   
             }
-            
+
 			var colArray = [];
 			var colDefs = [];
 
@@ -276,8 +280,10 @@ dataExplorerNamespace = function() {
 			}
             
             xScaleNom = d3.scale.ordinal(), 
-            yScale = d3.scale.linear(),
-            _representation.jsNominalHistograms.forEach(function(d) {histNomSizes.push(d.bins.length)});
+            yScale = d3.scale.linear();
+            if (_representation.jsNominalHistograms != null) {
+                _representation.jsNominalHistograms.forEach(function(d) {histNomSizes.push(d.bins.length)});
+            }
             histColNom = colArray.length ;
             
             var colDef = {
@@ -596,16 +602,6 @@ dataExplorerNamespace = function() {
 			var colArray = [];
 			var colDefs = [];
             
-//            if (_representation.displayRowIds || true) {
-//				var title = _representation.displayRowIds ? 'Column' : '';
-//				var orderable = _representation.displayRowIds;
-//				colArray.push({
-//					'title': title, 
-//					'orderable': orderable,
-//					'className': 'no-break'
-//				});
-//			}
-            
             //column names
             colArray.push({
                 'title': 'Column', 
@@ -667,8 +663,11 @@ dataExplorerNamespace = function() {
 			}
             
             xScale = d3.scale.linear(), 
-            yScale = d3.scale.linear(),
-            _representation.jsNumericHistograms.forEach(function(d) {histSizes.push(d.bins.length)});
+            yScale = d3.scale.linear();
+            
+            if (_representation.jsNumericHistograms != null) {
+                _representation.jsNumericHistograms.forEach(function(d) {histSizes.push(d.bins.length)});
+            }
             
             var colDef = {
                 'title' :"Histogram",

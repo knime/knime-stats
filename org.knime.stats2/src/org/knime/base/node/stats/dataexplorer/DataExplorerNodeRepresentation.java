@@ -107,6 +107,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     private int m_freqValuesNumber;
     private String[] m_maxNomValueReached;
     private String m_otherErrorValuesNotation = DataExplorerConfig.DEFAULT_OTHER_ERROR_VALUES_NOTATION;
+    private boolean m_missingValuesInHist;
 
     private List<JSNominalHistogram> m_jsNominalHistograms;
     private List<JSNumericHistogram> m_jsNumericHistograms;
@@ -513,6 +514,20 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
     }
 
     /**
+     * @return the m_missingValuesInHist
+     */
+    public boolean getMissingValuesInHist() {
+        return m_missingValuesInHist;
+    }
+
+    /**
+     * @param missingValuesInHist the m_missingValuesInHist to set
+     */
+    public void setMissingValuesInHist(final boolean missingValuesInHist) {
+        this.m_missingValuesInHist = missingValuesInHist;
+    }
+
+    /**
      * Extracts all mean values from statistics table.
      * @return a double array with all mean values, may be null if operation not possible
      */
@@ -554,7 +569,11 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
             JSONDataTableRow[] rows = m_nominal.getRows();
             for (int i = 0; i < rows.length; i++) {
                 JSONDataTableRow row = rows[i];
-                uniqueNom[i] = (int)row.getData()[nomIndex];
+                int addValue = 0;
+                if (m_missingValuesInHist && (int)row.getData()[colNames.indexOf(DataExplorerConfig.MISSING)] != 0) {
+                    addValue = 1;
+                }
+                uniqueNom[i] = (int)row.getData()[nomIndex] + addValue;
             }
             return uniqueNom;
         }
@@ -600,6 +619,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         settings.addInt(DataExplorerConfig.CFG_FREQ_VALUES_NUMBER, m_freqValuesNumber);
         settings.addStringArray(DataExplorerConfig.CFG_MAX_NOMINAL_VALUE_REACHED, m_maxNomValueReached);
         settings.addString(DataExplorerConfig.OTHER_ERROR_VALUES_NOTATION, m_otherErrorValuesNotation);
+        settings.addBoolean(DataExplorerConfig.CFG_MISSING_VALUES_IN_HIST, m_missingValuesInHist);
     }
 
     /**
@@ -640,6 +660,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
         m_freqValuesNumber = settings.getInt(DataExplorerConfig.CFG_FREQ_VALUES_NUMBER, DataExplorerConfig.DEFAULT_FREQ_VALUES_NUMBER);
         m_maxNomValueReached = settings.getStringArray(DataExplorerConfig.CFG_MAX_NOMINAL_VALUE_REACHED, DataExplorerConfig.DEFAULT_MAX_NOMINAL_VALUE_REACHED);
         m_otherErrorValuesNotation = DataExplorerConfig.DEFAULT_OTHER_ERROR_VALUES_NOTATION;
+        m_missingValuesInHist = settings.getBoolean(DataExplorerConfig.CFG_MISSING_VALUES_IN_HIST, DataExplorerConfig.DEFAULT_MISSING_VALUES_IN_HIST);
     }
 
     /**
@@ -688,6 +709,7 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_freqValuesNumber, other.m_freqValuesNumber)
                 .append(m_maxNomValueReached, other.m_maxNomValueReached)
                 .append(m_otherErrorValuesNotation, other.m_otherErrorValuesNotation)
+                .append(m_missingValuesInHist, other.m_missingValuesInHist)
                 .isEquals();
     }
 
@@ -727,8 +749,11 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
                 .append(m_freqValuesNumber)
                 .append(m_maxNomValueReached)
                 .append(m_otherErrorValuesNotation)
+                .append(m_missingValuesInHist)
                 .toHashCode();
     }
+
+
 
 
 
