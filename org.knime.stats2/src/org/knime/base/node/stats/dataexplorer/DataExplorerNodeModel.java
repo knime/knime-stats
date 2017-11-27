@@ -97,7 +97,6 @@ import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
@@ -173,16 +172,16 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
         final DataTableSpec inputSpec = (DataTableSpec)inSpecs[0];
 
-        if (m_config.getDisplayRowNumber() == 0) {
-            //throw new InvalidSetting();
-            NodeLogger.getLogger(getClass()).warn("Number of rows for data preview must be greater than 0! The default value of 10 is set instead of 0.");
-            m_config.setdisplayRowNumber(10);
+        if (m_config.getDisplayRowNumber() < 1) {
+            int def = DataExplorerConfig.DEFAULT_DISPLAY_ROW_NUMBER;
+            setWarningMessage("Number of rows for data preview must be greater than 0. Using default of " + def + ".");
+            m_config.setDisplayRowNumber(def);
         }
 
         if (m_config.getInitialPageSize() == 0) {
-            //throw new InvalidSettingsException("Number initial page size must be greater than 0!");
-            NodeLogger.getLogger(getClass()).warn("Number initial page size must be greater than 0! The default value of 10 is set instead of 0.");
-            m_config.setInitialPageSize(10);
+            int def = DataExplorerConfig.DEFAULT_INITIAL_PAGE_SIZE;
+            setWarningMessage("Initial page size must be greater than 0. Using default of " + def + ".");
+            m_config.setInitialPageSize(def);
         }
 
         PortObjectSpec[] out = new PortObjectSpec[]{inputSpec};
@@ -572,7 +571,8 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
             i++;
         }
         if (!warningMessage.isEmpty()) {
-            NodeLogger.getLogger(getClass()).warn("The following columns have non-generic type and will be excluded from  calculation: \n"+ warningMessage.toString());
+            setWarningMessage("The following columns have non-generic type and will be excluded from  calculation: \n"+ warningMessage.toString());
+            //TODO figure out if we need to see this warning also in the view
         }
 
 //        JSONDataTable jTable = new JSONDataTable();

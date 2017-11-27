@@ -98,7 +98,7 @@ public class DataExplorerConfig {
     private boolean m_enablePaging = DEFAULT_ENABLE_PAGING;
 
     final static String CFG_INITIAL_PAGE_SIZE = "initialPageSize";
-    private final static int DEFAULT_INITIAL_PAGE_SIZE = 10;
+    final static int DEFAULT_INITIAL_PAGE_SIZE = 10;
     private int m_initialPageSize = DEFAULT_INITIAL_PAGE_SIZE;
 
     final static String CFG_ENABLE_PAGE_SIZE_CHANGE = "enablePageSizeChange";
@@ -170,7 +170,7 @@ public class DataExplorerConfig {
     private boolean m_displayMissingValueAsQuestionMark = DEFAULT_DISPLAY_MISSING_VALUE_AS_QUESTION_MARK;
 
     final static String CFG_DISPLAY_ROW_NUMBER = "displayRowNumber";
-    final static int DEFAULT_DISPLAY_ROW_NUMBER = 10;
+    final static int DEFAULT_DISPLAY_ROW_NUMBER = 100;
     private int m_displayRowNumber = DEFAULT_DISPLAY_ROW_NUMBER;
 
     final static String CFG_MAX_NOMINAL_VALUES = "maxNominalValues";
@@ -505,7 +505,7 @@ public class DataExplorerConfig {
     /**
      * @param displayRowNumber the m_displayRowNumber to set
      */
-    public void setdisplayRowNumber(final int displayRowNumber) {
+    public void setDisplayRowNumber(final int displayRowNumber) {
         this.m_displayRowNumber = displayRowNumber;
     }
 

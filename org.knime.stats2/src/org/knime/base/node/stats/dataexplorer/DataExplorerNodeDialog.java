@@ -436,7 +436,7 @@ public class DataExplorerNodeDialog extends NodeDialogPane {
         config.setEnableSearching(m_enableSearchCheckbox.isSelected());
         config.setEnableGlobalNumberFormat(m_enableGlobalNumberFormatCheckbox.isSelected());
         config.setGlobalNumberFormatDecimals((Integer)m_globalNumberFormatDecimalSpinner.getValue());
-        config.setdisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
+        config.setDisplayRowNumber((Integer)m_displayPreviewRowsSpinner.getValue());
         config.setMaxNominalValues((Integer)m_maxNominalValuesSpinner.getValue());
         config.setEnableFreqValDisplay(m_enableFreqValDisplayCheckbox.isSelected());
         config.setFreqValuesNumber((Integer)m_freqValuesSpinner.getValue());
