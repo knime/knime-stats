@@ -191,22 +191,6 @@ dataExplorerNamespace = function() {
                     })
                 }
                 
-                if (_representation.enableFreqValDisplay && _representation.maxNomValueReached.length != 0) {
-                    colDefs.push({
-                        "targets" : 4,
-                        "createdCell": function (cell, cellData, rowData, rowIndex, colIndex) {
-                            if (cellData.indexOf(_representation.otherErrorValuesNotation) > -1) {
-                                $(cell).tooltip({ position: "bottom left", opacity: 0.7});                    
-                            }
-                        }
-                    })
-                }
-                
-//                if (data[j] == _representation.otherErrorValuesNotation) {
-//                    nomList = nomList.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
-//                } else { 
-//                    nomList = nomList.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
-//                }
                 
 				if (_representation.displayMissingValueAsQuestionMark) {
 					colDef.defaultContent = '<span class="missing-value-cell">?</span>';
@@ -226,52 +210,55 @@ dataExplorerNamespace = function() {
                 if (colType == "string") {
                     if (nominalTable.getKnimeColumnTypes()[i].indexOf('String') > -1) {
                         colDef.render = function(data, type, full, meta) {
-                            var nomList1 = "";
-                            var nomList2 = "";
-                            var switchToList2 = false;
-                            var comma = ''
-                                
-                            for (var j = 0; j < data.length; j++) {
-                                if (data[j] == _representation.otherErrorValuesNotation) {
-                                    switchToList2 = true;
-                                    continue;
-                                }
-                                if (switchToList2) {
-                                    nomList2 = nomList2.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
-                                } else {
-                                    nomList1 = nomList1.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
-                                }
-                                
-                            }
-                            var testDiv = document.createElement("div");
-                            var testsvg = d3.select(testDiv).attr("class", "testDiv")
-                                .append("svg")
-                                .attr("height", 20)
-                                .attr("width", 30)
+                            if (data != null) {
+                                var nomList1 = "";
+                                var nomList2 = "";
+                                var switchToList2 = false;
+                                var comma = ''
 
-                            testsvg.append("text")
-                                .attr("x", 2)
-                                .attr("y", 14)
-                                .style("fill", "red")
-                                .text(function() {
-                                    if (nomList2 != '') {
-                                        comma = ", ";
+                                for (var j = 0; j < data.length; j++) {
+                                    if (data[j] == _representation.otherErrorValuesNotation) {
+                                        switchToList2 = true;
+                                        continue;
                                     }
-                                    return _representation.otherErrorValuesNotation + comma;
-                                })
-                            
-                            testsvg.append("rect")
-                                .attr("height", 20)
-                                .attr("width", 27)
-                                .attr("fill", "white")
-                                .attr("opacity", 0.01)
-                                .append("title")
-                                .text(warningMessageCutOffValues)
-                            
-                            if (switchToList2) {
-                                return $('<div/>').append(nomList1).append(testDiv).append(nomList2).html();
-                            }
-                            return $('<div/>').append(nomList1).html();
+                                    if (switchToList2) {
+                                        nomList2 = nomList2.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
+                                    } else {
+                                        nomList1 = nomList1.concat("<span class='freqSpan'>", data[j], j == data.length-1? "" : ", ", "</span>");
+                                    }
+
+                                }
+                                var testDiv = document.createElement("div");
+                                var testsvg = d3.select(testDiv).attr("class", "testDiv")
+                                    .append("svg")
+                                    .attr("height", 20)
+                                    .attr("width", 30)
+
+                                testsvg.append("text")
+                                    .attr("x", 2)
+                                    .attr("y", 14)
+                                    .style("fill", "red")
+                                    .text(function() {
+                                        if (nomList2 != '') {
+                                            comma = ", ";
+                                        }
+                                        return _representation.otherErrorValuesNotation + comma;
+                                    })
+
+                                testsvg.append("rect")
+                                    .attr("height", 20)
+                                    .attr("width", 27)
+                                    .attr("fill", "white")
+                                    .attr("opacity", 0.01)
+                                    .append("title")
+                                    .text(warningMessageCutOffValues)
+
+                                if (switchToList2) {
+                                    return $('<div/>').append(nomList1).append(testDiv).append(nomList2).html();
+                                }
+                                return $('<div/>').append(nomList1).html();
+                                }
+
                         }
                     }
                 }
@@ -281,58 +268,66 @@ dataExplorerNamespace = function() {
             
             xScaleNom = d3.scale.ordinal(), 
             yScale = d3.scale.linear();
-            if (_representation.jsNominalHistograms != null) {
-                _representation.jsNominalHistograms.forEach(function(d) {histNomSizes.push(d.bins.length)});
-            }
-            histColNom = colArray.length ;
             
             var colDef = {
                 'title' :"Histogram",
                 'orderable': false, 
-                'searchable': false,
-                'defaultContent':  '<span class="missing-value-cell">?</span>'
+                'searchable': false
+            }
+            
+            if (_representation.displayMissingValueAsQuestionMark) {
+                colDef.defaultContent = '<span class="missing-value-cell">?</span>';
+            }
+            
+            histColNom = colArray.length ;
+            
+            if (_representation.jsNominalHistograms != null) {
+                _representation.jsNominalHistograms.forEach(function(d) {histNomSizes.push(d.bins.length)});
+                
+                colDef.render = function(data, type, full, meta) {
+                    svgHeight = svgHsmall + margin.top;
+                    svgWidth = svgWsmall;
+
+                    //window.alert(full);
+
+                    xScaleNom.rangeBands([0, svgWidth])
+                        .domain(full[histColNom].bins.map(function(d){return d.first}));
+                    yScale.range([svgHsmall, 0])
+                        .domain([0, full[histColNom].maxCount]);
+
+                    var histDiv = document.createElement("div");
+
+                    var svg = d3.select(histDiv).attr("class", "histNom")
+                        .append("svg")
+                        .attr("height", svgHeight)
+                        .attr("width", svgWidth)
+                        .attr("class", "svg_hist_nom")
+                        .attr("id", "svgNom"+full[histColNom].colIndex);
+
+                    var bar_group = svg.append("g")
+                        .attr("transform", "translate(" + [0 , margin.top] + ")")
+                        .attr("class", "bars")
+                        .attr("id", "svgNom"+meta.row);
+
+                    var bars = bar_group.selectAll("rect")
+                        .data(full[histColNom].bins)
+                            .enter()
+                        .append("rect")
+                        .attr("class", "rect"+full[histColNom].colIndex)
+                        .attr("x", function (d) {return xScaleNom(d.first);})
+                        .attr("y", function(d) {return yScale(d.second);})
+                        .attr("width", function(d) {return xScaleNom.rangeBand()})
+                        .attr("height", function(d){return svgHsmall - yScale(d.second);})
+                        .attr("fill", "#547cac")
+                        .attr("stroke", "black")
+                        .attr("stroke-width", "1px")
+                        .append("title")
+                        .text(function(d, i) { return d.first+": "+d.second; });
+
+                    return $('<div/>').append(histDiv).html();
+                }
             }
 
-            colDef.render = function(data, type, full, meta) {
-                svgHeight = svgHsmall + margin.top;
-                svgWidth = svgWsmall;
-                
-                xScaleNom.rangeBands([0, svgWidth])
-                    .domain(full[histColNom].bins.map(function(d){return d.first}));
-                yScale.range([svgHsmall, 0])
-                    .domain([0, full[histColNom].maxCount]);
-                
-                var histDiv = document.createElement("div");
-
-                var svg = d3.select(histDiv).attr("class", "histNom")
-                    .append("svg")
-                    .attr("height", svgHeight)
-                    .attr("width", svgWidth)
-                    .attr("class", "svg_hist_nom")
-                    .attr("id", "svgNom"+full[histColNom].colIndex);
-                
-                var bar_group = svg.append("g")
-                    .attr("transform", "translate(" + [0 , margin.top] + ")")
-                    .attr("class", "bars")
-                    .attr("id", "svgNom"+meta.row);
-                
-                var bars = bar_group.selectAll("rect")
-                    .data(full[histColNom].bins)
-                        .enter()
-                    .append("rect")
-                    .attr("class", "rect"+full[histColNom].colIndex)
-                    .attr("x", function (d) {return xScaleNom(d.first);})
-                    .attr("y", function(d) {return yScale(d.second);})
-                    .attr("width", function(d) {return xScaleNom.rangeBand()})
-                    .attr("height", function(d){return svgHsmall - yScale(d.second);})
-                    .attr("fill", "#547cac")
-                    .attr("stroke", "black")
-                    .attr("stroke-width", "1px")
-                    .append("title")
-                    .text(function(d, i) { return d.first+": "+d.second; });
-                
-                return $('<div/>').append(histDiv).html();
-            }
             colArray.push(colDef);
             
             pageLength = _representation.initialPageSize;
@@ -380,7 +375,8 @@ dataExplorerNamespace = function() {
 					if (searchEnabled && !_representation.enableSearching) {
 						$('#knimeNominal_filter').remove();
 					}
-                }
+                }, 
+                "oLanguage": { "sEmptyTable": "No nominal columns in the dataset." } 
 			});
             
             
@@ -443,8 +439,8 @@ dataExplorerNamespace = function() {
                     .domain([d3.max(histNomSizes), 16]);
                 
                 var charecterScale = d3.scale.linear()
-                    .range([3, 10])
-                    .domain([d3.max(histNomSizes), 16])
+                    .range([3, 7])
+                    .domain([d3.max(histNomSizes), 13])
                 
                 var data = row.data()[histColNom];
                 
@@ -530,7 +526,7 @@ dataExplorerNamespace = function() {
                     .call(xAxis)
                 
                 //different patterns of labels depending on number of elements in one column
-                if (histNomSizes[data.colIndex] > 15) {
+                if (histNomSizes[data.colIndex] > 12) {
                     axisX.selectAll("text")
                         .attr("y", -xScaleNom.rangeBand()/4)
                         .attr("x", -2)
@@ -665,75 +661,75 @@ dataExplorerNamespace = function() {
             xScale = d3.scale.linear(), 
             yScale = d3.scale.linear();
             
-            if (_representation.jsNumericHistograms != null) {
-                _representation.jsNumericHistograms.forEach(function(d) {histSizes.push(d.bins.length)});
-            }
-            
             var colDef = {
                 'title' :"Histogram",
                 'orderable': false, 
                 'searchable': false,
                 'defaultContent':  '<span class="missing-value-cell">?</span>'
             }
-
-            colDef.render = function(data, type, full, meta) {
-                //console.log("data", data)
-                svgHeight = svgHsmall + margin.top;
-                svgWidth = svgWsmall;
-                
-                var min = data.bins[0].def.first;
-                var max = data.bins[data.bins.length-1].def.second;
-                var barWidth = (max - min)/data.bins.length;
-                var dataRange = max - min;
-                
-                xScale.range([0, svgWidth])
-                if (dataRange == 0) {
-                    xScale.domain([0, max])
-                } else{ 
-                    xScale.domain([0, max - min]);
-                }
-                yScale.range([svgHsmall, 0])
-                    .domain([0, data.maxCount]);
-                
-                //var fill = colorScale(data.colIndex);
-                var histDiv = document.createElement("div");
-
-                var svg = d3.select(histDiv).attr("class", "hist")
-                    .append("svg")
-                    .attr("height", svgHeight)
-                    .attr("width", svgWidth)
-                    .attr("class", "svg_hist")
-                    .attr("id", "svg"+data.colIndex);
-                    //.attr("id", "svg"+meta.row);
-                
-                var bar_group = svg.append("g")
-                    .attr("transform", "translate(" + [0 , margin.top] + ")")
-                    .attr("class", "bars")
-                    //.attr("id", "id"+data.colIndex);
-                    .attr("id", "svg"+meta.row);
-                
-                var bars = bar_group.selectAll("rect")
-                    .data(data.bins)
-                        .enter()
-                    .append("rect")
-                    .attr("class", "rect"+data.colIndex)
-                    //.attr("class", "rect"+meta.row)
-                    .attr("x", function (d) {return xScale(d.def.first - min);})
-                    .attr("y", function(d) {return yScale(d.count);})
-                    .attr("width", function(d) {return xScale(dataRange == 0? d.def.first : barWidth)})
-                    .attr("height", function(d){return svgHsmall - yScale(d.count);})
-                    .attr("fill", "#547cac")
-                    .attr("stroke", "black")
-                    .attr("stroke-width", "1px")
-                    .append("title")
-                    .text(function(d, i) { return d.tooltip.slice(0,-13); });
-                
-                return $('<div/>').append(histDiv).html();
-            }
-            colArray.push(colDef);
             
-            //number of histogram column to use in the next calculations
-            histCol = colArray.length - 1;
+            if (_representation.jsNumericHistograms != null) {
+                _representation.jsNumericHistograms.forEach(function(d) {histSizes.push(d.bins.length)});
+                colDef.render = function(data, type, full, meta) {
+                    //console.log("data", data)
+                    svgHeight = svgHsmall + margin.top;
+                    svgWidth = svgWsmall;
+
+                    var min = data.bins[0].def.first;
+                    var max = data.bins[data.bins.length-1].def.second;
+                    var barWidth = (max - min)/data.bins.length;
+                    var dataRange = max - min;
+
+                    xScale.range([0, svgWidth])
+                    if (dataRange == 0) {
+                        xScale.domain([0, max])
+                    } else{ 
+                        xScale.domain([0, max - min]);
+                    }
+                    yScale.range([svgHsmall, 0])
+                        .domain([0, data.maxCount]);
+
+                    //var fill = colorScale(data.colIndex);
+                    var histDiv = document.createElement("div");
+
+                    var svg = d3.select(histDiv).attr("class", "hist")
+                        .append("svg")
+                        .attr("height", svgHeight)
+                        .attr("width", svgWidth)
+                        .attr("class", "svg_hist")
+                        .attr("id", "svg"+data.colIndex);
+                        //.attr("id", "svg"+meta.row);
+
+                    var bar_group = svg.append("g")
+                        .attr("transform", "translate(" + [0 , margin.top] + ")")
+                        .attr("class", "bars")
+                        //.attr("id", "id"+data.colIndex);
+                        .attr("id", "svg"+meta.row);
+
+                    var bars = bar_group.selectAll("rect")
+                        .data(data.bins)
+                            .enter()
+                        .append("rect")
+                        .attr("class", "rect"+data.colIndex)
+                        //.attr("class", "rect"+meta.row)
+                        .attr("x", function (d) {return xScale(d.def.first - min);})
+                        .attr("y", function(d) {return yScale(d.count);})
+                        .attr("width", function(d) {return xScale(dataRange == 0? d.def.first : barWidth)})
+                        .attr("height", function(d){return svgHsmall - yScale(d.count);})
+                        .attr("fill", "#547cac")
+                        .attr("stroke", "black")
+                        .attr("stroke-width", "1px")
+                        .append("title")
+                        .text(function(d, i) { return d.tooltip.slice(0,-13); });
+
+                    return $('<div/>').append(histDiv).html();
+                }
+                colArray.push(colDef);
+                //number of histogram column to use in the next calculations
+                histCol = colArray.length - 1;
+            } else {
+                colArray.push(colDef);
+            }
             
 			pageLength = _representation.initialPageSize;
 			if (_value.pageSize) {
@@ -791,7 +787,8 @@ dataExplorerNamespace = function() {
 					if (searchEnabled && !_representation.enableSearching) {
 						$('#knimeDataExplorer_filter').remove();
 					}
-				}
+				},
+                "oLanguage": { "sEmptyTable": "No numeric columns in the dataset." }  
 			});
             
             drawControls("knimeDataExplorer", knimeTable, dataTable);
@@ -1102,11 +1099,12 @@ dataExplorerNamespace = function() {
             var firstChunk = getDataSlice(0, _representation.initialPageSize, previewTable);
             
             var searchEnabled = _representation.enableSearching || (knimeService && knimeService.isInteractivityAvailable());
+            
             previewDataTable = $('#knimePreview').DataTable( {
                 'columns': colArray,
 				'columnDefs': colDefs,
 				'order': order,
-				'paging': true,
+				'paging': _representation.enablePaging,
                 'pageLength': pageLength,
 				'lengthMenu': pageLengths,
 				'lengthChange': _representation.enablePageSizeChange,
@@ -1115,7 +1113,8 @@ dataExplorerNamespace = function() {
 				'processing': true,
 				'data': firstChunk,
 				'buttons': buttons,
-                'responsive': true//,
+                'responsive': true,
+                "oLanguage": { "sEmptyTable": "The dataset is empty." }  
 			});
             
             drawControls("knimePreview", previewTable, previewDataTable);
@@ -1230,11 +1229,13 @@ dataExplorerNamespace = function() {
             if (knTable.getTableId() == "nominal") {
                 var numericPart = row.data.slice(knTable.getColumnTypes().indexOf("number"), knTable.getColumnTypes().indexOf("string"));
                 var nominalPart = row.data.slice(knTable.getColumnTypes().indexOf("string"), knTable.getColumnTypes().length);
+                //window.alert(nominalPart)
                 var nominalPartArrays = [];
                 var nominalPartPlain = [];
                 for (var j = 0; j < nominalPart.length; j++) {
-                    if (nominalPart[j] instanceof Array) {
+                    if (Array.isArray(nominalPart[j]) && nominalPart[j] != null) {
                         nominalPartArrays.push(nominalPart[j]);
+                        
                     } else {
                         nominalPartPlain.push(nominalPart[j]);
                     }
@@ -1247,16 +1248,24 @@ dataExplorerNamespace = function() {
             
             if (_representation.enableFreqValDisplay && knTable.getTableId() == "nominal") {
                 var dataRow = dataRow.concat(nominalPartArrays);
+                if (nominalPart.length == 1 && nominalPart[0] == null) {
+                    var dataRow = dataRow.concat(nominalPart);
+                }
             }
             
             switch (knTable.getTableId()) {
                 case "numeric":
-                    dataRow.push(_representation.jsNumericHistograms[i]);
+                    if (_representation.jsNumericHistograms != null) {
+                        dataRow.push(_representation.jsNumericHistograms[i]);
+                    }
                     break;
                 case "preview":
                     break;
                 case "nominal":
-                    dataRow.push(_representation.jsNominalHistograms[i]);
+                    if (_representation.jsNominalHistograms != null) {
+                        dataRow.push(_representation.jsNominalHistograms[i]);
+                    }
+                    //window.alert(_representation.jsNominalHistograms[i])
                     break;
                 default: 
                     break;

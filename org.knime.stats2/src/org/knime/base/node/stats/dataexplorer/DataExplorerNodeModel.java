@@ -307,12 +307,13 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         StatisticCalculator calc = new StatisticCalculator(spec, statistics.toArray(new Statistic[0]));
 
         //if some columns exceeded the set number of max unique values, prepare an array of such columns
-        //String test = calc.evaluate(table, exec.createSubExecutionContext(0.5));
+        List<String> errorSet = new ArrayList<String>();
         String nominalEvaluationResults = calc.evaluate(table, exec.createSubExecutionContext(0.5));
         if (nominalEvaluationResults != null) {
             String[] errors = nominalEvaluationResults.split(":");
             String[] errorsClean = errors[errors.length - 1].replaceAll("('\"|\"'|\"| |\\n)", "").split(",");
-            getViewRepresentation().setMaxNomValueReached(errorsClean);
+            //getViewRepresentation().setMaxNomValueReached(errorsClean);
+            errorSet.addAll(Arrays.asList(errorsClean));
         } else {
             getViewRepresentation().setMaxNomValueReached(new String[0]);
         }
@@ -329,23 +330,44 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         DataValue[] all = null;
         List<String> outputAllValues = null;
 
+
+
         for (int i = 0; i < includeColumns.length; i++) {
             String col = includeColumns[i];
 
             List<Object> rowValues = new ArrayList<Object>();
-            rowValues.add(missing.getNumberMissingValues(col));
+            int missingNum = missing.getNumberMissingValues(col);
+            if (table.size() == 0 && missingNum == 0) {
+                rowValues.add(null);
+            } else {
+                rowValues.add(missingNum);
+            }
+
 
             Map<DataValue, Integer> nomValue = nominal.getNominalValues(i);
+
+            //artificial add of missing value, when it is identified but not added to all values
+            if (missingNum != 0 && errorSet.contains(col) && nomValue.size() == m_config.getMaxNominalValues()) {
+                nomValue.put(new MissingCell(MISSING_VALUE_STRING), missingNum);
+            }
             //rowValues.add(nomValue.size());
 
             //exclude missing values for most freq values calculation
             Map<DataValue, Integer> nomValueMissingExcl = new HashMap<DataValue, Integer>(nomValue);
             Set<DataValue> keySet = nomValueMissingExcl.keySet();
-            if (keySet.contains(new MissingCell("?"))) {
-                nomValueMissingExcl.remove(new MissingCell("?"));
+            if (keySet.contains(new MissingCell(MISSING_VALUE_STRING))) {
+                nomValueMissingExcl.remove(new MissingCell(MISSING_VALUE_STRING));
             }
+
+
+
             //number of unique values excludes missing value
-            rowValues.add(nomValueMissingExcl.size());
+            if (table.size() == 0 && nomValueMissingExcl.size() == 0) {
+                rowValues.add(null);
+            } else {
+                rowValues.add(nomValueMissingExcl.size());
+            }
+
 
             //now sort values by freq
             Map<DataValue, Integer> sortedNomValuesMissingExcl = sortByValue(nomValueMissingExcl);
@@ -363,14 +385,19 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
 
             //create an output list
             outputAllValues = new ArrayList<String>();
-            if (Arrays.asList(getViewRepresentation().getMaxNomValueReached()).contains(col)) {
-                //normal case
+            if (errorSet.contains(col)) {
+                //abnormal case
                 outputAllValues = formAllValuesColumn(freq, infreq, all, DataExplorerConfig.DEFAULT_OTHER_ERROR_VALUES_NOTATION, null);
             } else {
-                //abnormal case
+                //normal case
                 outputAllValues = formAllValuesColumn(freq, infreq, all, DataExplorerConfig.DEFAULT_OTHER_VALUES_NOTATION, col);
             }
-            rowValues.add(outputAllValues.toArray());
+            if (table.size() == 0) {
+                rowValues.add(null);
+            } else {
+                rowValues.add(outputAllValues.toArray());
+            }
+
 
             //if we want to include missing values, than do it on the whole set of nominals
             if (m_config.getMissingValuesInHist()) {
@@ -383,13 +410,10 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
 
             rows[i] = new JSONDataTableRow(col, rowValues.toArray(new Object[0]));
         }
-//        JSONDataTableSpec jSpec = createStatsJSONSpecNominal(includeColumns.length);
-//        JSONDataTable jTable = new JSONDataTable();
-//        jTable.setSpec(jSpec);
-//        jTable.setRows(rows);
-//        jTable.setId("nominal");
 
-        getViewRepresentation().setJsNominalHistograms(jsHistograms);
+        getViewRepresentation().setMaxNomValueReached(errorSet.toArray(new String[0]));
+
+        getViewRepresentation().setJsNominalHistograms(table.size() == 0? null : jsHistograms);
 
         return createJSONTable(TableId.NOMINAL, rows, null);
     }
@@ -530,13 +554,24 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         m_javaNumericHistograms.addAll(javaHistograms.values());
 
         List<JSNumericHistogram> jsHistograms = new ArrayList<JSNumericHistogram>();
+
+        //TODO is it an optimal solution to use just one boolean for estimation of empty table treatment?
+        boolean missingMinMax = false;
         for (int i = 0; i < includeColumns.length; i++) {
-            JSNumericHistogram histTest = new JSNumericHistogram(includeColumns[i], i, table,  ((DoubleValue)minMax.getMin(includeColumns[i])).getDoubleValue(),
-                ((DoubleValue)minMax.getMax(includeColumns[i])).getDoubleValue(),  mean.getResult(includeColumns[i]), m_config.getNumberOfHistogramBars(),
-                m_config.getAdaptNumberOfHistogramBars());
-            jsHistograms.add(histTest);
+            if (minMax.getMin(includeColumns[i]) instanceof MissingCell) {
+                missingMinMax = true;
+            } else {
+                JSNumericHistogram histTest = new JSNumericHistogram(includeColumns[i], i, table,  ((DoubleValue)minMax.getMin(includeColumns[i])).getDoubleValue(),
+                    ((DoubleValue)minMax.getMax(includeColumns[i])).getDoubleValue(),  mean.getResult(includeColumns[i]), m_config.getNumberOfHistogramBars(),
+                    m_config.getAdaptNumberOfHistogramBars());
+                jsHistograms.add(histTest);
+            }
         }
-        getViewRepresentation().setJsNumericHistograms(jsHistograms);
+        if (missingMinMax) {
+            getViewRepresentation().setJsNumericHistograms(null);
+        } else {
+            getViewRepresentation().setJsNumericHistograms(jsHistograms);
+        }
         return createJSONTable(TableId.NUMERIC, rows,  null);
     }
 
@@ -801,9 +836,14 @@ public class DataExplorerNodeModel extends AbstractWizardNodeModel<DataExplorerN
         File hNomFile = new File(nodeInternDir, "nominalHistograms.xml.gz");
         DataExplorerNodeRepresentation rep = getViewRepresentation();
         if (hNumFile.exists()) {
-            double[] means = rep.getMeans();
-            if (means == null) {
-                throw new IOException("Means could not be retrieved from representation.");
+            Double[] meansCheck = rep.getMeans();
+            double[] means = new double[meansCheck.length];
+            if (Arrays.asList(meansCheck).contains(null)) {
+                throw new IOException("Means could not be retrieved from representation: null values were saved as mean values.");
+            } else {
+                for (int i = 0; i < meansCheck.length; i++) {
+                    means[i]= meansCheck[i];
+                }
             }
             try {
                 Map<Integer, ? extends HistogramModel<?>> numHistograms = HistogramColumn.loadHistograms(hNumFile,

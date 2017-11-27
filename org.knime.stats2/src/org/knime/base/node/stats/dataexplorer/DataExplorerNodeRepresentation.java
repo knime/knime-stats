@@ -532,19 +532,25 @@ public class DataExplorerNodeRepresentation extends JSONViewContent {
      * @return a double array with all mean values, may be null if operation not possible
      */
     @JsonIgnore
-    double[] getMeans() {
+    Double[] getMeans() {
         if (m_statistics != null) {
             JSONDataTableSpec spec = m_statistics.getSpec();
             List<String> colNames = Arrays.asList(spec.getColNames());
             if (!colNames.contains(DataExplorerConfig.MEAN)) {
                 return null;
             }
-            double[] means = new double[m_statistics.getSpec().getNumRows()];
+            Double[] means = new Double[m_statistics.getSpec().getNumRows()];
             int meanIndex = colNames.indexOf(DataExplorerConfig.MEAN);
             JSONDataTableRow[] rows = m_statistics.getRows();
             for (int i = 0; i < rows.length; i++) {
                 JSONDataTableRow row = rows[i];
-                means[i] = (double)row.getData()[meanIndex];
+                Object a = row.getData()[meanIndex];
+                if (row.getData()[meanIndex] != null) {
+                    means[i] = (double)row.getData()[meanIndex];
+                } else {
+                    means[i] = null;
+                }
+
             }
             return means;
         }
