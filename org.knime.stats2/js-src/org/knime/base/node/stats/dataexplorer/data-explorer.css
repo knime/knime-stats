@@ -27,9 +27,12 @@ span.freqSpan {
 	overflow: auto;
 }
 
-#tabs-knimeDataExplorerContainer {
-	margin: 20px;
+#tabs .tab-content .tab-pane {
+	padding: 20px;
 	overflow: hidden;
+	border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 
 h1 {
@@ -181,11 +184,6 @@ h2 {
 	color: #d9534f;
 }
 
-#tabs-knimePreviewContainer {
-	margin: 20px;
-	overflow: hidden;
-}
-
 #knimePreview_wrapper .dt-buttons.btn-group {
 	width: auto;
 }
@@ -320,11 +318,6 @@ h2 {
 
 #knimeNominal td .missing-value-cell {
 	color: #d9534f;
-}
-
-#tabs-knimeNominalContainer {
-	margin: 20px;
-	overflow: hidden;
 }
 
 #knimeNominal_wrapper .dt-buttons.btn-group {
