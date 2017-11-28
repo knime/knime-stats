@@ -67,12 +67,6 @@
             deprecated="false"
             factory-class="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory">
       </node>
-      <node
-            category-path="/labs/js-views"
-            deprecated="false"
-            factory-class="org.knime.base.node.stats.dataexplorer.DataExplorerNodeFactory">
-      </node>
-      
    </extension>
    <extension point="org.knime.workbench.repository.categories">
       <category
@@ -121,37 +115,6 @@
                webResourceBundleID="KnimeTable_1.0.0">
          </webDependency>
       </webResourceBundle>
-      <webResourceBundle
-            debug="true"
-            name="Data Explorer"
-            usesDefine="false"
-            version="1.0"
-            webResourceBundleID="org.knime.base.node.stats.dataexplorer.bundle">
-         <webResource
-               relativePathSource="js-src/org/knime/base/node/stats/dataexplorer/"
-               relativePathTarget="org/knime/base/node/stats/dataexplorer/">
-         </webResource>
-         <importResource
-               relativePath="org/knime/base/node/stats/dataexplorer/data-explorer.js"
-               type="JAVASCRIPT">
-         </importResource>
-         <importResource
-               relativePath="org/knime/base/node/stats/dataexplorer/data-explorer.css"
-               type="CSS">
-         </importResource>
-         <webDependency
-               webResourceBundleID="KnimeTable_1.0.0">
-         </webDependency>
-         <webDependency
-               webResourceBundleID="moment_timezone_locales_2_17">
-         </webDependency>
-         <webDependency
-               webResourceBundleID="dataTables_1_10_11_bootstrap">
-         </webDependency>
-         <webDependency
-               webResourceBundleID="D3_3.2.8">
-         </webDependency>
-      </webResourceBundle>
    </extension>
    <extension
          point="org.knime.js.core.javascriptComponents">
@@ -171,16 +134,6 @@
             javascriptComponentID="org_knime_base_node_stats_kaplanmeierplot"
             name="Kaplan-Meier Plot"
             namespace="kmplot_namespace"
-            setValidationError-method-name="setValidationError"
-            validate-method-name="validate">
-      </javascriptComponent>
-      <javascriptComponent
-            getComponentValue-method-name="getComponentValue"
-            implementationBundleID="org.knime.base.node.stats.dataexplorer.bundle"
-            init-method-name="init"
-            javascriptComponentID="org_knime_base_node_stats_dataexplorer"
-            name="Data Explorer"
-            namespace="dataExplorerNamespace"
             setValidationError-method-name="setValidationError"
             validate-method-name="validate">
       </javascriptComponent>
