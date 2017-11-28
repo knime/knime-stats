@@ -201,6 +201,8 @@ public class DataExplorerConfig {
     final static String[] DEFAULT_MAX_NOMINAL_VALUE_REACHED = new String[0];
     private String[] m_maxNomValueReached = DEFAULT_MAX_NOMINAL_VALUE_REACHED;
 
+
+    final static String CFG_SELECTION = "selection";
     /**
      * @return the hideInWizard
      */

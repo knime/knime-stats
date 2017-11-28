@@ -67,7 +67,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class DataExplorerNodeValue extends JSONViewContent {
 
-    private static final String CFG_SELECTION = "selection";
+//    private static final String CFG_SELECTION = "selection";
     private String[] m_selection;
 
     private static final String CFG_SELECT_ALL = "selectAll";
@@ -193,7 +193,7 @@ public class DataExplorerNodeValue extends JSONViewContent {
     @Override
     @JsonIgnore
     public void saveToNodeSettings(final NodeSettingsWO settings) {
-        settings.addStringArray(CFG_SELECTION, m_selection);
+        settings.addStringArray(DataExplorerConfig.CFG_SELECTION, m_selection);
         settings.addBoolean(CFG_SELECT_ALL, m_selectAll);
         settings.addInt(CFG_PAGE_SIZE, m_pageSize);
         settings.addInt(CFG_CURRENT_PAGE, m_currentPage);
@@ -214,7 +214,7 @@ public class DataExplorerNodeValue extends JSONViewContent {
     @Override
     @JsonIgnore
     public void loadFromNodeSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_selection = settings.getStringArray(CFG_SELECTION);
+        m_selection = settings.getStringArray(DataExplorerConfig.CFG_SELECTION);
         m_selectAll = settings.getBoolean(CFG_SELECT_ALL);
         m_pageSize = settings.getInt(CFG_PAGE_SIZE);
         m_currentPage = settings.getInt(CFG_CURRENT_PAGE);

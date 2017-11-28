@@ -108,7 +108,7 @@ dataExplorerNamespace = function() {
 			if (_representation.subtitle != null && _representation.subtitle != '') {
 				wrapper.append('<h2>' + _representation.subtitle + '</h2>')
 			}
-			var table = $('<table id="knimeNominal" class="table table-striped table-bordered" width="100%">');
+			var table = $('<table id="knimeNominal" class="table table-striped table-bordered knimeDataTable" width="100%">');
 			wrapper.append(table);
             
             if (_representation.jsNominalHistograms != null) {
@@ -149,7 +149,7 @@ dataExplorerNamespace = function() {
 							}*/
 						}, 0);
 						return '<input type="checkbox" name="id[]"'
-							+ (selection[data] ? ' checked' : '')
+							+ (selection[full[0]] ? ' checked' : '')
 							+' value="' + $('<div/>').text(full[0]).html() + '">';
 					}
 				});
@@ -592,7 +592,7 @@ dataExplorerNamespace = function() {
 			if (_representation.subtitle != null && _representation.subtitle != '') {
 				wrapper.append('<h2>' + _representation.subtitle + '</h2>')
 			}
-			var table = $('<table id="knimeDataExplorer" class="table table-striped table-bordered" width="100%">');
+			var table = $('<table id="knimeDataExplorer" class="table table-striped table-bordered knimeDataTable" width="100%">');
 			wrapper.append(table);
 			
 			var colArray = [];
@@ -622,7 +622,7 @@ dataExplorerNamespace = function() {
 							}*/
 						}, 0);
 						return '<input type="checkbox" name="id[]"'
-							+ (selection[data] ? ' checked' : '')
+							+ (selection[full[0]] ? ' checked' : '')
 							+' value="' + $('<div/>').text(full[0]).html() + '">';
 					}
 				});
@@ -1048,7 +1048,7 @@ dataExplorerNamespace = function() {
 			
 			var wrapper = $('<div id="tabs-knimePreviewContainer">').attr("class", "tab-pane");
 			content.append(wrapper);
-			var table = $('<table id="knimePreview" class="table table-striped table-bordered" width="100%">');
+			var table = $('<table id="knimePreview" class="table table-striped table-bordered knimeDataTable" width="100%">');
 			wrapper.append(table);
 			
 			var colArray = [];
