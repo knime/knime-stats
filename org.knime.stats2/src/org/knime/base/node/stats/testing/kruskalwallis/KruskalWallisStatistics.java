@@ -43,15 +43,31 @@ public class KruskalWallisStatistics {
             groupCount[assignedGroups[i]]++;
         }
 
-        double Htmp = 0.0;
+        // Implementation of formula for H which does not need a correction for ties.
+        // See: https://en.wikipedia.org/wiki/Kruskal%E2%80%93Wallis_one-way_analysis_of_variance
+        //
+        // H = (n - 1) * ( sum_i=1^g(n_i * (r_bar_i - r_bar)^2) / (sum_i=1^n(r_i - r_bar)^2) )
+        //        n := total number of data points
+        //        g := number of groups
+        //      n_i := number of data points in group i
+        //  r_bar_i := mean of ranks in group i
+        //    r_bar := total mean of ranks
+        //      r_i := rank of data point i
+
+        double n = data.length;
+        double numerator = 0.0;
+        double overallRankMean = (n + 1) / 2.0;
         for (int i = 0; i < numGroups; i++) {
-            Htmp += Math.pow(stats[i].getSum(), 2.0) / groupCount[assignedGroups[i]];
+            numerator += groupCount[i] * Math.pow((stats[i].getMean() - overallRankMean), 2);
+        }
+
+        double nominator = 0.0;
+        for (double rank : ranks) {
+            nominator += Math.pow((rank - overallRankMean), 2);
         }
 
         final KruskalWallisStatisticsResult res = new KruskalWallisStatisticsResult();
-
-        int N = data.length;
-        res.H = 12.0 / (N * (N + 1)) * Htmp - 3.0 * (N + 1);
+        res.H = (n - 1) * (numerator / nominator);
         res.stats = stats;
 
         return res;
