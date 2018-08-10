@@ -4,6 +4,9 @@
 
    <extension point="org.knime.workbench.repository.nodes">
       <node
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.testing.friedman.FriedmanTestNodeFactory"/>
+      <node
             after="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory"
             category-path="/labs/statistics"
             deprecated="true"
