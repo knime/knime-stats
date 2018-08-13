@@ -7,6 +7,9 @@
             category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.testing.friedman.FriedmanTestNodeFactory"/>
       <node
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.testing.proportion.ProportionTestNodeFactory"/>
+      <node
             after="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory"
             category-path="/labs/statistics"
             deprecated="true"

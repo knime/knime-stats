@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./proportion_test.png" type="Manipulator">
+    <name>Proportion Test</name>
+    
+    <shortDescription>
+    	One-proportion z-test 
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>
+        	<p>
+        	The Proportion Test states whether occurrences of category in a distribution has a different proportion than expected from the null hypothesis H<sub>0</sub>. The node calculates the sample proportion of the category p&#770;. With the given null-hypothesized proportion p<sub>0</sub>, a z-Score is calculated via (p&#770; - p<sub>0</sub>)/<i>se</i>, where <i>se</i> is the standard error. If the corresponding <i>p</i>-Value is below the given significance level &#945;, the null hypothesis can be rejected. Missing values will be ignored. See <a href="https://en.wikipedia.org/wiki/Test_statistic">Wikipedia on test statistic</a>, "One-proportion z-test" for further information.
+        	</p>
+        </intro>
+        <tab name="Options">
+			<option name="Category column">The distribution column, of type String. Its total number of occurrences without missing values is <i>nobs</i>.</option>
+			<option name="Category">The category to test for. The number of occurrences of this category in the category column is <i>count</i>.</option>
+			<option name="Null hypothesis">The null hypothesized proportion 0 &lt; p<sub>0</sub> &lt; 1.</option>
+			<option name="Alternative hypothesis">The alternative hypothesis H<sub>A</sub>: whether the actual proportion <i>p&#770;</i>=nobs/count is
+				<ul>
+					<li>larger than (GREATER_THAN)</li>
+					<li>less than (LESS_THAN)</li>
+					<li>different than (TWO_SIDED)</li>
+				</ul>
+			the null hypothesized distribution p<sub>0</sub>.</option>
+			<option name="Significance level &#945;">H<sub>0</sub> is rejected, if <i>p</i>-Value &lt; &#945;</option>
+		</tab>
+		<tab name="Advanced Settings">
+			<option name="Use sample proportion">Whether to calculate the standard error from the sample proportion p&#770; rather than the default null hypothesis proportion.</option>
+		</tab>
+    </fullDescription>
+    <ports>
+        <inPort index="0" name="Input data">The table from which to test samples</inPort>
+        <outPort index="0" name="Evaluation">Proportion test evaluation</outPort>
+    </ports>
+</knimeNode>
