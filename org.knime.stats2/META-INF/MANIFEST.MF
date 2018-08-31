@@ -2,18 +2,18 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: KNIME Statistic Nodes (Labs)
 Bundle-SymbolicName: org.knime.stats2;singleton:=true
-Bundle-Version: 3.6.0.qualifier
+Bundle-Version: 3.6.1.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: KNIME AG, Zurich, Switzerland
 Export-Package: org.knime.base.node.stats.contingencytable
 Require-Bundle: org.knime.base;bundle-version="[3.0.0,4.0.0)",
- org.apache.commons.math3;bundle-version="[3.2.0,4.0.0)",
- org.knime.js.core;bundle-version="[3.1.0,4.0.0)",
- org.apache.commons.lang3;bundle-version="[3.2.1,4.0.0)",
- com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.5.2,3.0.0)",
- com.fasterxml.jackson.core.jackson-core;bundle-version="[2.5.2,3.0.0)",
- com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.5.2,3.0.0)",
- org.knime.ext.svg;bundle-version="[3.4.0,4.0.0)",
- org.knime.stats;bundle-version="[3.4.0,4.0.0)"
+  org.apache.commons.math3;bundle-version="[3.2.0,4.0.0)",
+  org.knime.js.core;bundle-version="[3.1.0,4.0.0)",
+  org.apache.commons.lang3;bundle-version="[3.2.1,4.0.0)",
+  com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.5.2,3.0.0)",
+  com.fasterxml.jackson.core.jackson-core;bundle-version="[2.5.2,3.0.0)",
+  com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.5.2,3.0.0)",
+  org.knime.ext.svg;bundle-version="[3.4.0,4.0.0)",
+  org.knime.stats;bundle-version="[3.4.0,4.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
