@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./exponential_smoothing.png" type="Manipulator">
+    <name>Exponential Smoothing</name>
+    
+    <shortDescription>
+        Smoothes time series data with an exponential window function
+    </shortDescription>
+    
+    <fullDescription>
+        <intro><p>The Exponential Smoothing Node smoothes a time series signal by convolving an exponential window function over the data. This procedure is often used for prediction of the next timestep. Uses the average value of the column as the initial timestep.</p>        
+        <p>Please refer also to the <a href="https://en.wikipedia.org/wiki/Exponential_smoothing">Wikipedia description</a> for further explanation.</p>
+        </intro>
+        <tab name="Options">
+	        <option name="Timeseries">The data to be smoothed.</option>
+	        <option name="Smoothing factor &#945;">Strength of the smoothing: &#945;=0 results in the average value at each timestep, &#945;=1 shifts the data forward by one timestep. 0 &lt; &#945; &lt; 1.</option>
+	        <option name="Append/Replace">Whether to append a new column with the specified name or replace the chosen one.</option>
+        </tab>
+    </fullDescription>
+    <ports>
+        <inPort index="0" name="Input data">The table containing the timeseries.</inPort>
+        <outPort index="0" name="Smoothed Timeseries">Smooth result</outPort>
+    </ports>
+</knimeNode>
