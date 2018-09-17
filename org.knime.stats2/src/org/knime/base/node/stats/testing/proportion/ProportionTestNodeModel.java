@@ -91,8 +91,8 @@ public class ProportionTestNodeModel extends NodeModel {
     static final int PORT_IN_DATA = 0;
 
     static final String ERRORMESSAGE = "provide a \"StringValue\" or \"BooleanValue\" column  with at "
-        + "least two distinct values. If the desired column has more than 60 distinct values, try executing "
-        + "a preceding \"Domain Calculator\" node.";
+        + "least two distinct values. If a column has more than 60 distinct values,"
+        + " use the \"Domain Calculator\" node.";
 
     private final SettingsModelDoubleBounded m_alphaModel = createSettingsModelAlpha();
 
@@ -288,7 +288,7 @@ public class ProportionTestNodeModel extends NodeModel {
         final DataColumnSpec[] allColSpecs =
             new DataColumnSpec[]{new DataColumnSpecCreator("Count", IntCell.TYPE).createSpec(),
                 new DataColumnSpecCreator("Nobs", IntCell.TYPE).createSpec(),
-                new DataColumnSpecCreator("Percentage", DoubleCell.TYPE).createSpec(),
+                new DataColumnSpecCreator("Proportion", DoubleCell.TYPE).createSpec(),
                 new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec(),
                 new DataColumnSpecCreator("z-Score", DoubleCell.TYPE).createSpec(),
                 new DataColumnSpecCreator("p-Value", DoubleCell.TYPE).createSpec()};

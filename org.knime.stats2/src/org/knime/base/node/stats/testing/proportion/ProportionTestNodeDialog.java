@@ -86,11 +86,13 @@ public class ProportionTestNodeDialog extends DefaultNodeSettingsPane {
 
     private static final int INPUT_WIDTH = 5;
 
+    private static final int INPUT_HEIGHT = 25;
+
     private DataTableSpec[] m_lastSpecs;
 
     private final SettingsModelString m_categoryModel;
 
-    SettingsModelString m_categoryColumnModel;
+    private SettingsModelString m_categoryColumnModel;
 
     private final DialogComponentStringSelection m_categoryComponent;
 
@@ -109,9 +111,8 @@ public class ProportionTestNodeDialog extends DefaultNodeSettingsPane {
         final DialogComponentColumnNameSelection catColComponent = new DialogComponentColumnNameSelection(
             m_categoryColumnModel, "Category column", ProportionTestNodeModel.PORT_IN_DATA, NominalValue.class);
         addDialogComponent(catColComponent);
-
         // smaller size for long names, with tooltips
-        catColComponent.getComponentPanel().getComponent(1).setPreferredSize(new Dimension(260, 25));
+        catColComponent.getComponentPanel().getComponent(1).setPreferredSize(new Dimension(260, INPUT_HEIGHT));
 
         // update the category selection options, as these deoend on the selected column
         m_categoryColumnModel.addChangeListener(e -> {
@@ -125,14 +126,14 @@ public class ProportionTestNodeDialog extends DefaultNodeSettingsPane {
         });
 
         m_categoryModel = ProportionTestNodeModel.createSettingsModelCategory();
-        // TODO: add tooltip support to DialogComponentStringSelection?
+        // TODO: add tooltip support to DialogComponentStringSelection? - to be done in StringIconListCellRenderer
         m_categoryComponent = new DialogComponentStringSelection(m_categoryModel, "Category", "");
-        m_categoryComponent.setSizeComponents(260, 20);
+        m_categoryComponent.setSizeComponents(260, INPUT_HEIGHT);
         addDialogComponent(m_categoryComponent);
 
         // create a HTML-layouted warning message if the currently selected column won't work.
-        StringBuilder warningMessageSB =
-            new StringBuilder("No category available: " + ProportionTestNodeModel.ERRORMESSAGE);
+        final StringBuilder warningMessageSB =
+                new StringBuilder("No category available: " + ProportionTestNodeModel.ERRORMESSAGE);
         int i = 0;
         warningMessageSB.insert(0, "<html>");
         while ((i = warningMessageSB.indexOf(" ", i + 50)) != -1) {
@@ -151,17 +152,19 @@ public class ProportionTestNodeDialog extends DefaultNodeSettingsPane {
         addDialogComponent(p0Component);
 
         final List<String> hA = Stream.of(AlternativeHypothesis.values()).map(Enum::name).collect(Collectors.toList());
-        final DialogComponentStringSelection alternative = new DialogComponentStringSelection(
+        final DialogComponentStringSelection alternativeComponent = new DialogComponentStringSelection(
             ProportionTestNodeModel.createSettingsModelAlternativeHypothesis(), "Alternative hypothesis", hA);
-        addDialogComponent(alternative);
+        alternativeComponent.setSizeComponents(150, INPUT_HEIGHT);
+        addDialogComponent(alternativeComponent);
 
         final DialogComponentNumber alphaComponent = new DialogComponentNumber(
-            ProportionTestNodeModel.createSettingsModelAlpha(), "Significance level alpha", 0.01, INPUT_WIDTH);
+            ProportionTestNodeModel.createSettingsModelAlpha(), "Significance level (alpha)", 0.01, INPUT_WIDTH);
         addDialogComponent(alphaComponent);
 
         createNewTab("Advanced Settings");
-        addDialogComponent(new DialogComponentBoolean(
-            ProportionTestNodeModel.createSettingsModelSampleProportionStdError(), "Use sample proportion"));
+        addDialogComponent(
+            new DialogComponentBoolean(ProportionTestNodeModel.createSettingsModelSampleProportionStdError(),
+                    "Use sample proportion to compute standard error"));
     }
 
     /**
@@ -169,7 +172,7 @@ public class ProportionTestNodeDialog extends DefaultNodeSettingsPane {
      */
     @Override
     public void loadAdditionalSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs)
-        throws NotConfigurableException {
+            throws NotConfigurableException {
         m_lastSpecs = specs;
         m_lastSettings = settings;
         try {
