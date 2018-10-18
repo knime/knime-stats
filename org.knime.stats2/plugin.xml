@@ -63,8 +63,14 @@
       <node
             after="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory"
             category-path="/labs/statistics"
-            deprecated="false"
+            deprecated="true"
             factory-class="org.knime.base.node.stats.contintable.oddriskratio.OddsRiskRatioNodeFactory">
+      </node>
+      <node
+            after="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory"
+            category-path="/labs/statistics"
+            deprecated="false"
+            factory-class="org.knime.base.node.stats.contintable.oddriskratio2.OddsRiskRatioNodeFactory">
       </node>
       <node
             after="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"

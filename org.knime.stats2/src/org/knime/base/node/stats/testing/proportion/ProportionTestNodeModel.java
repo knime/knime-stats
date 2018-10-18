@@ -77,6 +77,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.stats.StatsUtil;
 
 /**
  * This is the model implementation of ProportionTest.
@@ -291,7 +292,7 @@ public class ProportionTestNodeModel extends NodeModel {
                 new DataColumnSpecCreator("Proportion", DoubleCell.TYPE).createSpec(),
                 new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec(),
                 new DataColumnSpecCreator("z-Score", DoubleCell.TYPE).createSpec(),
-                new DataColumnSpecCreator("p-Value", DoubleCell.TYPE).createSpec()};
+                StatsUtil.createPValueColumnSpec()};
 
         return new DataTableSpec(allColSpecs);
     }

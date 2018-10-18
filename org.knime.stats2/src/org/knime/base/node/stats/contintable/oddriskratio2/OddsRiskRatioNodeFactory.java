@@ -1,6 +1,5 @@
 /*
  * ------------------------------------------------------------------------
- *
  *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.org; Email: contact@knime.org
  *
@@ -41,26 +40,25 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * ---------------------------------------------------------------------
+ * -------------------------------------------------------------------
  */
-package org.knime.base.node.stats.testing.friedman;
+package org.knime.base.node.stats.contintable.oddriskratio2;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * <code>NodeFactory</code> for the "FriedmanTest" Node.
+ * <code>NodeFactory</code> for the "OddsRatio" Node.
  *
  *
- * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
+ * @author Oliver Sampson, University of Konstanz
  */
-public class FriedmanTestNodeFactory
-extends NodeFactory<FriedmanTestNodeModel> {
+public class OddsRiskRatioNodeFactory extends NodeFactory<OddsRiskRatioNodeModel> {
 
     @Override
-    public FriedmanTestNodeModel createNodeModel() {
-        return new FriedmanTestNodeModel();
+    public OddsRiskRatioNodeModel createNodeModel() {
+        return new OddsRiskRatioNodeModel();
     }
 
     @Override
@@ -69,8 +67,8 @@ extends NodeFactory<FriedmanTestNodeModel> {
     }
 
     @Override
-    public NodeView<FriedmanTestNodeModel> createNodeView(final int viewIndex,
-        final FriedmanTestNodeModel nodeModel) {
+    public NodeView<OddsRiskRatioNodeModel> createNodeView(final int viewIndex,
+        final OddsRiskRatioNodeModel nodeModel) {
         return null;
     }
 
@@ -81,8 +79,7 @@ extends NodeFactory<FriedmanTestNodeModel> {
 
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new FriedmanTestNodeDialog();
+        return new OddsRiskRatioNodeDialog();
     }
 
 }
-

@@ -37,12 +37,13 @@ import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.stats.StatsUtil;
 
 /**
  * This is the model implementation of KolmogorovSmirnovTest.
  *
  *
- * @author Kevin Kress, Knime GmbH, Konstanz
+ * @author Kevin Kress, KNIME GmbH, Konstanz, Germany
  */
 final class KolmogorovSmirnovTestNodeModel extends NodeModel {
 
@@ -331,8 +332,9 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
     private static DataTableSpec createOutputSpec() {
         final List<DataColumnSpec> allColSpecs = new ArrayList<>(3);
         allColSpecs.add(new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec());
-        allColSpecs.add(new DataColumnSpecCreator("Statistic", DoubleCell.TYPE).createSpec());
-        allColSpecs.add(new DataColumnSpecCreator("p-Value", DoubleCell.TYPE).createSpec());
+        allColSpecs.add(StatsUtil.createDataColumnSpec("Statistic", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
+        allColSpecs.add(StatsUtil.createPValueColumnSpec());
+
         return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
     }
 

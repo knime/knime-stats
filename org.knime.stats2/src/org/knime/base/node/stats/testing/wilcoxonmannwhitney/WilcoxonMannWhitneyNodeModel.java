@@ -56,9 +56,10 @@ import java.util.List;
 import org.apache.commons.math3.stat.ranking.NaturalRanking;
 import org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyStatistics.MannWhitneyUTestResult;
 import org.knime.core.data.DataCell;
+import org.knime.core.data.DataColumnSpec;
+import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
@@ -75,6 +76,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.stats.StatsUtil;
 
 /**
  * NodeModel for Wilcoxon-Mann-Whitney-U-Test
@@ -186,16 +188,24 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
             throw new InvalidSettingsException("Value of group two is not set.");
         }
 
-        return createOutSpec();
+        return new DataTableSpec[]{createOutSpec()};
     }
 
     /**
      * @return the outspec of this node
      */
-    private DataTableSpec[] createOutSpec() {
-        return new DataTableSpec[]{new DataTableSpec(new String[]{U_MIN_VALUE, U_MAX_VALUE, P_VALUE, MEAN_A, MEAN_B,
-            MEDIAN_A, MEDIAN_B}, new DataType[]{DoubleCell.TYPE, DoubleCell.TYPE, DoubleCell.TYPE, DoubleCell.TYPE,
-            DoubleCell.TYPE, DoubleCell.TYPE, DoubleCell.TYPE})};
+    private DataTableSpec createOutSpec() {
+        final List<DataColumnSpec> allColSpecs = new ArrayList<>(3);
+        allColSpecs.add(new DataColumnSpecCreator(U_MIN_VALUE, DoubleCell.TYPE).createSpec());
+        allColSpecs.add(new DataColumnSpecCreator(U_MAX_VALUE, DoubleCell.TYPE).createSpec());
+        allColSpecs.add(StatsUtil.createPValueColumnSpec());
+        allColSpecs.add(new DataColumnSpecCreator(MEAN_A, DoubleCell.TYPE).createSpec());
+        allColSpecs.add(new DataColumnSpecCreator(MEAN_B, DoubleCell.TYPE).createSpec());
+        allColSpecs.add(new DataColumnSpecCreator(MEDIAN_A, DoubleCell.TYPE).createSpec());
+        allColSpecs.add(new DataColumnSpecCreator(MEDIAN_B, DoubleCell.TYPE).createSpec());
+
+
+        return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
     }
 
     /**
@@ -256,7 +266,7 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
             }
         }
 
-        final BufferedDataContainer container = exec.createDataContainer(createOutSpec()[0]);
+        final BufferedDataContainer container = exec.createDataContainer(createOutSpec());
         if (a.size() == 0 || b.size() == 0) {
             throw new IllegalStateException("Number of observations is zero for one or both of the selected groups!");
         } else {

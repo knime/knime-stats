@@ -11,7 +11,6 @@ import org.knime.base.data.statistics.calculation.Mean;
 import org.knime.base.data.statistics.calculation.MissingValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
-import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
@@ -33,6 +32,7 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
+import org.knime.stats.StatsUtil;
 
 /**
  * This is the model implementation of PMMLToJavascriptCompiler.
@@ -332,8 +332,8 @@ public class ShapiroWilkNodeModel extends NodeModel {
     }
 
     private DataTableSpec createSpec() {
-        DataColumnSpec measure = new DataColumnSpecCreator("W", DoubleCell.TYPE).createSpec();
-        DataColumnSpec p = new DataColumnSpecCreator("P", DoubleCell.TYPE).createSpec();
+        DataColumnSpec measure = StatsUtil.createDataColumnSpec("W", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
+        DataColumnSpec p = StatsUtil.createPValueColumnSpec();
 
         return new DataTableSpec(measure, p);
     }

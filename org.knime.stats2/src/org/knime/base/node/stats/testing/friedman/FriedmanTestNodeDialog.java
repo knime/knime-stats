@@ -71,7 +71,7 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
 /**
  * <code>NodeDialog</code> for the "FriedmanTest" Node.
  *
- * @author Lukas Siedentop, University of Konstanz
+ * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
  */
 public class FriedmanTestNodeDialog extends DefaultNodeSettingsPane {
 

@@ -73,6 +73,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.stats.StatsUtil;
 
 /**
  * @author Patrick Winter, University of Konstanz
@@ -143,8 +144,8 @@ class WilcoxonSignedRankNodeModel extends NodeModel {
         colSpecs[3] = new DataColumnSpecCreator("w (minus)", DoubleCell.TYPE).createSpec();
         colSpecs[4] = new DataColumnSpecCreator("z-score (left)", DoubleCell.TYPE).createSpec();
         colSpecs[5] = new DataColumnSpecCreator("z-score (right)", DoubleCell.TYPE).createSpec();
-        colSpecs[6] = new DataColumnSpecCreator("p-value (one tailed)", DoubleCell.TYPE).createSpec();
-        colSpecs[7] = new DataColumnSpecCreator("p-value (two tailed)", DoubleCell.TYPE).createSpec();
+        colSpecs[6] = StatsUtil.createDataColumnSpec("p-value (one tailed)", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
+        colSpecs[7] = StatsUtil.createDataColumnSpec("p-value (two tailed)", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
         return new DataTableSpecCreator().addColumns(colSpecs).createSpec();
     }
 

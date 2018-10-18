@@ -78,6 +78,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.stats.StatsUtil;
 
 /**
  * NodeModel for Wilcoxon-Mann-Whitney-U-Test
@@ -191,7 +192,7 @@ public class KruskalWallisNodeModel extends NodeModel {
         final DataColumnSpec[] colOutSpecs = new DataColumnSpec[2 + (2 * groups.size())];
 
         colOutSpecs[0] = new DataColumnSpecCreator(H_VALUE, DoubleCell.TYPE).createSpec();
-        colOutSpecs[1] = new DataColumnSpecCreator(P_VALUE, DoubleCell.TYPE).createSpec();
+        colOutSpecs[1] = StatsUtil.createPValueColumnSpec();
 
         int i = 2;
         for (final String value : groups) {

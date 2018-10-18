@@ -81,6 +81,7 @@ import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.stats.StatsUtil;
 
 /**
  * This is the model implementation of MedianTest.
@@ -295,7 +296,7 @@ public class MedianTestNodeModel extends NodeModel {
         allColSpecs.add(new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator("ChiSq Value", DoubleCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator("Critical ChiSq Value", DoubleCell.TYPE).createSpec());
-        allColSpecs.add(new DataColumnSpecCreator("p-Value", DoubleCell.TYPE).createSpec());
+        allColSpecs.add(StatsUtil.createPValueColumnSpec());
 
         return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
     }
