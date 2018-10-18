@@ -51,6 +51,7 @@ package org.knime.base.node.stats.testing.wilcoxonsignedrank2;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
@@ -75,9 +76,7 @@ public class ColumnStatistics {
 
     private int m_missing = 0;
 
-    private double m_sum = 0;
-
-    private List<Double> m_values = new ArrayList<Double>();
+    private final DescriptiveStatistics m_values = new DescriptiveStatistics();
 
     private ColumnStatistics(final String column) {
         m_column = column;
@@ -94,6 +93,7 @@ public class ColumnStatistics {
         tableSpecCreator.addColumns(new DataColumnSpecCreator("Mean", DoubleCell.TYPE).createSpec());
         tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Deviation", DoubleCell.TYPE).createSpec());
         tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Error Mean", DoubleCell.TYPE).createSpec());
+        tableSpecCreator.addColumns(new DataColumnSpecCreator("Median", DoubleCell.TYPE).createSpec());
         return tableSpecCreator.createSpec();
     }
 
@@ -134,8 +134,7 @@ public class ColumnStatistics {
     }
 
     private void addValue(final double value) {
-        m_sum += value;
-        m_values.add(value);
+        m_values.addValue(value);
     }
 
     private void addMissing() {
@@ -143,25 +142,12 @@ public class ColumnStatistics {
     }
 
     private DataRow createRow(final String id) {
-        return new DefaultRow(id, new StringCell(m_column), new IntCell(m_values.size()), new IntCell(m_missing),
-            new DoubleCell(calcMean()), new DoubleCell(calcStdDeviation()), new DoubleCell(calcStdError()));
-    }
-
-    private double calcMean() {
-        return m_sum / m_values.size();
-    }
-
-    private double calcStdDeviation() {
-        double mean = calcMean();
-        double temp = 0;
-        for (Double a : m_values) {
-            temp += (a - mean) * (a - mean);
-        }
-        return Math.sqrt(temp / (m_values.size() - 1));
+        return new DefaultRow(id, new StringCell(m_column), new IntCell((int)m_values.getN()), new IntCell(m_missing),
+            new DoubleCell(m_values.getMean()), new DoubleCell(m_values.getStandardDeviation()), new DoubleCell(calcStdError()), new DoubleCell(m_values.getPercentile(50)));
     }
 
     private double calcStdError() {
-        return calcStdDeviation() / Math.sqrt(m_values.size());
+        return m_values.getStandardDeviation() / Math.sqrt(m_values.getN());
     }
 
 }
