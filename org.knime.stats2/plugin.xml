@@ -34,26 +34,38 @@
             deprecated="true"
             factory-class="org.knime.base.node.stats.testing.wilcoxonsignedrank.WilcoxonSignedRankNodeFactory">
       </node>
+      <node deprecated="true" 
+      		category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.lda.LDANodeFactory"
+            />
       <node 
       		category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.lda.LDANodeFactory" 
+            factory-class="org.knime.base.node.stats.lda2.LDA2NodeFactory"
+            />      
+      <node 
+      		after="org.knime.base.node.stats.lda2.LDA2NodeFactory"
+      		category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.lda2.LDAComputeNodeFactory"
+            />
+      <node 
+      		after="org.knime.base.node.stats.lda2.LDAComputeNodeFactory"
+      		category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.lda2.LDAApplyNodeFactory"
             />
       <node
-            after="org.knime.base.node.stats.contintable.mediantest.MedianTestNodeFactory"
-            category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory"/>
-      <node
-            after="org.knime.base.node.stats.lda.LDANodeFactory"
             category-path="/labs/statistics"
             deprecated="true"
             factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory">
       </node>
       <node
-            after="org.knime.base.node.stats.lda.LDANodeFactory"
+            after="org.knime.base.node.stats.lda2.LDA2NodeFactory"
             category-path="/labs/statistics"
-            deprecated="false"
             factory-class="org.knime.base.node.stats.shapirowilk2.ShapiroWilk2NodeFactory">
       </node>
+      <node
+            after="org.knime.base.node.stats.contintable.mediantest.MedianTestNodeFactory"
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.agreement.blandaltmanplot.BlandAltmanPlotNodeFactory"/>
       <node
             after="org.knime.base.node.stats.testing.wilcoxonsignedrank2.WilcoxonSignedRankNodeFactory"
             category-path="/labs/statistics"
@@ -90,6 +102,18 @@
             factory-class="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory">
       </node>
    </extension>
+        <extension
+           point="org.knime.core.PortType">
+           <portType
+              color="#9911FF"
+              hidden="true"
+              name="LDA"
+              objectClass="org.knime.base.node.stats.lda2.LDAModelPortObject" 
+              objectSerializer="org.knime.base.node.stats.lda2.LDAModelPortObject$Serializer"
+              specClass="org.knime.base.node.stats.lda2.LDAModelPortObjectSpec"
+              specSerializer="org.knime.base.node.stats.lda2.LDAModelPortObjectSpec$Serializer">
+        </portType>
+   </extension>     
    <extension point="org.knime.workbench.repository.categories">
       <category
             icon="icons/category_statistics.png"

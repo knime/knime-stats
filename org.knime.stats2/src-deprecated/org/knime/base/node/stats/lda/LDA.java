@@ -71,7 +71,9 @@ import org.knime.core.node.InvalidSettingsException;
 /**
  *
  * @author Alexander Fillbrunn
+ * @deprecated
  */
+@Deprecated
 public class LDA {
 
     private int m_k;

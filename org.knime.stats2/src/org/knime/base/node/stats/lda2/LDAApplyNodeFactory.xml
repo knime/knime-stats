@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./lda_apply-icon.png" type="Manipulator">
+    <name>Linear Discriminant Analysis Apply</name>
+    
+    <shortDescription>
+        This node applies a linear discriminant analysis.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>
+        This node applies a <a href="http://en.wikipedia.org/wiki/Linear_discriminant_analysis">Linear Discriminant Analysis (LDA)</a> on the given input data. The data model of the LDA computation node can be applied to arbitrary data to reduce it to a given number of dimensions.
+        <p>The column names, however, have to coincide with those used to calculate the model.</p>
+        </intro>
+        <option name="Remove original data columns">If checked, the columns containing the input data are removed.</option>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="Model">The Model to reduce the dimensions with</inPort>
+        <inPort index="1" name="Table to transform">The data to reduce the dimensions of</inPort>
+        <outPort index="0" name="Projected data">The original data (if not excluded) plus columns for the projected dimensions</outPort>
+    </ports>    
+</knimeNode>

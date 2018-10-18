@@ -9,7 +9,9 @@ import org.knime.core.node.NodeView;
  *
  *
  * @author Alexander Fillbrunn
+  * @deprecated
  */
+@Deprecated
 public class LDANodeFactory
         extends NodeFactory<LDANodeModel> {
 

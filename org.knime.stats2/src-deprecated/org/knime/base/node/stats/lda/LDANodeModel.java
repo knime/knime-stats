@@ -37,7 +37,9 @@ import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
  *
  *
  * @author Alexander Fillbrunn
+  * @deprecated
  */
+@Deprecated
 public class LDANodeModel extends NodeModel {
 
     /**

@@ -28,7 +28,9 @@ import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
  * {@link org.knime.core.node.NodeDialogPane}.
  *
  * @author Alexander Fillbrunn
+  * @deprecated
  */
+@Deprecated
 public class LDANodeDialog extends NodeDialogPane {
 
     private JPanel m_panel;
