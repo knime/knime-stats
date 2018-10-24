@@ -17,10 +17,12 @@ import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.RowKey;
+import org.knime.core.data.container.CloseableRowIterator;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.BooleanCell.BooleanCellFactory;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
+import org.knime.core.data.util.memory.MemoryAlertSystem;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -36,59 +38,41 @@ import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 
-import gnu.trove.set.hash.TDoubleHashSet;
-
-
 /**
  * This is the model implementation of KolmogorovSmirnovTest.
  *
  *
- * @author
+ * @author Kevin Kress, Knime GmbH, Konstanz
  */
-public class KolmogorovSmirnovTestNodeModel extends NodeModel {
+final class KolmogorovSmirnovTestNodeModel extends NodeModel {
 
     static final int PORT_IN_DATA = 0;
 
     private static final double MIN_ROWS = 2;
 
-    private static final String CFGKEY_COLUMN1 = "testCol1";
-    private static final String CFGKEY_COLUMN2 = "testCol2";
+    private static final int EXACT_P_MAX_VALUES = 10000;
 
-    /**
-     * Creates a settings model for the significance level alpha.
-     *
-     * @return the settings model
-     */
-    static SettingsModelDoubleBounded createSettingsModelAlpha() {
-        return new SettingsModelDoubleBounded("Alpha", 0.05, 0, 1);
-    }
+    static final String NAN_STRATEGY_FAILED = "FAILED";
 
-    /**
-     * Creates a settings model for one of the used columns.
-     *
-     * @return the settings model
-     */
-    static SettingsModelString createSettingsModelCol1() {
-        return new SettingsModelString(CFGKEY_COLUMN1, null);
-    }
+    static final String NAN_STRATEGY_REMOVED = "REMOVED";
 
-    /**
-     * Creates a settings model for one of the used columns.
-     *
-     * @return the settings model
-     */
-    static SettingsModelString createSettingsModelCol2() {
-        return new SettingsModelString(CFGKEY_COLUMN2, null);
-    }
+    static final String CFGKEY_COLUMN1 = "testCol1";
+
+    static final String CFGKEY_COLUMN2 = "testCol2";
 
     private final SettingsModelDoubleBounded m_alpha = createSettingsModelAlpha();
-    private final SettingsModelString m_nanStrategy = createSettingsModelNANStrategy();
-    private final SettingsModelBoolean m_exact = createSettingsModelExactP();
-    private final SettingsModelIntegerBounded m_iterations = createSettingsModelIterations();
-    private final SettingsModelDoubleBounded m_cauchyCriterion = createSettingsModelTolerance();
-    private SettingsModelString m_testColumn1 = createSettingsModelCol2();
-    private SettingsModelString m_testColumn2 = createSettingsModelCol1();
 
+    private final SettingsModelString m_nanStrategy = createSettingsModelNANStrategy();
+
+    private final SettingsModelBoolean m_exact = createSettingsModelExactP();
+
+    private final SettingsModelIntegerBounded m_iterations = createSettingsModelIterations();
+
+    private final SettingsModelDoubleBounded m_cauchyCriterion = createSettingsModelTolerance();
+
+    private final SettingsModelString m_testColumn1 = createSettingsModelCol(CFGKEY_COLUMN1);
+
+    private final SettingsModelString m_testColumn2 = createSettingsModelCol(CFGKEY_COLUMN2);
 
     /**
      * Constructor for the node model.
@@ -101,13 +85,13 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected BufferedDataTable[] execute(final BufferedDataTable[] inData,
-            final ExecutionContext exec) throws Exception {
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
+        throws Exception {
 
         final NodeProgressMonitor progMon = exec.getProgressMonitor();
         int progCnt = 0;
 
-        BufferedDataTable inTable = inData[PORT_IN_DATA];
+        final BufferedDataTable inTable = inData[PORT_IN_DATA];
 
         final BufferedDataContainer outContainer = exec.createDataContainer(createOutputSpec());
         if (inTable.size() == 0) {
@@ -115,10 +99,10 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
             return new BufferedDataTable[]{outContainer.getTable()};
         }
 
-        DataTableSpec inSpec = inTable.getDataTableSpec();
+        final DataTableSpec inSpec = inTable.getDataTableSpec();
 
-        String col1 = m_testColumn1.getStringValue();
-        String col2 = m_testColumn2.getStringValue();
+        final String col1 = m_testColumn1.getStringValue();
+        final String col2 = m_testColumn2.getStringValue();
 
         MissingValue missingStat = new MissingValue(col1, col2);
         StatisticCalculator statCalc = new StatisticCalculator(inSpec, missingStat);
@@ -127,14 +111,19 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
         long m = inTable.size() - missingStat.getNumberMissingValues(col1);
         long n = inTable.size() - missingStat.getNumberMissingValues(col2);
 
-        if (m_nanStrategy.getStringValue().equals("FAILED") && n + m < 2*inTable.size()) {
-            throw new InvalidSettingsException("Missing values are not allowed. Either remove them or set the option to ignore missing values");
+        if (m_nanStrategy.getStringValue().equals(NAN_STRATEGY_FAILED) && n + m < 2 * inTable.size()) {
+            throw new InvalidSettingsException(
+                "Missing values are not allowed. Either remove them or set the option to ignore missing values");
         }
 
         if (m < MIN_ROWS || n < MIN_ROWS) {
-            throw new InvalidSettingsException("Not enough data points to calculate the statistic. Need at least 3 values per sample");
+            throw new InvalidSettingsException(
+                "Not enough data points to calculate the statistic. Need at least 3 values per sample");
         } else if (m > Integer.MAX_VALUE || n > Integer.MAX_VALUE) {
             throw new InvalidSettingsException("Too many data points to calculate the statistic.");
+        } else if (MemoryAlertSystem.getMaximumMemory() * MemoryAlertSystem.DEFAULT_USAGE_THRESHOLD < (m + n) * 8) {
+            throw new InvalidSettingsException(
+                "Not enough memory to calculate the test. If possible increase the the available memory or decrease the dataset.");
         }
         final int cellIndex1 = inSpec.findColumnIndex(col1);
         final int cellIndex2 = inSpec.findColumnIndex(col2);
@@ -143,16 +132,21 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
         int count2 = 0;
         double[] colData1 = new double[(int)(m)];
         double[] colData2 = new double[(int)(n)];
-        for (DataRow row : inTable) {
-            progMon.setProgress(progCnt / (10.0 * inTable.size()));
-            progCnt++;
-            if (!row.getCell(cellIndex1).isMissing()) {
-                colData1[count1] = ((DoubleValue) row.getCell(cellIndex1)).getDoubleValue();
-                count1++;
-            }
-            if (!row.getCell(cellIndex2).isMissing()) {
-                colData2[count2] = ((DoubleValue) row.getCell(cellIndex2)).getDoubleValue();
-                count2++;
+
+        try (CloseableRowIterator rowIterator =
+            inTable.iteratorBuilder().filterColumns(cellIndex1, cellIndex2).build()) {
+            while (rowIterator.hasNext()) {
+                DataRow row = rowIterator.next();
+                progMon.setProgress(progCnt / (10.0 * inTable.size()));
+                progCnt++;
+                if (!row.getCell(cellIndex1).isMissing()) {
+                    colData1[count1] = ((DoubleValue)row.getCell(cellIndex1)).getDoubleValue();
+                    count1++;
+                }
+                if (!row.getCell(cellIndex2).isMissing()) {
+                    colData2[count2] = ((DoubleValue)row.getCell(cellIndex2)).getDoubleValue();
+                    count2++;
+                }
             }
         }
 
@@ -160,8 +154,9 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
         progMon.setProgress(0.5);
         boolean exact = false;
         if (m_exact.getBooleanValue()) {
-            if (colData1.length * colData2.length > 10000) {
-                setWarningMessage("Too many values to compute an exact p-value. The product of the sample size must be less than 10000.");
+            if (colData1.length * colData2.length > EXACT_P_MAX_VALUES) {
+                setWarningMessage(
+                    "Too many values to compute an exact p-value. The product of the sample size must be less than 10000.");
             } else if (findTies(colData1, colData2)) {
                 setWarningMessage("Cannot compute exact p-value with ties");
             } else {
@@ -175,7 +170,8 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
         cells.add(BooleanCellFactory.create(pvalue < m_alpha.getDoubleValue()));
         cells.add(new DoubleCell(statistic));
         cells.add(new DoubleCell(pvalue));
-        final RowKey key = new RowKey("Kolmogorov Smirnov (" + m_testColumn1.getStringValue() + ", " + m_testColumn2.getStringValue() + ")");
+        final RowKey key = new RowKey(
+            "Kolmogorov Smirnov (" + m_testColumn1.getStringValue() + ", " + m_testColumn2.getStringValue() + ")");
         final DataRow outRow = new DefaultRow(key, cells);
         outContainer.addRowToTable(outRow);
 
@@ -186,14 +182,26 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
     }
 
     private static boolean findTies(final double[] x, final double[] y) {
-        TDoubleHashSet map = new TDoubleHashSet(x.length);
-        for (double i : x) {
-            map.add(i);
+        int indexX = 0;
+        int indexY = 0;
+        while (indexX < x.length && indexY < y.length) {
+            double xValue = x[indexX];
+            double yValue = y[indexY];
+            if (xValue < yValue) {
+                indexX++;
+                if (indexX < x.length && Double.compare(xValue, x[indexX]) == 0) {
+                    return true;
+                }
+            } else if (xValue > yValue) {
+                indexY++;
+                if (indexY < y.length && Double.compare(yValue, y[indexY]) == 0) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
         }
-        for (double i : y) {
-            map.add(i);
-        }
-        return map.size() < x.length + y.length;
+        return false;
     }
 
     /**
@@ -260,12 +268,12 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
         turn an equality into an inequality, eg abs(1/2-4/5)>3/10
         */
         double q = (0.5 + FastMath.floor(d * md * nd - 1e-7)) / (md * nd);
-        double u[] = new double[n + 1];
+        double[] u = new double[n + 1];
         for (int j = 0; j <= n; j++) {
             u[j] = ((j / nd) > q) ? 0 : 1;
         }
         for (i = 1; i <= m; i++) {
-            double w = ((double) i) / ((double) (i + n));
+            double w = ((double)i) / ((double)(i + n));
             if ((i / md) > q) {
                 u[0] = 0;
             } else {
@@ -285,17 +293,18 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
     private double approximateP(final double d, final int n, final int m) {
         final double dm = m;
         final double dn = n;
-        return 1 - ksSum(d * FastMath.sqrt((dm * dn) / (dm + dn)), m_cauchyCriterion.getDoubleValue(), m_iterations.getIntValue());
+        return 1 - ksSum(d * FastMath.sqrt((dm * dn) / (dm + dn)), m_cauchyCriterion.getDoubleValue(),
+            m_iterations.getIntValue());
     }
 
     /**
-     * Method copied from org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest with small changes
-     * Added the case if t is smaller than one
+     * Method copied from org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest with small changes. Added the
+     * case if t is smaller than one
      */
     private static double ksSum(final double t, final double tolerance, final int maxIterations) {
         if (t < 1) {
-            int k_max = (int) FastMath.sqrt(2 - FastMath.log(tolerance));
-            final double x = -((Math.PI / 2) * (Math.PI / 4)) / (t*t);
+            int k_max = (int)FastMath.sqrt(2 - FastMath.log(tolerance));
+            final double x = -((Math.PI / 2) * (Math.PI / 4)) / (t * t);
             final double w = FastMath.log(t);
             double s = 0;
             for (int k = 1; k < k_max; k += 2) {
@@ -341,23 +350,36 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
-            throws InvalidSettingsException {
-        DataTableSpec inSpec = inSpecs[0];
-        if (!inSpec.containsName(m_testColumn1.getStringValue()) || !inSpec.containsName(m_testColumn2.getStringValue())) {
+    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+        final DataTableSpec inSpec = inSpecs[0];
+
+        final int k = inSpec.getNumColumns();
+        if (k < 2) {
+            throw new InvalidSettingsException(
+                "Not enough data columns available (" + k + "), please provide a data table with at least 2.");
+        }
+
+        if (m_testColumn1.getStringValue() == null || m_testColumn2.getStringValue() == null) {
             for (DataColumnSpec column : inSpec) {
                 if (column.getType().isCompatible(DoubleValue.class)) {
-                    if (!inSpec.containsName(m_testColumn1.getStringValue())) {
+                    if (m_testColumn1.getStringValue() == null) {
                         m_testColumn1.setStringValue(column.getName());
                     } else {
                         m_testColumn2.setStringValue(column.getName());
+                        break;
                     }
                 }
             }
         }
 
-        if (!inSpec.containsName(m_testColumn1.getStringValue()) || !inSpec.containsName(m_testColumn2.getStringValue())) {
-            throw new InvalidSettingsException("At least two columns with numeric values are required.");
+        if (!inSpec.containsName(m_testColumn1.getStringValue())
+            && inSpec.getColumnSpec(m_testColumn1.getStringValue()).getType().isCompatible(DoubleValue.class)) {
+            throw new InvalidSettingsException(
+                "Test column " + m_testColumn1.getStringValue() + " not found or incompatible");
+        } else if (!inSpec.containsName(m_testColumn2.getStringValue())
+            && inSpec.getColumnSpec(m_testColumn2.getStringValue()).getType().isCompatible(DoubleValue.class)) {
+            throw new InvalidSettingsException(
+                "Test column " + m_testColumn2.getStringValue() + " not found or incompatible");
         }
         if (m_testColumn1.getStringValue().equals(m_testColumn2.getStringValue())) {
             setWarningMessage("The two columns should be different.");
@@ -367,12 +389,90 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void saveSettingsTo(final NodeSettingsWO settings) {
+        m_alpha.saveSettingsTo(settings);
+        m_nanStrategy.saveSettingsTo(settings);
+        m_exact.saveSettingsTo(settings);
+        m_iterations.saveSettingsTo(settings);
+        m_cauchyCriterion.saveSettingsTo(settings);
+        m_testColumn1.saveSettingsTo(settings);
+        m_testColumn2.saveSettingsTo(settings);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_alpha.loadSettingsFrom(settings);
+        m_nanStrategy.loadSettingsFrom(settings);
+        m_exact.loadSettingsFrom(settings);
+        m_iterations.loadSettingsFrom(settings);
+        m_cauchyCriterion.loadSettingsFrom(settings);
+        m_testColumn1.loadSettingsFrom(settings);
+        m_testColumn2.loadSettingsFrom(settings);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_alpha.validateSettings(settings);
+        m_nanStrategy.validateSettings(settings);
+        m_exact.validateSettings(settings);
+        m_iterations.validateSettings(settings);
+        m_cauchyCriterion.validateSettings(settings);
+        m_testColumn1.validateSettings(settings);
+        m_testColumn2.validateSettings(settings);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void loadInternals(final File internDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
+        // Nothing to do
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void saveInternals(final File internDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
+        // Nothing to do
+    }
+
+    /**
+     * Creates a settings model for the significance level alpha.
+     *
+     * @return the settings model
+     */
+    static SettingsModelDoubleBounded createSettingsModelAlpha() {
+        return new SettingsModelDoubleBounded("Alpha", 0.05, 0, 1);
+    }
+
+    /**
+     * Creates a settings model for one of the used columns.
+     *
+     * @return the settings model
+     */
+    static SettingsModelString createSettingsModelCol(final String cfgKey) {
+        return new SettingsModelString(cfgKey, null);
+    }
+
+    /**
      * Creates a settings model for the NaN-Strategy.
      *
      * @return the settings model
      */
     static SettingsModelString createSettingsModelNANStrategy() {
-        return new SettingsModelString("NaN-Strategy", "REMOVED");
+        return new SettingsModelString("NaN-Strategy", NAN_STRATEGY_REMOVED);
     }
 
     /**
@@ -402,69 +502,4 @@ public class KolmogorovSmirnovTestNodeModel extends NodeModel {
         return new SettingsModelDoubleBounded("Cauchy Criterion", 1E-6, 0, 1);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveSettingsTo(final NodeSettingsWO settings) {
-        m_alpha.saveSettingsTo(settings);
-        m_nanStrategy.saveSettingsTo(settings);
-        m_exact.saveSettingsTo(settings);
-        m_iterations.saveSettingsTo(settings);
-        m_cauchyCriterion.saveSettingsTo(settings);
-        m_testColumn1.saveSettingsTo(settings);
-        m_testColumn2.saveSettingsTo(settings);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings)
-            throws InvalidSettingsException {
-        m_alpha.loadSettingsFrom(settings);
-        m_nanStrategy.loadSettingsFrom(settings);
-        m_exact.loadSettingsFrom(settings);
-        m_iterations.loadSettingsFrom(settings);
-        m_cauchyCriterion.loadSettingsFrom(settings);
-        m_testColumn1.loadSettingsFrom(settings);
-        m_testColumn2.loadSettingsFrom(settings);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void validateSettings(final NodeSettingsRO settings)
-            throws InvalidSettingsException {
-        m_alpha.validateSettings(settings);
-        m_nanStrategy.validateSettings(settings);
-        m_exact.validateSettings(settings);
-        m_iterations.validateSettings(settings);
-        m_cauchyCriterion.validateSettings(settings);
-        m_testColumn1.validateSettings(settings);
-        m_testColumn2.validateSettings(settings);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadInternals(final File internDir,
-            final ExecutionMonitor exec) throws IOException,
-            CanceledExecutionException {
-        // Nothing to do
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveInternals(final File internDir,
-            final ExecutionMonitor exec) throws IOException,
-            CanceledExecutionException {
-        // Nothing to do
-    }
-
 }
-

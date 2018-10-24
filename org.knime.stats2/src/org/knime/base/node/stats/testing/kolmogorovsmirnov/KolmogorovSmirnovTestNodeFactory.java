@@ -8,10 +8,9 @@ import org.knime.core.node.NodeView;
  * <code>NodeFactory</code> for the "KolmogorovSmirnovTest" Node.
  *
  *
- * @author
+ * @author Kevin Kress, Knime GmbH, Konstanz
  */
-public class KolmogorovSmirnovTestNodeFactory
-        extends NodeFactory<KolmogorovSmirnovTestNodeModel> {
+public final class KolmogorovSmirnovTestNodeFactory extends NodeFactory<KolmogorovSmirnovTestNodeModel> {
 
     /**
      * {@inheritDoc}
@@ -34,7 +33,7 @@ public class KolmogorovSmirnovTestNodeFactory
      */
     @Override
     public NodeView<KolmogorovSmirnovTestNodeModel> createNodeView(final int viewIndex,
-            final KolmogorovSmirnovTestNodeModel nodeModel) {
+        final KolmogorovSmirnovTestNodeModel nodeModel) {
         return null;
     }
 
@@ -55,4 +54,3 @@ public class KolmogorovSmirnovTestNodeFactory
     }
 
 }
-

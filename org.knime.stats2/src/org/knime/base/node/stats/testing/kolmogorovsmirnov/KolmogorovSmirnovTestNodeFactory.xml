@@ -10,7 +10,7 @@
     <fullDescription>
         <intro><p>The two-sample Kolmogorov-Smirnov test is used to detect if two samples come from the same underlying distribution. More precisely, this non-parametric test calculates a distance <i>d</i> between the empirical distribution functions of the two samples.</p>
         
-        <p>The corresponding <i>p</i>-value can be computed exactly if there are no ties present in the samples and the product of the two sample sizes is less than 10000. Otherwise the <i>p</i>-value has to be approximated by determining a convergence of a sum with the given options.</p>
+        <p>The corresponding <i>p</i>-value can be computed exactly if there are no ties (duplicate values) present in the samples and the product of the two sample sizes is less than 10000. Otherwise the <i>p</i>-value has to be approximated by determining a convergence of a sum with the given options.</p>
         
         <p>With the given significance level &#945;, a corresponding <i>p</i>-value (null hypothesis H<sub>0</sub>: the two samples come from a common distribution, alternative hypothesis H<sub>A</sub>: the two samples do not come from a common distribution) can be given.</p>
         
@@ -35,7 +35,7 @@
 												</ul>
 			</option>
 			<option name="Cauchy criterion">Stopping criteria for the approximaion of p when successive partial sums are within tolerance</option>
-			<option name="Max number of iterations">Stopping criteria for the approximaion of p when the number of iteration is reached</option>
+			<option name="Max number of iterations">Stopping criteria for the approximation of p when the number of iteration is reached</option>
 		</tab>
     </fullDescription>
     <ports>
