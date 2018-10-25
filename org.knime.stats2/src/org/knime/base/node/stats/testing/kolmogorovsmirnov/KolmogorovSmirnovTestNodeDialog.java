@@ -46,7 +46,7 @@ final class KolmogorovSmirnovTestNodeDialog extends DefaultNodeSettingsPane {
 
         createNewTab("Advanced Settings");
 
-        List<String> nanStrategies = Arrays.asList(KolmogorovSmirnovTestNodeModel.NAN_STRATEGY_REMOVED,
+        final List<String> nanStrategies = Arrays.asList(KolmogorovSmirnovTestNodeModel.NAN_STRATEGY_REMOVED,
             KolmogorovSmirnovTestNodeModel.NAN_STRATEGY_FAILED);
         final DialogComponentStringSelection nanComponent = new DialogComponentStringSelection(
             KolmogorovSmirnovTestNodeModel.createSettingsModelNANStrategy(), "Missing values strategy", nanStrategies);

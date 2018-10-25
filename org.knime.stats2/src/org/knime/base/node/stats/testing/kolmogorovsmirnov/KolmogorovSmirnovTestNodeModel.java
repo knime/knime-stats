@@ -104,12 +104,12 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
         final String col1 = m_testColumn1.getStringValue();
         final String col2 = m_testColumn2.getStringValue();
 
-        MissingValue missingStat = new MissingValue(col1, col2);
-        StatisticCalculator statCalc = new StatisticCalculator(inSpec, missingStat);
+        final MissingValue missingStat = new MissingValue(col1, col2);
+        final StatisticCalculator statCalc = new StatisticCalculator(inSpec, missingStat);
         statCalc.evaluate(inTable, exec.createSubExecutionContext(0.2));
 
-        long m = inTable.size() - missingStat.getNumberMissingValues(col1);
-        long n = inTable.size() - missingStat.getNumberMissingValues(col2);
+        final long m = inTable.size() - missingStat.getNumberMissingValues(col1);
+        final long n = inTable.size() - missingStat.getNumberMissingValues(col2);
 
         if (m_nanStrategy.getStringValue().equals(NAN_STRATEGY_FAILED) && n + m < 2 * inTable.size()) {
             throw new InvalidSettingsException(
@@ -130,13 +130,13 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
 
         int count1 = 0;
         int count2 = 0;
-        double[] colData1 = new double[(int)(m)];
-        double[] colData2 = new double[(int)(n)];
+        final double[] colData1 = new double[(int)m];
+        final double[] colData2 = new double[(int)n];
 
         try (CloseableRowIterator rowIterator =
             inTable.iteratorBuilder().filterColumns(cellIndex1, cellIndex2).build()) {
             while (rowIterator.hasNext()) {
-                DataRow row = rowIterator.next();
+                final DataRow row = rowIterator.next();
                 progMon.setProgress(progCnt / (10.0 * inTable.size()));
                 progCnt++;
                 if (!row.getCell(cellIndex1).isMissing()) {
@@ -150,7 +150,7 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
             }
         }
 
-        double statistic = calculateKSStatistic(colData1, colData2);
+        final double statistic = calculateKSStatistic(colData1, colData2);
         progMon.setProgress(0.5);
         boolean exact = false;
         if (m_exact.getBooleanValue()) {
@@ -163,7 +163,7 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
                 exact = true;
             }
         }
-        double pvalue = calculatePValue(colData1.length, colData2.length, statistic, exact);
+        final double pvalue = calculatePValue(colData1.length, colData2.length, statistic, exact);
         progMon.setProgress(0.9);
 
         final List<DataCell> cells = new ArrayList<>(3);
@@ -185,8 +185,8 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
         int indexX = 0;
         int indexY = 0;
         while (indexX < x.length && indexY < y.length) {
-            double xValue = x[indexX];
-            double yValue = y[indexY];
+            final double xValue = x[indexX];
+            final double yValue = y[indexY];
             if (xValue < yValue) {
                 indexX++;
                 if (indexX < x.length && Double.compare(xValue, x[indexX]) == 0) {
@@ -260,21 +260,21 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
             n = m;
             m = i;
         }
-        double md = m;
-        double nd = n;
+        final double md = m;
+        final double nd = n;
 
         /*
         q has 0.5/mn added to ensure that rounding error doesn't
         turn an equality into an inequality, eg abs(1/2-4/5)>3/10
         */
-        double q = (0.5 + FastMath.floor(d * md * nd - 1e-7)) / (md * nd);
-        double[] u = new double[n + 1];
+        final double q = (0.5 + FastMath.floor(d * md * nd - 1e-7)) / (md * nd);
+        final double[] u = new double[n + 1];
         for (int j = 0; j <= n; j++) {
-            u[j] = ((j / nd) > q) ? 0 : 1;
+            u[j] = j / nd > q ? 0 : 1;
         }
         for (i = 1; i <= m; i++) {
-            double w = ((double)i) / ((double)(i + n));
-            if ((i / md) > q) {
+            final double w = (double)i / (double)(i + n);
+            if (i / md > q) {
                 u[0] = 0;
             } else {
                 u[0] = w * u[0];
@@ -303,7 +303,7 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
      */
     private static double ksSum(final double t, final double tolerance, final int maxIterations) {
         if (t < 1) {
-            int k_max = (int)FastMath.sqrt(2 - FastMath.log(tolerance));
+            final int k_max = (int)FastMath.sqrt(2 - FastMath.log(tolerance));
             final double x = -((Math.PI / 2) * (Math.PI / 4)) / (t * t);
             final double w = FastMath.log(t);
             double s = 0;
@@ -360,12 +360,14 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
         }
 
         if (m_testColumn1.getStringValue() == null || m_testColumn2.getStringValue() == null) {
-            for (DataColumnSpec column : inSpec) {
+            for (final DataColumnSpec column : inSpec) {
                 if (column.getType().isCompatible(DoubleValue.class)) {
                     if (m_testColumn1.getStringValue() == null) {
                         m_testColumn1.setStringValue(column.getName());
-                    } else {
+                    } else if (m_testColumn2.getStringValue() == null) {
                         m_testColumn2.setStringValue(column.getName());
+                        break;
+                    } else {
                         break;
                     }
                 }
