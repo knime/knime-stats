@@ -40,6 +40,7 @@ import org.knime.stats.StatsUtil;
  *
  * @author Alexander Fillbrunn
  */
+@Deprecated
 public class ShapiroWilkNodeModel extends NodeModel {
 
     private static final double SHAPIRO_FRANCIA_KURTOSIS = 3;

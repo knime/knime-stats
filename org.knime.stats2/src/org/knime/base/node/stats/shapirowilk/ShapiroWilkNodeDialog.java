@@ -15,6 +15,7 @@ import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelectio
  *
  * @author Alexander Fillbrunn
  */
+@Deprecated
 public class ShapiroWilkNodeDialog extends DefaultNodeSettingsPane {
 
     /**

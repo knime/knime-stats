@@ -45,8 +45,14 @@
       <node
             after="org.knime.base.node.stats.lda.LDANodeFactory"
             category-path="/labs/statistics"
-            deprecated="false"
+            deprecated="true"
             factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory">
+      </node>
+      <node
+            after="org.knime.base.node.stats.lda.LDANodeFactory"
+            category-path="/labs/statistics"
+            deprecated="false"
+            factory-class="org.knime.base.node.stats.shapirowilk2.ShapiroWilk2NodeFactory">
       </node>
       <node
             after="org.knime.base.node.stats.testing.wilcoxonsignedrank2.WilcoxonSignedRankNodeFactory"

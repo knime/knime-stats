@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./shapiro.png" type="Manipulator">
+    <name>Shapiro Wilk Normality Test</name>
+    
+    <shortDescription>
+        This node performs a Shapiro-Wilk Normality Test.
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>
+            The Shapiro-Wilk Normality Test checks whether a sample comes from a normally distributed population. It is applicable for 3 to 5000 data points.
+            The node outputs two values: the test statistic W and the corresponding p-value. To accept or reject the null hypothesis, one can either compare W
+            to a predefined threshold Wcritical or use a threshold for the p-value.
+            Since the test is biased by sample size, the test may be statistically significant from a normal distribution in any large samples.
+            Thus a Q–Q plot is required for verification in addition to the test.
+            More information about this test can be found on <a href="https://en.wikipedia.org/wiki/Shapiro–Wilk_test">Wikipedia</a>.
+        </intro>
+
+        <option name="Test Columns">The columns to test.</option>
+    </fullDescription>
+    
+    <ports>
+        <inPort index="0" name="Input data">The data to test normality on</inPort>
+        <outPort index="0" name="Statistics">The statistics with p-value and test measure</outPort>
+    </ports>    
+</knimeNode>
