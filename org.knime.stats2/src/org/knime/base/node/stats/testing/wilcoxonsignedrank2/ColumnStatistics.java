@@ -77,6 +77,8 @@ final class ColumnStatistics {
 	}
 
 	/**
+	 * @param computeMedian
+	 *            True if the median column should be added
 	 * @return Specs for the column stats table
 	 */
 	public static DataTableSpec createSpec(final boolean computeMedian) {
@@ -102,6 +104,8 @@ final class ColumnStatistics {
 	 *            The columns to calculate statistics from
 	 * @param exec
 	 *            Execution context used to create the new table
+	 * @param computeMedian
+	 *            True if the median should be computed
 	 * @return Table containing the stats for the given columns
 	 */
 	static BufferedDataTable createTable(final DataTable table, final List<String> columns, final ExecutionContext exec,
