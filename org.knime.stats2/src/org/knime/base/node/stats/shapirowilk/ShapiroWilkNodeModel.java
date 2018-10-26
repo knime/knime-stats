@@ -118,8 +118,7 @@ public class ShapiroWilkNodeModel extends NodeModel {
 
         ExecutionContext sortContext = exec.createSubExecutionContext(0.3);
 
-        BufferedDataTableSorter sorter =
-            new BufferedDataTableSorter(inTable, Arrays.asList(col), new boolean[]{true});
+        BufferedDataTableSorter sorter = new BufferedDataTableSorter(inTable, Arrays.asList(col), new boolean[]{true});
         BufferedDataTable sorted = sorter.sort(sortContext);
 
         Kurtosis kurtosisStat = new Kurtosis(col);
@@ -236,8 +235,7 @@ public class ShapiroWilkNodeModel extends NodeModel {
         pushFlowVariableDouble("shapiro-statistic", w);
 
         DataContainer dc = exec.createDataContainer(createSpec());
-        dc.addRowToTable(
-            new DefaultRow(new RowKey("Value"), new DoubleCell(w), new DoubleCell(pVal)));
+        dc.addRowToTable(new DefaultRow(new RowKey("Value"), new DoubleCell(w), new DoubleCell(pVal)));
         dc.close();
 
         return new PortObject[]{(BufferedDataTable)dc.getTable()};
@@ -332,7 +330,8 @@ public class ShapiroWilkNodeModel extends NodeModel {
     }
 
     private DataTableSpec createSpec() {
-        DataColumnSpec measure = StatsUtil.createDataColumnSpec("W", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
+        DataColumnSpec measure =
+            StatsUtil.createDataColumnSpec("W", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
         DataColumnSpec p = StatsUtil.createPValueColumnSpec();
 
         return new DataTableSpec(measure, p);

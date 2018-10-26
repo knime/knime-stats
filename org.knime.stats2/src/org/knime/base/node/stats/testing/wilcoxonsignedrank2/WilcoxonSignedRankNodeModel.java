@@ -129,7 +129,7 @@ class WilcoxonSignedRankNodeModel extends NodeModel {
             cells[6] = new DoubleCell(test.getOneTailedPValue());
             cells[7] = new DoubleCell(test.getTwoTailedPValue());
             container.addRowToTable(new DefaultRow("Row" + i, cells));
-            test.addRankStatisticsToTable(i+1, rankStatsContainer);
+            test.addRankStatisticsToTable(i + 1, rankStatsContainer);
         }
         container.close();
         rankStatsContainer.close();
@@ -144,8 +144,10 @@ class WilcoxonSignedRankNodeModel extends NodeModel {
         colSpecs[3] = new DataColumnSpecCreator("w (minus)", DoubleCell.TYPE).createSpec();
         colSpecs[4] = new DataColumnSpecCreator("z-score (left)", DoubleCell.TYPE).createSpec();
         colSpecs[5] = new DataColumnSpecCreator("z-score (right)", DoubleCell.TYPE).createSpec();
-        colSpecs[6] = StatsUtil.createDataColumnSpec("p-value (one tailed)", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
-        colSpecs[7] = StatsUtil.createDataColumnSpec("p-value (two tailed)", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
+        colSpecs[6] =
+            StatsUtil.createDataColumnSpec("p-value (one tailed)", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
+        colSpecs[7] =
+            StatsUtil.createDataColumnSpec("p-value (two tailed)", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
         return new DataTableSpecCreator().addColumns(colSpecs).createSpec();
     }
 
@@ -177,13 +179,13 @@ class WilcoxonSignedRankNodeModel extends NodeModel {
     }
 
     @Override
-    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
+    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
     }
 
     @Override
-    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
+    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
     }
 
     @Override

@@ -243,8 +243,8 @@ public class KruskalWallisNodeModel extends NodeModel {
             for (final DataRow row : inData[0]) {
 
                 if (row.getCell(groupingIndex).isMissing()) {
-                    LOGGER.warn("Skipping row " + row.getKey().toString()
-                        + " as the value in grouping column is missing!");
+                    LOGGER.warn(
+                        "Skipping row " + row.getKey().toString() + " as the value in grouping column is missing!");
                     continue;
                 }
 
@@ -267,13 +267,12 @@ public class KruskalWallisNodeModel extends NodeModel {
                 ++i;
             }
 
-            for (final DataCell domainEntry : inData[0].getSpec().getColumnSpec(groupingIndex).getDomain().getValues()) {
+            for (final DataCell domainEntry : inData[0].getSpec().getColumnSpec(groupingIndex).getDomain()
+                .getValues()) {
                 final String groupToTest = ((StringValue)domainEntry).getStringValue();
                 if (!groups.contains(groupToTest)) {
-                    LOGGER
-                        .warn("Group "
-                            + groupToTest
-                            + " was found in the domain of the column spec, but no values were present in the table. The group will be ignored. ");
+                    LOGGER.warn("Group " + groupToTest
+                        + " was found in the domain of the column spec, but no values were present in the table. The group will be ignored. ");
                 }
             }
 
@@ -282,8 +281,8 @@ public class KruskalWallisNodeModel extends NodeModel {
 
             // FIXME Implement more KNIMEish Rank function etc
             final KruskalWallisStatisticsResult res =
-                KruskalWallisStatistics.calculateHValue(data, groupIndices, groups.size(), MissingValueHandler
-                    .getHandlerByName(m_missingValueHandlerModel.getStringValue()).getStrategy());
+                KruskalWallisStatistics.calculateHValue(data, groupIndices, groups.size(),
+                    MissingValueHandler.getHandlerByName(m_missingValueHandlerModel.getStringValue()).getStrategy());
 
             exec.setMessage("Calculating p-value...");
             exec.setProgress(0.6);
@@ -314,8 +313,8 @@ public class KruskalWallisNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
+    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
         // Nothing to do here...
     }
 
@@ -323,8 +322,8 @@ public class KruskalWallisNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
+    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
         // Nothing to do here...
     }
 

@@ -266,9 +266,12 @@ public class OddsRiskRatioNodeModel extends NodeModel {
         outColSpecs.add(new DataColumnSpecCreator("Risk Ratio", DoubleCell.TYPE).createSpec());
         outColSpecs.add(new DataColumnSpecCreator("RR Lower CI", DoubleCell.TYPE).createSpec());
         outColSpecs.add(new DataColumnSpecCreator("RR Upper CI", DoubleCell.TYPE).createSpec());
-        outColSpecs.add(StatsUtil.createDataColumnSpec("Fishers Two Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
-        outColSpecs.add(StatsUtil.createDataColumnSpec("Fishers Left Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
-        outColSpecs.add(StatsUtil.createDataColumnSpec("Fishers Right Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
+        outColSpecs.add(
+            StatsUtil.createDataColumnSpec("Fishers Two Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
+        outColSpecs.add(
+            StatsUtil.createDataColumnSpec("Fishers Left Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
+        outColSpecs.add(
+            StatsUtil.createDataColumnSpec("Fishers Right Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
         outColSpecs.add(new DataColumnSpecCreator("ChiSq", DoubleCell.TYPE).createSpec());
         outColSpecs.add(new DataColumnSpecCreator("Yates Corrected", DoubleCell.TYPE).createSpec());
         outColSpecs.add(new DataColumnSpecCreator("Pearsons", DoubleCell.TYPE).createSpec());
@@ -315,14 +318,14 @@ public class OddsRiskRatioNodeModel extends NodeModel {
     }
 
     @Override
-    protected void loadInternals(final File internDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
+    protected void loadInternals(final File internDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
         // Nothing to do.
     }
 
     @Override
-    protected void saveInternals(final File internDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
+    protected void saveInternals(final File internDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
         // Nothing to do.
     }
 
@@ -411,7 +414,5 @@ public class OddsRiskRatioNodeModel extends NodeModel {
     protected static SettingsModelString createSettingsModelValueSelectorY() {
         return new SettingsModelString(CFGKEY_VALUE_Y, "");
     }
-
-
 
 }

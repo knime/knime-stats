@@ -113,6 +113,7 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
         final long n = inTable.size() - missingStat.getNumberMissingValues(col2);
 
         if (m_nanStrategy.getStringValue().equals(NAN_STRATEGY_FAILED) && n + m < 2 * inTable.size()) {
+
             throw new InvalidSettingsException(
                 "Missing values are not allowed. Either remove them or set the option to ignore missing values");
         }
@@ -332,7 +333,8 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
     private static DataTableSpec createOutputSpec() {
         final List<DataColumnSpec> allColSpecs = new ArrayList<>(3);
         allColSpecs.add(new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec());
-        allColSpecs.add(StatsUtil.createDataColumnSpec("Statistic", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
+        allColSpecs
+            .add(StatsUtil.createDataColumnSpec("Statistic", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
         allColSpecs.add(StatsUtil.createPValueColumnSpec());
 
         return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
@@ -510,5 +512,4 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
     static SettingsModelDoubleBounded createSettingsModelTolerance() {
         return new SettingsModelDoubleBounded("Cauchy Criterion", 1E-6, 0, 1);
     }
-
 }

@@ -204,7 +204,6 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
         allColSpecs.add(new DataColumnSpecCreator(MEDIAN_A, DoubleCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator(MEDIAN_B, DoubleCell.TYPE).createSpec());
 
-
         return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
     }
 
@@ -271,8 +270,8 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
             throw new IllegalStateException("Number of observations is zero for one or both of the selected groups!");
         } else {
             if ((a.size() + b.size()) < 20) {
-                LOGGER
-                    .warn("Number of observations is small. Approximating U values using standard normal distribution, which is only suitable for n > 20. ");
+                LOGGER.warn(
+                    "Number of observations is small. Approximating U values using standard normal distribution, which is only suitable for n > 20. ");
             }
 
             exec.setMessage("Calculating U values...");
@@ -281,8 +280,8 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
             // Statistics (which required copying the data into another format.
             // FIXME Implement more KNIMEish Rank function etc
             final MannWhitneyUTestResult mannWhitneyU =
-                WilcoxonMannWhitneyStatistics.mannWhitneyU(a, b, new NaturalRanking(MissingValueHandler
-                    .getHandlerByName(m_missingValueHandlerModel.getStringValue()).getStrategy()));
+                WilcoxonMannWhitneyStatistics.mannWhitneyU(a, b, new NaturalRanking(
+                    MissingValueHandler.getHandlerByName(m_missingValueHandlerModel.getStringValue()).getStrategy()));
 
             exec.setMessage("Calculating p-value...");
             exec.setProgress(0.6);
@@ -295,8 +294,8 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
 
             container.addRowToTable(new DefaultRow(RowKey.createRowKey(0), new DoubleCell(mannWhitneyU.uMin),
                 new DoubleCell(mannWhitneyU.uMax), new DoubleCell(p), new DoubleCell(mannWhitneyU.meanA),
-                new DoubleCell(mannWhitneyU.meanB), new DoubleCell(mannWhitneyU.medianA), new DoubleCell(
-                    mannWhitneyU.medianB)));
+                new DoubleCell(mannWhitneyU.meanB), new DoubleCell(mannWhitneyU.medianA),
+                new DoubleCell(mannWhitneyU.medianB)));
 
         }
         // Create Output
@@ -309,8 +308,8 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
+    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
         // Nothing to do here...
     }
 
@@ -318,8 +317,8 @@ public class WilcoxonMannWhitneyNodeModel extends NodeModel {
      * {@inheritDoc}
      */
     @Override
-    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
+    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
         // Nothing to do here...
     }
 

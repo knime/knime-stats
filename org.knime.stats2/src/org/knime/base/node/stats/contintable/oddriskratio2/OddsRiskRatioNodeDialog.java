@@ -106,19 +106,15 @@ public class OddsRiskRatioNodeDialog extends DefaultNodeSettingsPane {
     protected OddsRiskRatioNodeDialog() {
         super();
 
-        m_dcnsX =
-            new DialogComponentColumnNameSelection(m_columnX, "Column X", OddsRiskRatioNodeModel.PORT_IN_DATA,
-                StringValue.class);
-        m_dcnsY =
-            new DialogComponentColumnNameSelection(m_columnY, "Column Y", OddsRiskRatioNodeModel.PORT_IN_DATA,
-                StringValue.class);
+        m_dcnsX = new DialogComponentColumnNameSelection(m_columnX, "Column X", OddsRiskRatioNodeModel.PORT_IN_DATA,
+            StringValue.class);
+        m_dcnsY = new DialogComponentColumnNameSelection(m_columnY, "Column Y", OddsRiskRatioNodeModel.PORT_IN_DATA,
+            StringValue.class);
 
-        m_dcssX =
-            new DialogComponentStringSelection(m_valueX, "Value from Column X", new String[]{""});
-        m_dcssY =
-            new DialogComponentStringSelection(m_valueY, "Value from Column Y", new String[]{""});
+        m_dcssX = new DialogComponentStringSelection(m_valueX, "Value from Column X", new String[]{""});
+        m_dcssY = new DialogComponentStringSelection(m_valueY, "Value from Column Y", new String[]{""});
 
-                //m_values.get(m_values.keySet().iterator().next()));
+        //m_values.get(m_values.keySet().iterator().next()));
 
         m_columnX.addChangeListener(new ChangeListener() {
             @Override
@@ -152,8 +148,6 @@ public class OddsRiskRatioNodeDialog extends DefaultNodeSettingsPane {
         addDialogComponent(m_dcssX);
 
         addDialogComponent(m_dcssY);
-
-
 
         addDialogComponent(new DialogComponentNumber(OddsRiskRatioNodeModel.createSettingsModelConfidenceLevel(),
             "Confidence Level", OddsRiskRatioNodeModel.CONFIDENCE_LEVEL_STEPSIZE, INPUT_WIDTH));
@@ -190,7 +184,5 @@ public class OddsRiskRatioNodeDialog extends DefaultNodeSettingsPane {
         super.loadAdditionalSettingsFrom(settings, specs);
 
     }
-
-
 
 }
