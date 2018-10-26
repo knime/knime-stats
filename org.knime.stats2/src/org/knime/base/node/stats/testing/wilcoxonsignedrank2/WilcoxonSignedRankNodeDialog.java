@@ -28,87 +28,88 @@ import org.knime.core.node.util.ColumnPairsSelectionPanel;
  */
 class WilcoxonSignedRankNodeDialog extends NodeDialogPane {
 
-    private ColumnPairsSelectionPanel m_columnPairs;
-    private final JCheckBox m_checkbox;
+	private final ColumnPairsSelectionPanel m_columnPairs;
 
-    public WilcoxonSignedRankNodeDialog() {
-        m_columnPairs = new ColumnPairsSelectionPanel() {
-            private static final long serialVersionUID = -6485698971147583920L;
+	private final JCheckBox m_checkbox;
 
-            @SuppressWarnings({"rawtypes", "unchecked"})
-            @Override
-            protected void initComboBox(final DataTableSpec spec, final JComboBox comboBox, final String selected) {
-                DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel)comboBox.getModel();
-                comboBoxModel.removeAllElements();
-                for (DataColumnSpec colSpec : spec) {
-                    if (colSpec.getType().isCompatible(DoubleValue.class)) {
-                        comboBoxModel.addElement(colSpec);
-                        if (null != selected && colSpec.getName().equals(selected)) {
-                            comboBoxModel.setSelectedItem(colSpec);
-                        }
-                    }
-                }
-            }
-        };
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        JScrollPane scrollPane = new JScrollPane(m_columnPairs);
-        Component header = m_columnPairs.getHeaderView("Left column", "Right column");
-        header.setPreferredSize(new Dimension(300, 20));
-        scrollPane.setColumnHeaderView(header);
-        scrollPane.setPreferredSize(new Dimension(300, 200));
-        scrollPane.setMinimumSize(new Dimension(300, 100));
-        m_columnPairs.setBackground(Color.white);
-        panel.add(scrollPane, gbc);
+	public WilcoxonSignedRankNodeDialog() {
+		m_columnPairs = new ColumnPairsSelectionPanel() {
+			private static final long serialVersionUID = -6485698971147583920L;
 
-        m_checkbox = new JCheckBox(WilcoxonSignedRankNodeConfig.ENABLE_COMPUTE_MEDIAN_CFG);
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        gbc.weighty = 0;
+			@SuppressWarnings({ "rawtypes", "unchecked" })
+			@Override
+			protected void initComboBox(final DataTableSpec spec, final JComboBox comboBox, final String selected) {
+				final DefaultComboBoxModel comboBoxModel = (DefaultComboBoxModel) comboBox.getModel();
+				comboBoxModel.removeAllElements();
+				for (final DataColumnSpec colSpec : spec) {
+					if (colSpec.getType().isCompatible(DoubleValue.class)) {
+						comboBoxModel.addElement(colSpec);
+						if (null != selected && colSpec.getName().equals(selected)) {
+							comboBoxModel.setSelectedItem(colSpec);
+						}
+					}
+				}
+			}
+		};
+		final JPanel panel = new JPanel(new GridBagLayout());
+		final GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(5, 5, 5, 5);
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.weightx = 1;
+		gbc.weighty = 1;
+		final JScrollPane scrollPane = new JScrollPane(m_columnPairs);
+		final Component header = m_columnPairs.getHeaderView("Left column", "Right column");
+		header.setPreferredSize(new Dimension(300, 20));
+		scrollPane.setColumnHeaderView(header);
+		scrollPane.setPreferredSize(new Dimension(300, 200));
+		scrollPane.setMinimumSize(new Dimension(300, 100));
+		m_columnPairs.setBackground(Color.white);
+		panel.add(scrollPane, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        panel.add(m_checkbox, gbc);
-        addTab("Config", panel);
-    }
+		m_checkbox = new JCheckBox(WilcoxonSignedRankNodeConfig.ENABLE_COMPUTE_MEDIAN_CFG);
+		gbc.gridwidth = 1;
+		gbc.weightx = 0;
+		gbc.weighty = 0;
 
-    @Override
-    protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
-        WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
-        config.setFirstColumns(objectsToColumnNames(m_columnPairs.getLeftSelectedItems()));
-        config.setSecondColumns(objectsToColumnNames(m_columnPairs.getRightSelectedItems()));
-        config.setComputeMedian(m_checkbox.isSelected());
-        config.save(settings);
-    }
+		gbc.gridx = 0;
+		gbc.gridy++;
+		panel.add(m_checkbox, gbc);
+		addTab("Config", panel);
+	}
 
-    @Override
-    protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs)
-        throws NotConfigurableException {
-        WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
-        config.loadInDialog(settings);
-        String[] firstColumns = config.getFirstColumns();
-        String[] secondColumns = config.getSecondColumns();
-        if (firstColumns.length == 0) {
-            firstColumns = null;
-            secondColumns = null;
-        }
-        m_columnPairs.updateData(new DataTableSpec[]{specs[0], specs[0]}, firstColumns, secondColumns);
-        m_checkbox.setSelected(config.getComputeMedian());
-    }
+	@Override
+	protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
+		final WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
+		config.setFirstColumns(objectsToColumnNames(m_columnPairs.getLeftSelectedItems()));
+		config.setSecondColumns(objectsToColumnNames(m_columnPairs.getRightSelectedItems()));
+		config.setComputeMedian(m_checkbox.isSelected());
+		config.save(settings);
+	}
 
-    private String[] objectsToColumnNames(final Object[] objects) {
-        String[] names = new String[objects.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = ((DataColumnSpec)objects[i]).getName();
-        }
-        return names;
-    }
+	@Override
+	protected void loadSettingsFrom(final NodeSettingsRO settings, final DataTableSpec[] specs)
+			throws NotConfigurableException {
+		final WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
+		config.loadInDialog(settings);
+		String[] firstColumns = config.getFirstColumns();
+		String[] secondColumns = config.getSecondColumns();
+		if (firstColumns.length == 0) {
+			firstColumns = null;
+			secondColumns = null;
+		}
+		m_columnPairs.updateData(new DataTableSpec[] { specs[0], specs[0] }, firstColumns, secondColumns);
+		m_checkbox.setSelected(config.getComputeMedian());
+	}
+
+	private String[] objectsToColumnNames(final Object[] objects) {
+		final String[] names = new String[objects.length];
+		for (int i = 0; i < names.length; i++) {
+			names[i] = ((DataColumnSpec) objects[i]).getName();
+		}
+		return names;
+	}
 
 }

@@ -73,79 +73,82 @@ import org.knime.core.node.ExecutionContext;
  */
 final class ColumnStatistics {
 
-    private ColumnStatistics() {
-    }
+	private ColumnStatistics() {
+	}
 
-    /**
-     * @return Specs for the column stats table
-     */
-    public static DataTableSpec createSpec(final boolean computeMedian) {
-        DataTableSpecCreator tableSpecCreator = new DataTableSpecCreator();
-        tableSpecCreator.addColumns(new DataColumnSpecCreator("Column", StringCell.TYPE).createSpec());
-        tableSpecCreator.addColumns(new DataColumnSpecCreator("N", IntCell.TYPE).createSpec());
-        tableSpecCreator.addColumns(new DataColumnSpecCreator("Missing Count", IntCell.TYPE).createSpec());
-        tableSpecCreator.addColumns(new DataColumnSpecCreator("Mean", DoubleCell.TYPE).createSpec());
-        tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Deviation", DoubleCell.TYPE).createSpec());
-        tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Error Mean", DoubleCell.TYPE).createSpec());
-        if (computeMedian) {
-            tableSpecCreator.addColumns(new DataColumnSpecCreator("Median", DoubleCell.TYPE).createSpec());
-        }
-        return tableSpecCreator.createSpec();
-    }
+	/**
+	 * @return Specs for the column stats table
+	 */
+	public static DataTableSpec createSpec(final boolean computeMedian) {
+		final DataTableSpecCreator tableSpecCreator = new DataTableSpecCreator();
+		tableSpecCreator.addColumns(new DataColumnSpecCreator("Column", StringCell.TYPE).createSpec());
+		tableSpecCreator.addColumns(new DataColumnSpecCreator("N", IntCell.TYPE).createSpec());
+		tableSpecCreator.addColumns(new DataColumnSpecCreator("Missing Count", IntCell.TYPE).createSpec());
+		tableSpecCreator.addColumns(new DataColumnSpecCreator("Mean", DoubleCell.TYPE).createSpec());
+		tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Deviation", DoubleCell.TYPE).createSpec());
+		tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Error Mean", DoubleCell.TYPE).createSpec());
+		if (computeMedian) {
+			tableSpecCreator.addColumns(new DataColumnSpecCreator("Median", DoubleCell.TYPE).createSpec());
+		}
+		return tableSpecCreator.createSpec();
+	}
 
-    /**
-     * Creates a table containing statistics for the given columns.
-     *
-     * @param table Table containing the columns
-     * @param columns The columns to calculate statistics from
-     * @param exec Execution context used to create the new table
-     * @return Table containing the stats for the given columns
-     */
-    static BufferedDataTable createTable(final DataTable table, final List<String> columns,
-        final ExecutionContext exec, final boolean computeMedian) {
-        final DataTableSpec spec = table.getDataTableSpec();
-        BufferedDataContainer container = exec.createDataContainer(createSpec(computeMedian));
-        HashMap<Integer, DescriptiveStatistics> indexForStats = new HashMap<>();
-        HashMap<Integer, Integer> indexForMissingValues = new HashMap<>();
-        for (String column : columns) {
-            indexForStats.put(spec.findColumnIndex(column), new DescriptiveStatistics());
-            indexForMissingValues.put(spec.findColumnIndex(column), 0);
-        }
-        for (DataRow row : table) {
-            for (Entry<Integer, DescriptiveStatistics> colStats : indexForStats.entrySet()) {
-                int index = colStats.getKey();
-                DescriptiveStatistics stats = colStats.getValue();
-                DataCell cell = row.getCell(index);
-                if (cell.isMissing()) {
-                    indexForMissingValues.computeIfPresent(index, (key, value) -> value++);
-                } else {
-                    stats.addValue(((DoubleValue)cell).getDoubleValue());
-                }
-            }
-        }
-        int i = 0;
-        for (Entry<Integer, DescriptiveStatistics> colStats : indexForStats.entrySet()) {
-            container.addRowToTable(createRow(colStats.getValue(), spec.getColumnSpec(colStats.getKey()).getName(),
-                indexForMissingValues.get(colStats.getKey()), "Row" + i++, computeMedian));
-        }
-        container.close();
-        return container.getTable();
-    }
+	/**
+	 * Creates a table containing statistics for the given columns.
+	 *
+	 * @param table
+	 *            Table containing the columns
+	 * @param columns
+	 *            The columns to calculate statistics from
+	 * @param exec
+	 *            Execution context used to create the new table
+	 * @return Table containing the stats for the given columns
+	 */
+	static BufferedDataTable createTable(final DataTable table, final List<String> columns, final ExecutionContext exec,
+			final boolean computeMedian) {
+		final DataTableSpec spec = table.getDataTableSpec();
+		final BufferedDataContainer container = exec.createDataContainer(createSpec(computeMedian));
+		final HashMap<Integer, DescriptiveStatistics> indexForStats = new HashMap<>();
+		final HashMap<Integer, Integer> indexForMissingValues = new HashMap<>();
+		for (final String column : columns) {
+			indexForStats.put(spec.findColumnIndex(column), new DescriptiveStatistics());
+			indexForMissingValues.put(spec.findColumnIndex(column), 0);
+		}
+		for (final DataRow row : table) {
+			for (final Entry<Integer, DescriptiveStatistics> colStats : indexForStats.entrySet()) {
+				final int index = colStats.getKey();
+				final DescriptiveStatistics stats = colStats.getValue();
+				final DataCell cell = row.getCell(index);
+				if (cell.isMissing()) {
+					indexForMissingValues.computeIfPresent(index, (key, value) -> value++);
+				} else {
+					stats.addValue(((DoubleValue) cell).getDoubleValue());
+				}
+			}
+		}
+		int i = 0;
+		for (final Entry<Integer, DescriptiveStatistics> colStats : indexForStats.entrySet()) {
+			container.addRowToTable(createRow(colStats.getValue(), spec.getColumnSpec(colStats.getKey()).getName(),
+					indexForMissingValues.get(colStats.getKey()), "Row" + i++, computeMedian));
+		}
+		container.close();
+		return container.getTable();
+	}
 
-    private static DataRow createRow(final DescriptiveStatistics stats, final String name, final int missingValues,
-        final String id, final boolean computeBoolean) {
-        if (computeBoolean) {
-            return new DefaultRow(id, new StringCell(name), new IntCell((int)stats.getN()), new IntCell(missingValues),
-                new DoubleCell(stats.getMean()), new DoubleCell(stats.getStandardDeviation()),
-                new DoubleCell(calcStdError(stats)), new DoubleCell(stats.getPercentile(50)));
-        }
-        return new DefaultRow(id, new StringCell(name), new IntCell((int)stats.getN()), new IntCell(missingValues),
-            new DoubleCell(stats.getMean()), new DoubleCell(stats.getStandardDeviation()),
-            new DoubleCell(calcStdError(stats)));
-    }
+	private static DataRow createRow(final DescriptiveStatistics stats, final String name, final int missingValues,
+			final String id, final boolean computeBoolean) {
+		if (computeBoolean) {
+			return new DefaultRow(id, new StringCell(name), new IntCell((int) stats.getN()), new IntCell(missingValues),
+					new DoubleCell(stats.getMean()), new DoubleCell(stats.getStandardDeviation()),
+					new DoubleCell(calcStdError(stats)), new DoubleCell(stats.getPercentile(50)));
+		}
+		return new DefaultRow(id, new StringCell(name), new IntCell((int) stats.getN()), new IntCell(missingValues),
+				new DoubleCell(stats.getMean()), new DoubleCell(stats.getStandardDeviation()),
+				new DoubleCell(calcStdError(stats)));
+	}
 
-    private static double calcStdError(final DescriptiveStatistics stats) {
-        return stats.getStandardDeviation() / Math.sqrt(stats.getN());
-    }
+	private static double calcStdError(final DescriptiveStatistics stats) {
+		return stats.getStandardDeviation() / Math.sqrt(stats.getN());
+	}
 
 }

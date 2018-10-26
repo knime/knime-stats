@@ -79,135 +79,137 @@ import org.knime.core.node.NodeSettingsWO;
  */
 class WilcoxonSignedRankNodeModel extends NodeModel {
 
-    private WilcoxonSignedRankNodeConfig m_config = new WilcoxonSignedRankNodeConfig();
+	private WilcoxonSignedRankNodeConfig m_config = new WilcoxonSignedRankNodeConfig();
 
-    protected WilcoxonSignedRankNodeModel() {
-        super(1, 3);
-    }
+	protected WilcoxonSignedRankNodeModel() {
+		super(1, 3);
+	}
 
-    @Override
-    protected BufferedDataTable[] execute(final BufferedDataTable[] inTables, final ExecutionContext exec)
-        throws Exception {
-        BufferedDataTable table = inTables[0];
-        BufferedDataContainer container = exec.createDataContainer(createSpec());
-        BufferedDataContainer rankStatsContainer = exec.createDataContainer(RankStatistics.createSpec());
-        String[] firstColumns = m_config.getFirstColumns();
-        String[] secondColumns = m_config.getSecondColumns();
-        Set<String> uniqueColumns = new TreeSet<>();
-        uniqueColumns.addAll(Arrays.asList(firstColumns));
-        uniqueColumns.addAll(Arrays.asList(secondColumns));
-        BufferedDataTable statsTable = ColumnStatistics.createTable(table, new ArrayList<String>(uniqueColumns), exec, m_config.getComputeMedian());
-        for (int i = 0; i < firstColumns.length; i++) {
-            int column1Index = table.getDataTableSpec().findColumnIndex(firstColumns[i]);
-            int column2Index = table.getDataTableSpec().findColumnIndex(secondColumns[i]);
-            WilcoxonSignedRankTest test = new WilcoxonSignedRankTest();
-            for (DataRow row : table) {
-                DataCell cell1 = row.getCell(column1Index);
-                DataCell cell2 = row.getCell(column2Index);
-                if (!cell1.isMissing() && !cell2.isMissing()) {
-                    double value1 = ((DoubleValue)cell1).getDoubleValue();
-                    double value2 = ((DoubleValue)cell2).getDoubleValue();
-                    test.addSample(value1, value2);
-                }
-            }
-            test.execute();
-            pushFlowVariableDouble("w (plus)", test.getWPlus());
-            pushFlowVariableDouble("w (minus)", test.getWMinus());
-            pushFlowVariableDouble("z-score (left)", test.getLeftZScore());
-            pushFlowVariableDouble("z-score (right)", test.getRightZScore());
-            pushFlowVariableDouble("p-value (one tailed)", test.getOneTailedPValue());
-            pushFlowVariableDouble("p-value (two tailed)", test.getTwoTailedPValue());
-            DataCell[] cells = new DataCell[8];
-            cells[0] = new StringCell(firstColumns[i]);
-            cells[1] = new StringCell(secondColumns[i]);
-            cells[2] = new DoubleCell(test.getWPlus());
-            cells[3] = new DoubleCell(test.getWMinus());
-            cells[4] = new DoubleCell(test.getLeftZScore());
-            cells[5] = new DoubleCell(test.getRightZScore());
-            cells[6] = new DoubleCell(test.getOneTailedPValue());
-            cells[7] = new DoubleCell(test.getTwoTailedPValue());
-            container.addRowToTable(new DefaultRow("Row" + i, cells));
-            test.addRankStatisticsToTable(i+1, rankStatsContainer);
-        }
-        container.close();
-        rankStatsContainer.close();
-        return new BufferedDataTable[]{container.getTable(), statsTable, rankStatsContainer.getTable()};
-    }
+	@Override
+	protected BufferedDataTable[] execute(final BufferedDataTable[] inTables, final ExecutionContext exec)
+			throws Exception {
+		BufferedDataTable table = inTables[0];
+		BufferedDataContainer container = exec.createDataContainer(createSpec());
+		BufferedDataContainer rankStatsContainer = exec.createDataContainer(RankStatistics.createSpec());
+		String[] firstColumns = m_config.getFirstColumns();
+		String[] secondColumns = m_config.getSecondColumns();
+		Set<String> uniqueColumns = new TreeSet<>();
+		uniqueColumns.addAll(Arrays.asList(firstColumns));
+		uniqueColumns.addAll(Arrays.asList(secondColumns));
+		BufferedDataTable statsTable = ColumnStatistics.createTable(table, new ArrayList<String>(uniqueColumns), exec,
+				m_config.getComputeMedian());
+		for (int i = 0; i < firstColumns.length; i++) {
+			int column1Index = table.getDataTableSpec().findColumnIndex(firstColumns[i]);
+			int column2Index = table.getDataTableSpec().findColumnIndex(secondColumns[i]);
+			WilcoxonSignedRankTest test = new WilcoxonSignedRankTest();
+			for (DataRow row : table) {
+				DataCell cell1 = row.getCell(column1Index);
+				DataCell cell2 = row.getCell(column2Index);
+				if (!cell1.isMissing() && !cell2.isMissing()) {
+					double value1 = ((DoubleValue) cell1).getDoubleValue();
+					double value2 = ((DoubleValue) cell2).getDoubleValue();
+					test.addSample(value1, value2);
+				}
+			}
+			test.execute();
+			pushFlowVariableDouble("w (plus)", test.getWPlus());
+			pushFlowVariableDouble("w (minus)", test.getWMinus());
+			pushFlowVariableDouble("z-score (left)", test.getLeftZScore());
+			pushFlowVariableDouble("z-score (right)", test.getRightZScore());
+			pushFlowVariableDouble("p-value (one tailed)", test.getOneTailedPValue());
+			pushFlowVariableDouble("p-value (two tailed)", test.getTwoTailedPValue());
+			DataCell[] cells = new DataCell[8];
+			cells[0] = new StringCell(firstColumns[i]);
+			cells[1] = new StringCell(secondColumns[i]);
+			cells[2] = new DoubleCell(test.getWPlus());
+			cells[3] = new DoubleCell(test.getWMinus());
+			cells[4] = new DoubleCell(test.getLeftZScore());
+			cells[5] = new DoubleCell(test.getRightZScore());
+			cells[6] = new DoubleCell(test.getOneTailedPValue());
+			cells[7] = new DoubleCell(test.getTwoTailedPValue());
+			container.addRowToTable(new DefaultRow("Row" + i, cells));
+			test.addRankStatisticsToTable(i + 1, rankStatsContainer);
+		}
+		container.close();
+		rankStatsContainer.close();
+		return new BufferedDataTable[] { container.getTable(), statsTable, rankStatsContainer.getTable() };
+	}
 
-    private DataTableSpec createSpec() {
-        DataColumnSpec[] colSpecs = new DataColumnSpec[8];
-        colSpecs[0] = new DataColumnSpecCreator("Left column", StringCell.TYPE).createSpec();
-        colSpecs[1] = new DataColumnSpecCreator("Right column", StringCell.TYPE).createSpec();
-        colSpecs[2] = new DataColumnSpecCreator("w (plus)", DoubleCell.TYPE).createSpec();
-        colSpecs[3] = new DataColumnSpecCreator("w (minus)", DoubleCell.TYPE).createSpec();
-        colSpecs[4] = new DataColumnSpecCreator("z-score (left)", DoubleCell.TYPE).createSpec();
-        colSpecs[5] = new DataColumnSpecCreator("z-score (right)", DoubleCell.TYPE).createSpec();
-        colSpecs[6] = new DataColumnSpecCreator("p-value (one tailed)", DoubleCell.TYPE).createSpec();
-        colSpecs[7] = new DataColumnSpecCreator("p-value (two tailed)", DoubleCell.TYPE).createSpec();
-        return new DataTableSpecCreator().addColumns(colSpecs).createSpec();
-    }
+	private DataTableSpec createSpec() {
+		DataColumnSpec[] colSpecs = new DataColumnSpec[8];
+		colSpecs[0] = new DataColumnSpecCreator("Left column", StringCell.TYPE).createSpec();
+		colSpecs[1] = new DataColumnSpecCreator("Right column", StringCell.TYPE).createSpec();
+		colSpecs[2] = new DataColumnSpecCreator("w (plus)", DoubleCell.TYPE).createSpec();
+		colSpecs[3] = new DataColumnSpecCreator("w (minus)", DoubleCell.TYPE).createSpec();
+		colSpecs[4] = new DataColumnSpecCreator("z-score (left)", DoubleCell.TYPE).createSpec();
+		colSpecs[5] = new DataColumnSpecCreator("z-score (right)", DoubleCell.TYPE).createSpec();
+		colSpecs[6] = new DataColumnSpecCreator("p-value (one tailed)", DoubleCell.TYPE).createSpec();
+		colSpecs[7] = new DataColumnSpecCreator("p-value (two tailed)", DoubleCell.TYPE).createSpec();
+		return new DataTableSpecCreator().addColumns(colSpecs).createSpec();
+	}
 
-    @Override
-    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-        DataTableSpec inSpec = inSpecs[0];
-        String[] firstColumns = m_config.getFirstColumns();
-        String[] secondColumns = m_config.getSecondColumns();
-        if (firstColumns.length < 1) {
-            throw new InvalidSettingsException("At least one pair of columns has to be selected");
-        }
-        for (int i = 0; i < firstColumns.length; i++) {
-            String column1 = firstColumns[i];
-            String column2 = secondColumns[i];
-            if (!inSpec.containsName(column1)) {
-                throw new InvalidSettingsException("Selected column '" + column1 + "' does not exist");
-            }
-            if (!inSpec.getColumnSpec(column1).getType().isCompatible(DoubleValue.class)) {
-                throw new InvalidSettingsException("Column '" + column1 + "' is not numerical");
-            }
-            if (!inSpec.containsName(column2)) {
-                throw new InvalidSettingsException("Selected column '" + column2 + "' does not exist");
-            }
-            if (!inSpec.getColumnSpec(column2).getType().isCompatible(DoubleValue.class)) {
-                throw new InvalidSettingsException("Column '" + column2 + "' is not numerical");
-            }
-        }
-        return new DataTableSpec[]{createSpec(), ColumnStatistics.createSpec(m_config.getComputeMedian()), RankStatistics.createSpec()};
-    }
+	@Override
+	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+		DataTableSpec inSpec = inSpecs[0];
+		String[] firstColumns = m_config.getFirstColumns();
+		String[] secondColumns = m_config.getSecondColumns();
+		if (firstColumns.length < 1) {
+			throw new InvalidSettingsException("At least one pair of columns has to be selected");
+		}
+		for (int i = 0; i < firstColumns.length; i++) {
+			String column1 = firstColumns[i];
+			String column2 = secondColumns[i];
+			if (!inSpec.containsName(column1)) {
+				throw new InvalidSettingsException("Selected column '" + column1 + "' does not exist");
+			}
+			if (!inSpec.getColumnSpec(column1).getType().isCompatible(DoubleValue.class)) {
+				throw new InvalidSettingsException("Column '" + column1 + "' is not numerical");
+			}
+			if (!inSpec.containsName(column2)) {
+				throw new InvalidSettingsException("Selected column '" + column2 + "' does not exist");
+			}
+			if (!inSpec.getColumnSpec(column2).getType().isCompatible(DoubleValue.class)) {
+				throw new InvalidSettingsException("Column '" + column2 + "' is not numerical");
+			}
+		}
+		return new DataTableSpec[] { createSpec(), ColumnStatistics.createSpec(m_config.getComputeMedian()),
+				RankStatistics.createSpec() };
+	}
 
-    @Override
-    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
-    }
+	@Override
+	protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
+			throws IOException, CanceledExecutionException {
+	}
 
-    @Override
-    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec) throws IOException,
-        CanceledExecutionException {
-    }
+	@Override
+	protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
+			throws IOException, CanceledExecutionException {
+	}
 
-    @Override
-    protected void saveSettingsTo(final NodeSettingsWO settings) {
-        m_config.save(settings);
-    }
+	@Override
+	protected void saveSettingsTo(final NodeSettingsWO settings) {
+		m_config.save(settings);
+	}
 
-    @Override
-    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
-        config.load(settings);
-    }
+	@Override
+	protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+		WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
+		config.load(settings);
+	}
 
-    @Override
-    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
-        config.load(settings);
-        m_config = config;
-    }
+	@Override
+	protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+		WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
+		config.load(settings);
+		m_config = config;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void reset() {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void reset() {
 
-    }
+	}
 
 }
