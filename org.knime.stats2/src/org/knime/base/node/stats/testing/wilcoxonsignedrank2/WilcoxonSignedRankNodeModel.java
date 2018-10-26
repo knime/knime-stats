@@ -93,10 +93,10 @@ class WilcoxonSignedRankNodeModel extends NodeModel {
         BufferedDataContainer rankStatsContainer = exec.createDataContainer(RankStatistics.createSpec());
         String[] firstColumns = m_config.getFirstColumns();
         String[] secondColumns = m_config.getSecondColumns();
-        Set<String> uniqueColumns = new TreeSet<String>();
+        Set<String> uniqueColumns = new TreeSet<>();
         uniqueColumns.addAll(Arrays.asList(firstColumns));
         uniqueColumns.addAll(Arrays.asList(secondColumns));
-        BufferedDataTable statsTable = ColumnStatistics.createTable(table, new ArrayList<String>(uniqueColumns), exec);
+        BufferedDataTable statsTable = ColumnStatistics.createTable(table, new ArrayList<String>(uniqueColumns), exec, m_config.getComputeMedian());
         for (int i = 0; i < firstColumns.length; i++) {
             int column1Index = table.getDataTableSpec().findColumnIndex(firstColumns[i]);
             int column2Index = table.getDataTableSpec().findColumnIndex(secondColumns[i]);
@@ -171,7 +171,7 @@ class WilcoxonSignedRankNodeModel extends NodeModel {
                 throw new InvalidSettingsException("Column '" + column2 + "' is not numerical");
             }
         }
-        return new DataTableSpec[]{createSpec(), ColumnStatistics.createSpec(), RankStatistics.createSpec()};
+        return new DataTableSpec[]{createSpec(), ColumnStatistics.createSpec(m_config.getComputeMedian()), RankStatistics.createSpec()};
     }
 
     @Override

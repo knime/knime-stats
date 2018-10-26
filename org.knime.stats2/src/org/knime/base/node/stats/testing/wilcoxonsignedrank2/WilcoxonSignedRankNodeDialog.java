@@ -8,6 +8,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -28,6 +29,7 @@ import org.knime.core.node.util.ColumnPairsSelectionPanel;
 class WilcoxonSignedRankNodeDialog extends NodeDialogPane {
 
     private ColumnPairsSelectionPanel m_columnPairs;
+    private final JCheckBox m_checkbox;
 
     public WilcoxonSignedRankNodeDialog() {
         m_columnPairs = new ColumnPairsSelectionPanel() {
@@ -65,6 +67,15 @@ class WilcoxonSignedRankNodeDialog extends NodeDialogPane {
         scrollPane.setMinimumSize(new Dimension(300, 100));
         m_columnPairs.setBackground(Color.white);
         panel.add(scrollPane, gbc);
+
+        m_checkbox = new JCheckBox(WilcoxonSignedRankNodeConfig.ENABLE_COMPUTE_MEDIAN_CFG);
+        gbc.gridwidth = 1;
+        gbc.weightx = 0;
+        gbc.weighty = 0;
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panel.add(m_checkbox, gbc);
         addTab("Config", panel);
     }
 
@@ -73,6 +84,7 @@ class WilcoxonSignedRankNodeDialog extends NodeDialogPane {
         WilcoxonSignedRankNodeConfig config = new WilcoxonSignedRankNodeConfig();
         config.setFirstColumns(objectsToColumnNames(m_columnPairs.getLeftSelectedItems()));
         config.setSecondColumns(objectsToColumnNames(m_columnPairs.getRightSelectedItems()));
+        config.setComputeMedian(m_checkbox.isSelected());
         config.save(settings);
     }
 
@@ -88,6 +100,7 @@ class WilcoxonSignedRankNodeDialog extends NodeDialogPane {
             secondColumns = null;
         }
         m_columnPairs.updateData(new DataTableSpec[]{specs[0], specs[0]}, firstColumns, secondColumns);
+        m_checkbox.setSelected(config.getComputeMedian());
     }
 
     private String[] objectsToColumnNames(final Object[] objects) {
