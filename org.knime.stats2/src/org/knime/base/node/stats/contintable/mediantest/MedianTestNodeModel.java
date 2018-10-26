@@ -254,6 +254,39 @@ public class MedianTestNodeModel extends NodeModel {
 
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+        final DataTableSpec inSpec = inSpecs[0];
+
+        Iterator<DataColumnSpec> colIter = inSpec.iterator();
+        while ((m_col1.getStringValue() == null || m_col2.getStringValue() == null) && colIter.hasNext()) {
+            DataColumnSpec colSpec = colIter.next();
+            if (colSpec.getType().isCompatible(DoubleValue.class)) {
+                if (m_col1.getStringValue() == null) {
+                    m_col1.setStringValue(colSpec.getName());
+                } else if (m_col2.getStringValue() == null) {
+                    m_col2.setStringValue(colSpec.getName());
+                }
+            }
+        }
+
+        if (m_col1.getStringValue() == null) {
+            throw new InvalidSettingsException(
+                    "Not enough numerical data columns available, please provide a data table with at least 1.");
+        } else if (m_col2.getStringValue() == null) {
+            m_col2.setStringValue(m_col1.getStringValue());
+        }
+
+        if (!inSpec.containsName(m_col1.getStringValue())
+            || !inSpec.getColumnSpec(m_col1.getStringValue()).getType().isCompatible(DoubleValue.class)) {
+            throw new InvalidSettingsException(
+                "Test column " + m_col1.getStringValue() + " not found or incompatible");
+        } else if (!inSpec.containsName(m_col2.getStringValue())
+            || !inSpec.getColumnSpec(m_col2.getStringValue()).getType().isCompatible(DoubleValue.class)) {
+            throw new InvalidSettingsException(
+                "Test column " + m_col2.getStringValue() + " not found or incompatible");
+        }
+        if (m_col1.getStringValue().equals(m_col2.getStringValue())) {
+            setWarningMessage("The two columns should be different.");
+        }
         return new DataTableSpec[]{createOutputSpec()};
     }
 
@@ -312,11 +345,11 @@ public class MedianTestNodeModel extends NodeModel {
     }
 
     static SettingsModelString createSettingsModelCol2() {
-        return new SettingsModelString(CFGKEY_COLUMN2, "");
+        return new SettingsModelString(CFGKEY_COLUMN2, null);
     }
 
     static SettingsModelString createSettingsModelCol1() {
-        return new SettingsModelString(CFGKEY_COLUMN1, "");
+        return new SettingsModelString(CFGKEY_COLUMN1, null);
     }
 
     static SettingsModelDoubleBounded createSettingsModelLaplaceCorrection() {
