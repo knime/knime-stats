@@ -48,9 +48,8 @@
  */
 package org.knime.base.node.stats.testing.wilcoxonsignedrank2;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.knime.core.data.DataCell;
@@ -73,86 +72,121 @@ import org.knime.core.node.ExecutionContext;
  */
 final class ColumnStatistics {
 
-	private ColumnStatistics() {
-	}
+    private ColumnStatistics() {
+    }
 
-	/**
-	 * @param computeMedian
-	 *            True if the median column should be added
-	 * @return Specs for the column stats table
-	 */
-	public static DataTableSpec createSpec(final boolean computeMedian) {
-		final DataTableSpecCreator tableSpecCreator = new DataTableSpecCreator();
-		tableSpecCreator.addColumns(new DataColumnSpecCreator("Column", StringCell.TYPE).createSpec());
-		tableSpecCreator.addColumns(new DataColumnSpecCreator("N", IntCell.TYPE).createSpec());
-		tableSpecCreator.addColumns(new DataColumnSpecCreator("Missing Count", IntCell.TYPE).createSpec());
-		tableSpecCreator.addColumns(new DataColumnSpecCreator("Mean", DoubleCell.TYPE).createSpec());
-		tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Deviation", DoubleCell.TYPE).createSpec());
-		tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Error Mean", DoubleCell.TYPE).createSpec());
-		if (computeMedian) {
-			tableSpecCreator.addColumns(new DataColumnSpecCreator("Median", DoubleCell.TYPE).createSpec());
-		}
-		return tableSpecCreator.createSpec();
-	}
+    /**
+     * @param computeMedian True if the median column should be added
+     * @return Specs for the column stats table
+     */
+    static DataTableSpec createSpec(final boolean computeMedian) {
+        final DataTableSpecCreator tableSpecCreator = new DataTableSpecCreator();
+        tableSpecCreator.addColumns(new DataColumnSpecCreator("Column", StringCell.TYPE).createSpec());
+        tableSpecCreator.addColumns(new DataColumnSpecCreator("N", IntCell.TYPE).createSpec());
+        tableSpecCreator.addColumns(new DataColumnSpecCreator("Missing Count", IntCell.TYPE).createSpec());
+        tableSpecCreator.addColumns(new DataColumnSpecCreator("Mean", DoubleCell.TYPE).createSpec());
+        tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Deviation", DoubleCell.TYPE).createSpec());
+        tableSpecCreator.addColumns(new DataColumnSpecCreator("Standard Error Mean", DoubleCell.TYPE).createSpec());
+        if (computeMedian) {
+            tableSpecCreator.addColumns(new DataColumnSpecCreator("Median", DoubleCell.TYPE).createSpec());
+        }
+        return tableSpecCreator.createSpec();
+    }
 
-	/**
-	 * Creates a table containing statistics for the given columns.
-	 *
-	 * @param table
-	 *            Table containing the columns
-	 * @param columns
-	 *            The columns to calculate statistics from
-	 * @param exec
-	 *            Execution context used to create the new table
-	 * @param computeMedian
-	 *            True if the median should be computed
-	 * @return Table containing the stats for the given columns
-	 */
-	static BufferedDataTable createTable(final DataTable table, final List<String> columns, final ExecutionContext exec,
-			final boolean computeMedian) {
-		final DataTableSpec spec = table.getDataTableSpec();
-		final BufferedDataContainer container = exec.createDataContainer(createSpec(computeMedian));
-		final HashMap<Integer, DescriptiveStatistics> indexForStats = new HashMap<>();
-		final HashMap<Integer, Integer> indexForMissingValues = new HashMap<>();
-		for (final String column : columns) {
-			indexForStats.put(spec.findColumnIndex(column), new DescriptiveStatistics());
-			indexForMissingValues.put(spec.findColumnIndex(column), 0);
-		}
-		for (final DataRow row : table) {
-			for (final Entry<Integer, DescriptiveStatistics> colStats : indexForStats.entrySet()) {
-				final int index = colStats.getKey();
-				final DescriptiveStatistics stats = colStats.getValue();
-				final DataCell cell = row.getCell(index);
-				if (cell.isMissing()) {
-					indexForMissingValues.computeIfPresent(index, (key, value) -> value++);
-				} else {
-					stats.addValue(((DoubleValue) cell).getDoubleValue());
-				}
-			}
-		}
-		int i = 0;
-		for (final Entry<Integer, DescriptiveStatistics> colStats : indexForStats.entrySet()) {
-			container.addRowToTable(createRow(colStats.getValue(), spec.getColumnSpec(colStats.getKey()).getName(),
-					indexForMissingValues.get(colStats.getKey()), "Row" + i++, computeMedian));
-		}
-		container.close();
-		return container.getTable();
-	}
+    /**
+     * Creates a table containing statistics for the given columns.
+     *
+     * @param table Table containing the columns
+     * @param columns The columns to calculate statistics from
+     * @param exec Execution context used to create the new table
+     * @param computeMedian True if the median should be computed
+     * @return Table containing the stats for the given columns
+     */
+    static BufferedDataTable createTable(final DataTable table, final List<String> columns, final ExecutionContext exec,
+        final boolean computeMedian) {
+        final DataTableSpec spec = table.getDataTableSpec();
+        final BufferedDataContainer container = exec.createDataContainer(createSpec(computeMedian));
+        final List<ColumnStatistic> stats = new ArrayList<>(columns.size());
+        for (final String column : columns) {
+            stats.add(new ColumnStatistic(spec.findColumnIndex(column)));
+        }
+        for (final DataRow row : table) {
+            for (final ColumnStatistic stat : stats) {
+                final int index = stat.getIndex();
+                final DataCell cell = row.getCell(index);
+                if (cell.isMissing()) {
+                    stat.setMissingValues(stat.getMissingValues() + 1);
+                } else {
+                    stat.getStatistics().addValue(((DoubleValue)cell).getDoubleValue());
+                }
+            }
+        }
+        int i = 0;
+        for (final ColumnStatistic stat : stats) {
+            container.addRowToTable(createRow(stat.getStatistics(), spec.getColumnSpec(stat.getIndex()).getName(),
+                stat.getMissingValues(), "Row" + i++, computeMedian));
+        }
+        container.close();
+        return container.getTable();
+    }
 
-	private static DataRow createRow(final DescriptiveStatistics stats, final String name, final int missingValues,
-			final String id, final boolean computeBoolean) {
-		if (computeBoolean) {
-			return new DefaultRow(id, new StringCell(name), new IntCell((int) stats.getN()), new IntCell(missingValues),
-					new DoubleCell(stats.getMean()), new DoubleCell(stats.getStandardDeviation()),
-					new DoubleCell(calcStdError(stats)), new DoubleCell(stats.getPercentile(50)));
-		}
-		return new DefaultRow(id, new StringCell(name), new IntCell((int) stats.getN()), new IntCell(missingValues),
-				new DoubleCell(stats.getMean()), new DoubleCell(stats.getStandardDeviation()),
-				new DoubleCell(calcStdError(stats)));
-	}
+    private static DataRow createRow(final DescriptiveStatistics stats, final String name, final int missingValues,
+        final String id, final boolean computeMedian) {
+        if (computeMedian) {
+            return new DefaultRow(id, new StringCell(name), new IntCell((int)stats.getN()), new IntCell(missingValues),
+                new DoubleCell(stats.getMean()), new DoubleCell(stats.getStandardDeviation()),
+                new DoubleCell(calcStdError(stats)), new DoubleCell(stats.getPercentile(50)));
+        }
+        return new DefaultRow(id, new StringCell(name), new IntCell((int)stats.getN()), new IntCell(missingValues),
+            new DoubleCell(stats.getMean()), new DoubleCell(stats.getStandardDeviation()),
+            new DoubleCell(calcStdError(stats)));
+    }
 
-	private static double calcStdError(final DescriptiveStatistics stats) {
-		return stats.getStandardDeviation() / Math.sqrt(stats.getN());
-	}
+    private static double calcStdError(final DescriptiveStatistics stats) {
+        return stats.getStandardDeviation() / Math.sqrt(stats.getN());
+    }
+
+    private static class ColumnStatistic {
+
+        private final int index;
+
+        private int missingValues;
+
+        private final DescriptiveStatistics statistics;
+
+        private ColumnStatistic(final int index1) {
+            this.index = index1;
+            this.missingValues = 0;
+            this.statistics = new DescriptiveStatistics();
+        }
+
+        /**
+         * @return the index
+         */
+        private int getIndex() {
+            return index;
+        }
+
+        /**
+         * @return the missingValues
+         */
+        private int getMissingValues() {
+            return missingValues;
+        }
+
+        /**
+         * @param missingValues1 the missingValues to set
+         */
+        private void setMissingValues(final int missingValues1) {
+            this.missingValues = missingValues1;
+        }
+
+        /**
+         * @return the statistics
+         */
+        private DescriptiveStatistics getStatistics() {
+            return statistics;
+        }
+    }
 
 }
