@@ -256,9 +256,9 @@ public class MedianTestNodeModel extends NodeModel {
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
         final DataTableSpec inSpec = inSpecs[0];
 
-        Iterator<DataColumnSpec> colIter = inSpec.iterator();
+        final Iterator<DataColumnSpec> colIter = inSpec.iterator();
         while ((m_col1.getStringValue() == null || m_col2.getStringValue() == null) && colIter.hasNext()) {
-            DataColumnSpec colSpec = colIter.next();
+            final DataColumnSpec colSpec = colIter.next();
             if (colSpec.getType().isCompatible(DoubleValue.class)) {
                 if (m_col1.getStringValue() == null) {
                     m_col1.setStringValue(colSpec.getName());
@@ -270,7 +270,7 @@ public class MedianTestNodeModel extends NodeModel {
 
         if (m_col1.getStringValue() == null) {
             throw new InvalidSettingsException(
-                    "Not enough numerical data columns available, please provide a data table with at least 1.");
+                    "Not enough numerical data columns available, please provide a data table with at least one.");
         } else if (m_col2.getStringValue() == null) {
             m_col2.setStringValue(m_col1.getStringValue());
         }
@@ -285,7 +285,7 @@ public class MedianTestNodeModel extends NodeModel {
                 "Test column " + m_col2.getStringValue() + " not found or incompatible");
         }
         if (m_col1.getStringValue().equals(m_col2.getStringValue())) {
-            setWarningMessage("The two columns should be different.");
+            setWarningMessage("The two columns selected to test are identical but should be different.");
         }
         return new DataTableSpec[]{createOutputSpec()};
     }
