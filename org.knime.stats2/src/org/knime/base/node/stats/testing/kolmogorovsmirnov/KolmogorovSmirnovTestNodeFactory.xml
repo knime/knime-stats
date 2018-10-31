@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
 <knimeNode icon="./kolmogorov_smirnov_test.png" type="Manipulator">
-    <name>Kolmogorov Smirnov Test</name>
+    <name>Kolmogorov-Smirnov Test</name>
     
     <shortDescription>
         States whether two samples come from the same distribution
@@ -10,14 +10,14 @@
     <fullDescription>
         <intro><p>The two-sample Kolmogorov-Smirnov test is used to detect if two samples come from the same underlying distribution. More precisely, this non-parametric test calculates a distance <i>d</i> between the empirical distribution functions of the two samples.</p>
         
-        <p>The corresponding <i>p</i>-value can be computed exactly if there are no ties (duplicate values) present in the samples and the product of the two sample sizes is less than 10000. Otherwise the <i>p</i>-value has to be approximated by determining a convergence of a sum with the given options.</p>
+        <p>The corresponding <i>p</i>-value can be computed exactly if there are no ties (duplicate values) present in the samples and the product of the two sample sizes is less than 10000. Otherwise, the <i>p</i>-value has to be approximated with the given options.</p>
         
-        <p>With the given significance level &#945;, a corresponding <i>p</i>-value (null hypothesis H<sub>0</sub>: the two samples come from a common distribution, alternative hypothesis H<sub>A</sub>: the two samples do not come from a common distribution) can be given.</p>
+        <p>With the given significance level &#945; and the calculated <i>p</i>-value the null hypothesis H<sub>0</sub> (the two samples come from a common distribution) can be either accepted or rejected.</p>
         
         <p>Please refer also to the <a href="https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test">Wikipedia description of the Kolmogorov-Smirnov Test</a>.</p>
         </intro>
         <tab name="Options">
-        	<option name="Significance level &#945;">A difference in the samples is assumed based on this value, 0 &lt; &#945; &lt; 1</option>
+        	<option name="Significance level &#945;">Significance level at which the null hypothesis can be rejected, 0 &lt; &#945; &lt; 1</option>
 	        <option name="First test column">The first sample (column) included in the test</option>
 	        <option name="Second test column">The second sample (column) included in the test</option>
         </tab>
@@ -34,8 +34,8 @@
 													<li>Product of the two sample sizes &lt; 10000</li>
 												</ul>
 			</option>
-			<option name="Cauchy criterion">Stopping criteria for the approximaion of p when successive partial sums are within tolerance</option>
-			<option name="Max number of iterations">Stopping criteria for the approximation of p when the number of iteration is reached</option>
+			<option name="Cauchy criterion">Stopping criterion for the approximation of p when successive partial sums are within tolerance</option>
+			<option name="Max number of iterations">Stopping criterion for the approximation of p when the number of iteration is reached</option>
 		</tab>
     </fullDescription>
     <ports>

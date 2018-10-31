@@ -12,6 +12,9 @@ import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
 import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
 import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
+import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
+import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
+import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
 
 /**
  * {@link NodeDialog} for the "KolmogorovSmirnovTest" Node.
@@ -21,6 +24,13 @@ import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
 final class KolmogorovSmirnovTestNodeDialog extends DefaultNodeSettingsPane {
 
     private static final int INPUT_WIDTH = 5;
+
+    private final SettingsModelBoolean exactP = KolmogorovSmirnovTestNodeModel.createSettingsModelExactP();
+
+    private final SettingsModelDoubleBounded tolerance = KolmogorovSmirnovTestNodeModel.createSettingsModelTolerance();
+
+    private final SettingsModelIntegerBounded iterations =
+        KolmogorovSmirnovTestNodeModel.createSettingsModelIterations();
 
     /**
      * New pane for configuring KolmogorovSmirnovTest node dialog.
@@ -53,17 +63,27 @@ final class KolmogorovSmirnovTestNodeDialog extends DefaultNodeSettingsPane {
         addDialogComponent(nanComponent);
 
         final DialogComponentBoolean exactPComponent =
-            new DialogComponentBoolean(KolmogorovSmirnovTestNodeModel.createSettingsModelExactP(), "Exact p-value");
+            new DialogComponentBoolean(exactP, "Exact p-value (Computationally expensive)");
+        exactP.addChangeListener(e -> {
+            if (exactP.getBooleanValue()) {
+                tolerance.setEnabled(false);
+                iterations.setEnabled(false);
+            } else {
+                tolerance.setEnabled(true);
+                iterations.setEnabled(true);
+            }
+        });
+
         addDialogComponent(exactPComponent);
 
         createNewGroup("Settings for approximation of p-value");
 
-        final DialogComponentNumber cauchyCriterionComponent = new DialogComponentNumber(
-            KolmogorovSmirnovTestNodeModel.createSettingsModelTolerance(), "Cauchy criterion", 1E-7, 8);
+        final DialogComponentNumber cauchyCriterionComponent =
+            new DialogComponentNumber(tolerance, "Cauchy criterion", 1E-7, 8);
         addDialogComponent(cauchyCriterionComponent);
 
-        final DialogComponentNumber iterationsComponent = new DialogComponentNumber(
-            KolmogorovSmirnovTestNodeModel.createSettingsModelIterations(), "Max number of iterations", 10000);
+        final DialogComponentNumber iterationsComponent =
+            new DialogComponentNumber(iterations, "Max number of iterations", 10000);
         addDialogComponent(iterationsComponent);
     }
 

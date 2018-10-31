@@ -152,18 +152,17 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
 
         final double statistic = calculateKSStatistic(colData1, colData2);
         progMon.setProgress(0.5);
-        boolean exact = false;
         if (m_exact.getBooleanValue()) {
             if (colData1.length * colData2.length > EXACT_P_MAX_VALUES) {
-                setWarningMessage(
-                    "Too many values to compute an exact p-value. The product of the sample size must be less than 10000.");
+                throw new InvalidSettingsException(
+                    "Too many values to compute an exact p-value. Either reduce the sample size or change the settings of exact p-value.");
             } else if (findTies(colData1, colData2)) {
-                setWarningMessage("Cannot compute exact p-value with ties");
-            } else {
-                exact = true;
+                throw new InvalidSettingsException(
+                    "Cannot compute exact p-value with ties. Provide data without duplicate values or change the settings of exact p-value.");
             }
         }
-        final double pvalue = calculatePValue(colData1.length, colData2.length, statistic, exact);
+
+        final double pvalue = calculatePValue(colData1.length, colData2.length, statistic, m_exact.getBooleanValue());
         progMon.setProgress(0.9);
 
         final List<DataCell> cells = new ArrayList<>(3);
@@ -171,7 +170,7 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
         cells.add(new DoubleCell(statistic));
         cells.add(new DoubleCell(pvalue));
         final RowKey key = new RowKey(
-            "Kolmogorov Smirnov (" + m_testColumn1.getStringValue() + ", " + m_testColumn2.getStringValue() + ")");
+            "Kolmogorov-Smirnov (" + m_testColumn1.getStringValue() + ", " + m_testColumn2.getStringValue() + ")");
         final DataRow outRow = new DefaultRow(key, cells);
         outContainer.addRowToTable(outRow);
 
@@ -334,7 +333,6 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
         allColSpecs.add(new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator("Statistic", DoubleCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator("p-Value", DoubleCell.TYPE).createSpec());
-
         return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
     }
 
@@ -374,12 +372,19 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
             }
         }
 
+        if (m_testColumn1.getStringValue() == null) {
+            throw new InvalidSettingsException(
+                "Not enough numerical data columns available, please provide a data table with at least one.");
+        } else if (m_testColumn2.getStringValue() == null) {
+            m_testColumn2.setStringValue(m_testColumn1.getStringValue());
+        }
+
         if (!inSpec.containsName(m_testColumn1.getStringValue())
-            && inSpec.getColumnSpec(m_testColumn1.getStringValue()).getType().isCompatible(DoubleValue.class)) {
+            || !inSpec.getColumnSpec(m_testColumn1.getStringValue()).getType().isCompatible(DoubleValue.class)) {
             throw new InvalidSettingsException(
                 "Test column " + m_testColumn1.getStringValue() + " not found or incompatible");
         } else if (!inSpec.containsName(m_testColumn2.getStringValue())
-            && inSpec.getColumnSpec(m_testColumn2.getStringValue()).getType().isCompatible(DoubleValue.class)) {
+            || !inSpec.getColumnSpec(m_testColumn2.getStringValue()).getType().isCompatible(DoubleValue.class)) {
             throw new InvalidSettingsException(
                 "Test column " + m_testColumn2.getStringValue() + " not found or incompatible");
         }
