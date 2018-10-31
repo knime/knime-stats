@@ -90,7 +90,7 @@ import org.knime.stats.StatsUtil;
  * This is the model implementation of FriedmanTest, as on
  * https://en.wikipedia.org/w/index.php?title=Friedman_test&oldid=829231943
  *
- * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
+ * @author Lukas Siedentop, University of Konstanz
  */
 public class FriedmanTestNodeModel extends NodeModel {
 
@@ -273,7 +273,7 @@ public class FriedmanTestNodeModel extends NodeModel {
         allColSpecs.add(new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator("Q", DoubleCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator("Critical ChiSq Value", DoubleCell.TYPE).createSpec());
-        allColSpecs.add(StatsUtil.createPValueColumnSpec());
+        allColSpecs.add(StatsUtil.createDataColumnSpec("p-Value", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
 
         return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
     }

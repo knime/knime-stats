@@ -54,6 +54,7 @@ import org.knime.core.node.NodeView;
  *
  * @author Oliver Sampson, University of Konstanz
  */
+@Deprecated
 public class OddsRiskRatioNodeFactory extends NodeFactory<OddsRiskRatioNodeModel> {
 
     @Override

@@ -70,7 +70,7 @@
             after="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory"
             category-path="/labs/statistics"
             deprecated="false"
-            factory-class="org.knime.base.node.stats.contintable.oddriskratio2.OddsRiskRatioNodeFactory">
+            factory-class="org.knime.base.node.stats.contintable.oddriskratio.OddsRiskRatio2NodeFactory">
       </node>
       <node
             after="org.knime.base.node.stats.testing.wilcoxonmannwhitney.WilcoxonMannWhitneyNodeFactory"

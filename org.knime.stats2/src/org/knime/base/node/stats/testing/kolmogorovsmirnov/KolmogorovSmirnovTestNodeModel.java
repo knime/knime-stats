@@ -335,7 +335,7 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
         allColSpecs.add(new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec());
         allColSpecs
             .add(StatsUtil.createDataColumnSpec("Statistic", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
-        allColSpecs.add(StatsUtil.createPValueColumnSpec());
+        allColSpecs.add(StatsUtil.createDataColumnSpec("p-Value", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
 
         return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
     }

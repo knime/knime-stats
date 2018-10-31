@@ -86,6 +86,7 @@ import org.knime.core.node.port.PortObjectSpec;
  *
  * @author Oliver Sampson, University of Konstanz
  */
+@Deprecated
 public class OddsRiskRatioNodeModel extends NodeModel {
 
     // the logger instance

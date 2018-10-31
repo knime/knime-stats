@@ -53,7 +53,7 @@ import org.knime.core.node.NodeView;
  * <code>NodeFactory</code> for the "FriedmanTest" Node.
  *
  *
- * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
+ * @author Lukas Siedentop, University of Konstanz
  */
 public class FriedmanTestNodeFactory
 extends NodeFactory<FriedmanTestNodeModel> {

@@ -291,7 +291,8 @@ public class ProportionTestNodeModel extends NodeModel {
                 new DataColumnSpecCreator("Nobs", IntCell.TYPE).createSpec(),
                 new DataColumnSpecCreator("Proportion", DoubleCell.TYPE).createSpec(),
                 new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec(),
-                new DataColumnSpecCreator("z-Score", DoubleCell.TYPE).createSpec(), StatsUtil.createPValueColumnSpec()};
+                new DataColumnSpecCreator("z-Score", DoubleCell.TYPE).createSpec(),
+                StatsUtil.createDataColumnSpec("p-Value", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE)};
 
         return new DataTableSpec(allColSpecs);
     }

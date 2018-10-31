@@ -42,7 +42,7 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * -------------------------------------------------------------------
  */
-package org.knime.base.node.stats.contintable.oddriskratio2;
+package org.knime.base.node.stats.contintable.oddriskratio;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,10 +88,10 @@ import org.knime.stats.StatsUtil;
  *
  * @author Oliver Sampson, University of Konstanz
  */
-public class OddsRiskRatioNodeModel extends NodeModel {
+public class OddsRiskRatio2NodeModel extends NodeModel {
 
     // the logger instance
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(OddsRiskRatioNodeModel.class);
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(OddsRiskRatio2NodeModel.class);
 
     /**
      * the settings key which is used to retrieve and store the settings (from the dialog or from a settings file)
@@ -163,7 +163,7 @@ public class OddsRiskRatioNodeModel extends NodeModel {
     /**
      * Constructor for the node model.
      */
-    protected OddsRiskRatioNodeModel() {
+    protected OddsRiskRatio2NodeModel() {
         super(1, 2);
     }
 
@@ -269,9 +269,9 @@ public class OddsRiskRatioNodeModel extends NodeModel {
         outColSpecs.add(
             StatsUtil.createDataColumnSpec("Fishers Two Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
         outColSpecs.add(
-            StatsUtil.createDataColumnSpec("Fishers Left Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
+            StatsUtil.createDataColumnSpec("Fishers Left Tail", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
         outColSpecs.add(
-            StatsUtil.createDataColumnSpec("Fishers Right Sided", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
+            StatsUtil.createDataColumnSpec("Fishers Right Tail", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
         outColSpecs.add(new DataColumnSpecCreator("ChiSq", DoubleCell.TYPE).createSpec());
         outColSpecs.add(new DataColumnSpecCreator("Yates Corrected", DoubleCell.TYPE).createSpec());
         outColSpecs.add(new DataColumnSpecCreator("Pearsons", DoubleCell.TYPE).createSpec());

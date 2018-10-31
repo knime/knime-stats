@@ -332,7 +332,7 @@ public class ShapiroWilkNodeModel extends NodeModel {
     private DataTableSpec createSpec() {
         DataColumnSpec measure =
             StatsUtil.createDataColumnSpec("W", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
-        DataColumnSpec p = StatsUtil.createPValueColumnSpec();
+        DataColumnSpec p = StatsUtil.createDataColumnSpec("P", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
 
         return new DataTableSpec(measure, p);
     }

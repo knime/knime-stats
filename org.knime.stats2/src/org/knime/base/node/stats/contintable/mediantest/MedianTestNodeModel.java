@@ -296,7 +296,7 @@ public class MedianTestNodeModel extends NodeModel {
         allColSpecs.add(new DataColumnSpecCreator("Reject H0", BooleanCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator("ChiSq Value", DoubleCell.TYPE).createSpec());
         allColSpecs.add(new DataColumnSpecCreator("Critical ChiSq Value", DoubleCell.TYPE).createSpec());
-        allColSpecs.add(StatsUtil.createPValueColumnSpec());
+        allColSpecs.add(StatsUtil.createDataColumnSpec("p-Value", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE));
 
         return new DataTableSpec(allColSpecs.toArray(new DataColumnSpec[0]));
     }
