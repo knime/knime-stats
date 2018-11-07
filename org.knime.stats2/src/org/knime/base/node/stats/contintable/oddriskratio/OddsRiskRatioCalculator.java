@@ -61,7 +61,7 @@ import org.knime.core.node.InvalidSettingsException;
 
 /**
  *
- * @author knime
+ * @author Kevin Kress, Knime GmbH, Konstanz
  */
 public class OddsRiskRatioCalculator {
 
