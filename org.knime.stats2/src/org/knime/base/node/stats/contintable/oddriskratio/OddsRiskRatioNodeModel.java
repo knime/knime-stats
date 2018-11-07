@@ -81,7 +81,7 @@ import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 
 /**
- * This is the model implementation of OddsRatio.
+ * @deprecated This is the model implementation of OddsRatio.
  *
  *
  * @author Oliver Sampson, University of Konstanz
@@ -174,49 +174,11 @@ public class OddsRiskRatioNodeModel extends NodeModel {
         BufferedDataTable dataTable = (BufferedDataTable)inData[PORT_IN_DATA];
 
         BufferedDataContainer resultsContainer = exec.createDataContainer(createResultsTableSpec());
+        BufferedDataContainer contingencyContainer = exec.createDataContainer(createContingencyTableSpec());
 
-        Map<String, Map<String, Integer>> counts =
-            BivariateCounts.getCounts(dataTable, m_columnX.getStringValue(), m_columnY.getStringValue());
-
-        String valX = m_valueX.getStringValue();
-        String valY = m_valueY.getStringValue();
-
-        if (m_columnX.getStringValue().equals(m_columnY.getStringValue())) {
-            throw new InvalidSettingsException("The two columns must be different.");
-        }
-
-        if (dataTable.getRowCount() == 0) {
-            throw new InvalidSettingsException("ERROR: Input table is empty.");
-        }
-
-        int a = 0;
-        if (counts.get(valX).containsKey(valY)) {
-            a = counts.get(valX).get(valY);
-        } else {
-            a = 0;
-        }
-        int b = 0;
-        int c = 0;
-        int d = 0;
-
-        for (String x : counts.keySet()) {
-            for (String y : counts.get(x).keySet()) {
-                if (!x.equals(valX) && y.equals(valY)) {
-                    b += counts.get(x).get(y);
-                } else if (x.equals(valX) && !y.equals(valY)) {
-                    c += counts.get(x).get(y);
-                } else if (!x.equals(valX) && !y.equals(valY)) {
-                    d += counts.get(x).get(y);
-                }
-            }
-        }
-
-        double lpCorr = 0.0;
-        if (a == 0 || b == 0 || c == 0 || d == 0) {
-            lpCorr = m_lapaceCorrection.getDoubleValue();
-        }
-
-        ContingencyTable orr = new ContingencyTable(a, b, c, d, m_confidenceLevel.getDoubleValue(), lpCorr);
+        ContingencyTable orr = OddsRiskRatioCalculator.calculateOddsRiskRatio(m_columnX.getStringValue(), m_columnY.getStringValue(),
+            m_valueX.getStringValue(), m_valueY.getStringValue(), m_lapaceCorrection.getDoubleValue(),
+            m_confidenceLevel.getDoubleValue(), dataTable, contingencyContainer);
 
         resultsContainer.addRowToTable(getPushDoubleRow("Odds Ratio", orr.getOddsRatio()));
         resultsContainer.addRowToTable(getPushDoubleRow("OR Lower CI", orr.getOddsRatioLowerCI()));
@@ -233,15 +195,8 @@ public class OddsRiskRatioNodeModel extends NodeModel {
         resultsContainer.addRowToTable(getPushDoubleRow("Pearsons", orr.getPearsons()));
         resultsContainer.addRowToTable(getPushDoubleRow("Cramers V", orr.getCramers()));
         resultsContainer.close();
-
-        BufferedDataContainer contingencyTableContainer = exec.createDataContainer(createContingencyTableSpec());
-        contingencyTableContainer.addRowToTable(getIntegerRow("a", a));
-        contingencyTableContainer.addRowToTable(getIntegerRow("b", b));
-        contingencyTableContainer.addRowToTable(getIntegerRow("c", c));
-        contingencyTableContainer.addRowToTable(getIntegerRow("d", d));
-
-        contingencyTableContainer.close();
-        return new BufferedDataTable[]{resultsContainer.getTable(), contingencyTableContainer.getTable()};
+        contingencyContainer.close();
+        return new BufferedDataTable[]{resultsContainer.getTable(), contingencyContainer.getTable()};
     }
 
     private DefaultRow getPushDoubleRow(final String name, final double d) {

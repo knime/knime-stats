@@ -49,7 +49,7 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * <code>NodeFactory</code> for the "OddsRatio" Node.
+ * @deprecated <code>NodeFactory</code> for the "OddsRatio" Node.
  *
  *
  * @author Oliver Sampson, University of Konstanz
