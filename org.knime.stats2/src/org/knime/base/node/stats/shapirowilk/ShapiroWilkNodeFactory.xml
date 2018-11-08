@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
-<knimeNode icon="./shapiro.png" type="Manipulator">
+<knimeNode deprecated="true" icon="./shapiro.png" type="Manipulator">
     <name>Shapiro Wilk Normality Test</name>
     
     <shortDescription>

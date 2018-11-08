@@ -14,13 +14,7 @@ import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
 
 /**
- * <code>NodeDialog</code> for the "PMMLToJavascriptCompiler" Node.
- *
- *
- * This node dialog derives from {@link DefaultNodeSettingsPane} which allows
- * creation of a simple dialog with standard components. If you need a more
- * complex dialog please derive directly from
- * {@link org.knime.core.node.NodeDialogPane}.
+ * <code>NodeDialog</code> for the "ShapiroWilk2" Node.
  *
  * @author Alexander Fillbrunn
  */

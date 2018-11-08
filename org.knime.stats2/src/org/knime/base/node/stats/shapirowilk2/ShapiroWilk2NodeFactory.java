@@ -5,7 +5,7 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * <code>NodeFactory</code> for the "PMMLToJavascriptCompiler" Node.
+ * <code>NodeFactory</code> for the "ShapiroWilk2" Node.
  *
  *
  * @author Alexander Fillbrunn

@@ -1,15 +1,18 @@
 package org.knime.base.node.stats.shapirowilk;
 
+import org.knime.base.node.stats.shapirowilk2.ShapiroWilk2NodeFactory;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
+ * @deprecated Use the {@link ShapiroWilk2NodeFactory} instead.
  * <code>NodeFactory</code> for the "PMMLToJavascriptCompiler" Node.
  *
  *
  * @author Alexander Fillbrunn
  */
+@Deprecated
 public class ShapiroWilkNodeFactory
         extends NodeFactory<ShapiroWilkNodeModel> {
 

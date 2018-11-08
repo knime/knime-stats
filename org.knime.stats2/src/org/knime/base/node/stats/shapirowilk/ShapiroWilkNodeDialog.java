@@ -1,10 +1,12 @@
 package org.knime.base.node.stats.shapirowilk;
 
+import org.knime.base.node.stats.shapirowilk2.ShapiroWilk2NodeDialog;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
 
 /**
+ * @deprecated Use the {@link ShapiroWilk2NodeDialog} instead.
  * <code>NodeDialog</code> for the "PMMLToJavascriptCompiler" Node.
  *
  *
