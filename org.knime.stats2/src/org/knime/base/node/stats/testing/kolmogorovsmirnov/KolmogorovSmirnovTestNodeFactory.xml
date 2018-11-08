@@ -12,7 +12,7 @@
         
         <p>The corresponding <i>p</i>-value can be computed exactly if there are no ties (duplicate values) present in the samples and the product of the two sample sizes is less than 10000. Otherwise, the <i>p</i>-value has to be approximated with the given options.</p>
         
-        <p>With the given significance level &#945; and the calculated <i>p</i>-value the null hypothesis H<sub>0</sub> (the two samples come from a common distribution) can be either accepted or rejected.</p>
+        <p>With the given significance level &#945; and the calculated <i>p</i>-value the null hypothesis H<sub>0</sub> (the two samples come from a common distribution) will either be rejected or not.</p>
         
         <p>Please refer also to the <a href="https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test">Wikipedia description of the Kolmogorov-Smirnov Test</a>.</p>
         </intro>
@@ -28,14 +28,14 @@
 													<li>FAILED - missing values result in node failure</li>
 												</ul>
 			</option>
-			<option name="Exact p-value">If the exact p-value should be computed. This requires:
+			<option name="Exact p-value">If the exact <i>p</i>-value should be computed. This requires:
 												<ul>
 													<li>No ties present in both samples</li>
 													<li>Product of the two sample sizes &lt; 10000</li>
 												</ul>
 			</option>
-			<option name="Cauchy criterion">Stopping criterion for the approximation of p when successive partial sums are within tolerance</option>
-			<option name="Max number of iterations">Stopping criterion for the approximation of p when the number of iteration is reached</option>
+			<option name="Cauchy criterion">Stopping criterion for the approximation of the <i>p</i>-value when successive partial sums are within tolerance</option>
+			<option name="Max number of iterations">Stopping criterion for the approximation of the <i>p</i>-value when the number of iteration is reached</option>
 		</tab>
     </fullDescription>
     <ports>
