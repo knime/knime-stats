@@ -7,7 +7,7 @@ import org.knime.core.node.NodeView;
 
 /**
  * @deprecated Use the {@link ShapiroWilk2NodeFactory} instead.
- * <code>NodeFactory</code> for the "PMMLToJavascriptCompiler" Node.
+ * <code>NodeFactory</code> for the "ShapiroWilk" Node.
  *
  *
  * @author Alexander Fillbrunn

@@ -66,6 +66,7 @@ import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
 
 /**
+ * Helper class which provides the necessary function to perform the shapiro-wilk normality test
  *
  * @author Kevin Kress, Knime GmbH, Konstanz
  */

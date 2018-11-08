@@ -34,7 +34,6 @@ import org.knime.stats.StatsUtil;
 /**
  * This is the model implementation of ShapiroWilk2.
  *
- *
  * @author Alexander Fillbrunn
  */
 public class ShapiroWilk2NodeModel extends NodeModel {

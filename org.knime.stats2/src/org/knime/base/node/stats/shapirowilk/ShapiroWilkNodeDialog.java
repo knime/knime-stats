@@ -7,13 +7,7 @@ import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelectio
 
 /**
  * @deprecated Use the {@link ShapiroWilk2NodeDialog} instead.
- * <code>NodeDialog</code> for the "PMMLToJavascriptCompiler" Node.
- *
- *
- * This node dialog derives from {@link DefaultNodeSettingsPane} which allows
- * creation of a simple dialog with standard components. If you need a more
- * complex dialog please derive directly from
- * {@link org.knime.core.node.NodeDialogPane}.
+ * <code>NodeDialog</code> for the "ShapiroWilk" Node.
  *
  * @author Alexander Fillbrunn
  */
