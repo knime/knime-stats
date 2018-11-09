@@ -19,7 +19,7 @@
             deprecated="true"
             factory-class="org.knime.base.node.stats.contingencytable.ContingencyTableNodeFactory"/>
       <node
-            after="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory"
+            after="org.knime.base.node.stats.shapirowilk2.ShapiroWilk2NodeFactory"
             category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.testing.kruskalwallis.KruskalWallisNodeFactory">
       </node>
@@ -61,7 +61,7 @@
             factory-class="org.knime.base.node.stats.kaplanmeier.KaplanMeierNodeFactory">
       </node>
       <node
-            after="org.knime.base.node.stats.contintable.oddriskratio.OddsRiskRatioNodeFactory"
+            after="org.knime.base.node.stats.contintable.oddriskratio.OddsRiskRatio2NodeFactory"
             category-path="/labs/statistics"
             deprecated="false"
             factory-class="org.knime.base.node.stats.contintable.mediantest.MedianTestNodeFactory">
