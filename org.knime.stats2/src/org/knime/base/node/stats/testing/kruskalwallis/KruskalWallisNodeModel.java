@@ -192,7 +192,7 @@ public class KruskalWallisNodeModel extends NodeModel {
         final DataColumnSpec[] colOutSpecs = new DataColumnSpec[2 + (2 * groups.size())];
 
         colOutSpecs[0] = new DataColumnSpecCreator(H_VALUE, DoubleCell.TYPE).createSpec();
-        colOutSpecs[1] = StatsUtil.createDataColumnSpec("p-Value", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
+        colOutSpecs[1] = StatsUtil.createDataColumnSpec(P_VALUE, StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
 
         int i = 2;
         for (final String value : groups) {
