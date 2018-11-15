@@ -99,9 +99,9 @@ public class ShapiroWilkCalculator {
      * @throws InvalidSettingsException
      * @throws CanceledExecutionException
      */
-    public static ShapiroWilkStatistic calculateSWStatistic(final ExecutionContext exec, final BufferedDataTable inTable,
-        final String col, final boolean shapiroFrancia, final double maxProg1, final double maxProg2)
-        throws InvalidSettingsException, CanceledExecutionException {
+    public static ShapiroWilkStatistic calculateSWStatistic(final ExecutionContext exec,
+        final BufferedDataTable inTable, final String col, final boolean shapiroFrancia, final double maxProg1,
+        final double maxProg2) throws InvalidSettingsException, CanceledExecutionException {
 
         final DataTableSpec inSpec = inTable.getDataTableSpec();
         final int cellIndex = inSpec.findColumnIndex(col);
@@ -116,16 +116,14 @@ public class ShapiroWilkCalculator {
             new BufferedDataTableSorter(inTable, Arrays.asList(col), new boolean[]{true});
         final BufferedDataTable sorted = sorter.sort(sortContext);
 
-        final Kurtosis kurtosisStat = new Kurtosis(col);
         final Mean meanStat = new Mean(col);
         final MissingValue missingStat = new MissingValue(col);
 
         // Calculate mean and kurtosis
-        final StatisticCalculator statCalc = new StatisticCalculator(inSpec, kurtosisStat, meanStat, missingStat);
+        final StatisticCalculator statCalc = new StatisticCalculator(inSpec, meanStat, missingStat);
         statCalc.evaluate(inTable, exec.createSubExecutionContext(maxProg2));
 
         final double mean = meanStat.getResult(col);
-        final double kurtosis = kurtosisStat.getResult(col);
 
         final int n = (int)inTable.size() - missingStat.getNumberMissingValues(col);
         if (n < MIN_ROWS) {
@@ -143,91 +141,118 @@ public class ShapiroWilkCalculator {
         String warning = null;
 
         // Shapiro-Francia test is better for leptokurtic samples
-        if (kurtosis > SHAPIRO_FRANCIA_KURTOSIS && shapiroFrancia) {
-            double weightedSum = 0;
-            int counter = 0;
-            double sum4Var = 0;
-            for (final DataRow row : sorted) {
-                final DataCell cell = row.getCell(cellIndex);
-                if (!cell.isMissing()) {
-                    final double val = ((DoubleValue)cell).getDoubleValue();
-                    weightedSum += sqrtSumInv * getM(counter + 1, n) * val;
-                    sum4Var += Math.pow(val - mean, 2);
-                    counter++;
-                } else if (warning == null) {
-                    warning = "Input contains missing values. They will be ignored";
-                }
-            }
-            w = weightedSum * weightedSum / sum4Var;
-        } else { // Shapiro-Wilk test is better for platykurtic samples
-            final double cn = sqrtSumInv * getM(n, n);
-            final double cn1 = sqrtSumInv * getM(n - 1, n);
-            final double u = 1.0 / Math.sqrt(n);
-
-            final double[] p1 = new double[]{-2.706056, 4.434685, -2.071190, -0.147981, 0.221157, cn};
-            final double[] p2 = new double[]{-3.582633, 5.682633, -1.752461, -0.293762, 0.042981, cn1};
-
-            double wn = polyval(p1, u);
-            double w1 = -wn;
-            double wn1 = Double.NaN;
-            double w2 = Double.NaN;
-            double phi;
-
-            int ct = 2;
-
-            if (n == 3) {
-                w1 = 0.707106781;
-                wn = -w1;
-                phi = 1;
-            } else if (n >= 6) {
-                wn1 = polyval(p2, u);
-                w2 = -wn1;
-
-                ct = 3;
-                phi = (sum - 2 * Math.pow(getM(n, n), 2) - 2 * Math.pow(getM(n - 1, n), 2))
-                    / (1 - 2 * Math.pow(wn, 2) - 2 * Math.pow(wn1, 2));
+        if (shapiroFrancia) {
+            final Kurtosis kurtosisStat = new Kurtosis(col);
+            new StatisticCalculator(inSpec, kurtosisStat).evaluate(inTable, exec.createSubExecutionContext(maxProg2));
+            final double kurtosis = kurtosisStat.getResult(col);
+            if (kurtosis <= SHAPIRO_FRANCIA_KURTOSIS) {
+                warning = "Some samples are not leptokurtic. Shapiro-Wil test was be used for them instead.";
             } else {
-                phi = (sum - 2 * Math.pow(getM(n, n), 2) / (1 - 2 * Math.pow(wn, 2)));
-            }
-
-            double weightedSum = 0;
-            int counter = 0;
-            double sum4Var = 0;
-            for (final DataRow row : sorted) {
-                final DataCell cell = row.getCell(cellIndex);
-                if (!cell.isMissing()) {
-                    double weight = 0;
-                    // We might have to use the precalculated w1, w2, wn or wn - 1
-                    if (counter < ct - 1) {
-                        if (counter == 0) {
-                            weight = w1;
-                        } else if (counter == 1) {
-                            weight = w2;
-                        }
-                    } else if (counter >= n - ct + 1) {
-                        if (counter == n - 1) {
-                            weight = wn;
-                        } else if (counter == n - 2) {
-                            weight = wn1;
-                        }
-                    } else {
-                        weight = getM(counter + 1, n) / Math.sqrt(phi);
+                double weightedSum = 0;
+                int counter = 0;
+                double sum4Var = 0;
+                for (final DataRow row : sorted) {
+                    final DataCell cell = row.getCell(cellIndex);
+                    if (!cell.isMissing()) {
+                        final double val = ((DoubleValue)cell).getDoubleValue();
+                        weightedSum += sqrtSumInv * getM(counter + 1, n) * val;
+                        sum4Var += Math.pow(val - mean, 2);
+                        counter++;
+                    } else if (warning == null) {
+                        warning = "Input contains missing values. They will be ignored";
                     }
-
-                    final double val = ((DoubleValue)cell).getDoubleValue();
-                    weightedSum += weight * val;
-                    sum4Var += Math.pow(val - mean, 2);
-                    counter++;
-                } else if (warning == null) {
-                    warning = "Input contains missing values. They will be ignored";
                 }
+                w = weightedSum * weightedSum / sum4Var;
+
+                final double pVal = 1 - shapiroFranciaPvalue(w, n);
+
+                return new ShapiroWilkStatistic(w, pVal, warning);
             }
-            w = Math.pow(weightedSum, 2) / sum4Var;
         }
 
-        final double pVal = shapiroWilkPalue(w, n);
+        // Shapiro-Wilk test is better for platykurtic samples
+        final double cn = sqrtSumInv * getM(n, n);
+        final double cn1 = sqrtSumInv * getM(n - 1, n);
+        final double u = 1.0 / Math.sqrt(n);
 
-        return new ShapiroWilkStatistic(w, pVal);
+        final double[] p1 = new double[]{-2.706056, 4.434685, -2.071190, -0.147981, 0.221157, cn};
+        final double[] p2 = new double[]{-3.582633, 5.682633, -1.752461, -0.293762, 0.042981, cn1};
+
+        double wn = polyval(p1, u);
+        double w1 = -wn;
+        double wn1 = Double.NaN;
+        double w2 = Double.NaN;
+        double phi;
+
+        int ct = 2;
+
+        if (n == 3) {
+            w1 = 0.707106781;
+            wn = -w1;
+            phi = 1;
+        } else if (n >= 6) {
+            wn1 = polyval(p2, u);
+            w2 = -wn1;
+
+            ct = 3;
+            phi = (sum - 2 * Math.pow(getM(n, n), 2) - 2 * Math.pow(getM(n - 1, n), 2))
+                / (1 - 2 * Math.pow(wn, 2) - 2 * Math.pow(wn1, 2));
+        } else {
+            phi = (sum - 2 * Math.pow(getM(n, n), 2) / (1 - 2 * Math.pow(wn, 2)));
+        }
+
+        double weightedSum = 0;
+        int counter = 0;
+        double sum4Var = 0;
+        for (final DataRow row : sorted) {
+            final DataCell cell = row.getCell(cellIndex);
+            if (!cell.isMissing()) {
+                double weight = 0;
+                // We might have to use the precalculated w1, w2, wn or wn - 1
+                if (counter < ct - 1) {
+                    if (counter == 0) {
+                        weight = w1;
+                    } else if (counter == 1) {
+                        weight = w2;
+                    }
+                } else if (counter >= n - ct + 1) {
+                    if (counter == n - 1) {
+                        weight = wn;
+                    } else if (counter == n - 2) {
+                        weight = wn1;
+                    }
+                } else {
+                    weight = getM(counter + 1, n) / Math.sqrt(phi);
+                }
+
+                final double val = ((DoubleValue)cell).getDoubleValue();
+                weightedSum += weight * val;
+                sum4Var += Math.pow(val - mean, 2);
+                counter++;
+            } else if (warning == null) {
+                warning = "Input contains missing values. They will be ignored";
+            }
+        }
+        w = Math.pow(weightedSum, 2) / sum4Var;
+
+        final double pVal = shapiroWilkPvalue(w, n);
+
+        return new ShapiroWilkStatistic(w, pVal, warning);
+    }
+
+    /**
+     * @param w
+     * @param n
+     * @return
+     */
+    private static double shapiroFranciaPvalue(final double w, final int n) {
+        final double u = Math.log(n);
+        final double v = Math.log(u);
+        final double mu = -1.2725 + 1.0521 * (v - u);
+        final double sig = 1.0308 - 0.26758 * (v + 2 / u);
+        final double z = (Math.log(1 - w) - mu) / sig;
+
+        return cndf(z);
     }
 
     /**
@@ -260,7 +285,7 @@ public class ShapiroWilkCalculator {
      * @param n The length of the array
      * @return p value
      */
-    private static final double shapiroWilkPalue(final double w, final int n) {
+    private static final double shapiroWilkPvalue(final double w, final int n) {
 
         if (n < MIN_ROWS) {
             return 1;

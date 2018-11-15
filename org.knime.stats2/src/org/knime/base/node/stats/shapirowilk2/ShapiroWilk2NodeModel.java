@@ -2,17 +2,18 @@ package org.knime.base.node.stats.shapirowilk2;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.knime.core.data.DataColumnSpec;
+import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
 import org.knime.core.data.RowKey;
+import org.knime.core.data.def.BooleanCell;
+import org.knime.core.data.def.BooleanCell.BooleanCellFactory;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
-import org.knime.core.data.sort.BufferedDataTableSorter;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -24,7 +25,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
-import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
@@ -40,23 +41,20 @@ public class ShapiroWilk2NodeModel extends NodeModel {
 
     static final int PORT_IN_DATA = 0;
 
-    static final String PVALUE_SORT_ASCENDING = "Ascending";
+    static final String PVALUE_COLUMN_NAME = "p-Value";
 
-    static final String PVALUE_SORT_DESCENDING = "Descending";
+    static final String TEST_STATISTIC_COLUMN_NAME = "Test Statistic (W)";
 
-    static final String PVALUE_SORT_NOSORTING = "No sorting";
+    static final String REJECT_H0 = "Reject H0";
 
-    private static final double MAX_ROWS = 5000;
+    private static final int MAX_ROWS_WARNING = 50;
+
+    private static final int MAX_ROWS_ERROR = 5000;
 
     /**
      * The configuration key for the setting that controls if shapiro francia is used for leptokurtic samples.
      */
     static final String SHAPIRO_FRANCIA_CFG = "shapFrancia";
-
-    /**
-     * The configuration key for the setting that controls if the result table should be sorted by the p-Value.
-     */
-    static final String PVALUE_SORT_CFG = "pValueSort";
 
     /**
      * The configuration key for the setting that controls on which columns the test should be executed on.
@@ -73,6 +71,15 @@ public class ShapiroWilk2NodeModel extends NodeModel {
      */
     protected ShapiroWilk2NodeModel() {
         super(new PortType[]{BufferedDataTable.TYPE}, new PortType[]{BufferedDataTable.TYPE});
+    }
+
+    /**
+     * Creates a settings model for the significance level alpha.
+     *
+     * @return the settings model
+     */
+    static SettingsModelDoubleBounded createSettingsModelAlpha() {
+        return new SettingsModelDoubleBounded("Alpha", 0.05, 0, 1);
     }
 
     /**
@@ -94,20 +101,11 @@ public class ShapiroWilk2NodeModel extends NodeModel {
         return new SettingsModelBoolean(SHAPIRO_FRANCIA_CFG, true);
     }
 
-    /**
-     * Creates a settings model for the sort by p-Value.
-     *
-     * @return the settings model
-     */
-    public static SettingsModelString createSortByPValueSettingsModel() {
-        return new SettingsModelString(PVALUE_SORT_CFG, PVALUE_SORT_NOSORTING);
-    }
+    private final SettingsModelDoubleBounded m_alpha = createSettingsModelAlpha();
 
     private final SettingsModelBoolean m_shapiroFrancia = createShapiroFranciaSettingsModel();
 
     private final SettingsModelColumnFilter2 m_usedCols = createSettingsModelCols();
-
-    private final SettingsModelString m_sortByPValue = createSortByPValueSettingsModel();
 
     /**
      * {@inheritDoc}
@@ -125,45 +123,51 @@ public class ShapiroWilk2NodeModel extends NodeModel {
             return new BufferedDataTable[]{dc.getTable()};
         }
 
-        if (inTable.size() > Integer.MAX_VALUE) {
+        if (inTable.size() > MAX_ROWS_ERROR) {
+            throw new InvalidSettingsException(
+                "The test is not applicable for data sets with more than 5000 data points.");
+        } else if (inTable.size() > Integer.MAX_VALUE) {
             throw new InvalidSettingsException("Too many data points to calculate the statistic.");
-        } else if (inTable.size() > MAX_ROWS) {
-            setWarningMessage("The test might be inaccurate for data sets with more than 5000 data points.");
+        } else if (inTable.size() > MAX_ROWS_WARNING) {
+            setWarningMessage("The test might be inaccurate for data sets with more than 50 data points.");
         }
+
         int progCnt = 0;
+        String warning = null;
 
         for (final String col : cols) {
             ShapiroWilkStatistic stat = ShapiroWilkCalculator.calculateSWStatistic(exec, inTable, col,
                 m_shapiroFrancia.getBooleanValue(), progCnt / (3.0 * cols.length), progCnt++ / (3.0 * cols.length));
 
+            if (warning == null && stat.getWarning() != null && !stat.getWarning().isEmpty()) {
+                warning = stat.getWarning();
+            }
+
             pushFlowVariableDouble("shapiro-p-value", stat.getPvalue());
             pushFlowVariableDouble("shapiro-statistic", stat.getStatistic());
 
             dc.addRowToTable(
-                new DefaultRow(new RowKey(col), new DoubleCell(stat.getStatistic()), new DoubleCell(stat.getPvalue())));
+                new DefaultRow(new RowKey(col), BooleanCellFactory.create(stat.getPvalue() < m_alpha.getDoubleValue()),
+                    new DoubleCell(stat.getStatistic()), new DoubleCell(stat.getPvalue())));
 
             progCnt++;
         }
+        if (warning != null) {
+            setWarningMessage(warning);
+        }
 
         dc.close();
-        if (m_sortByPValue.getStringValue().equals(PVALUE_SORT_ASCENDING)) {
-            final BufferedDataTableSorter sorter =
-                new BufferedDataTableSorter(dc.getTable(), Arrays.asList("P"), new boolean[]{true});
-            return new PortObject[]{sorter.sort(exec.createSubExecutionContext(1))};
-        } else if (m_sortByPValue.getStringValue().equals(PVALUE_SORT_DESCENDING)) {
-            final BufferedDataTableSorter sorter =
-                new BufferedDataTableSorter(dc.getTable(), Arrays.asList("P"), new boolean[]{false});
-            return new PortObject[]{sorter.sort(exec.createSubExecutionContext(1))};
-        }
         return new PortObject[]{dc.getTable()};
     }
 
     private static DataTableSpec createSpec() {
-        DataColumnSpec measure =
-            StatsUtil.createDataColumnSpec("W", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
-        DataColumnSpec p = StatsUtil.createDataColumnSpec("P", StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
+        DataColumnSpec rejectH0 = new DataColumnSpecCreator(REJECT_H0, BooleanCell.TYPE).createSpec();
+        DataColumnSpec measure = StatsUtil.createDataColumnSpec(TEST_STATISTIC_COLUMN_NAME,
+            StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
+        DataColumnSpec p =
+            StatsUtil.createDataColumnSpec(PVALUE_COLUMN_NAME, StatsUtil.FULL_PRECISION_RENDERER, DoubleCell.TYPE);
 
-        return new DataTableSpec(measure, p);
+        return new DataTableSpec(rejectH0, measure, p);
     }
 
     /**
@@ -200,7 +204,6 @@ public class ShapiroWilk2NodeModel extends NodeModel {
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         m_usedCols.saveSettingsTo(settings);
         m_shapiroFrancia.saveSettingsTo(settings);
-        m_sortByPValue.saveSettingsTo(settings);
     }
 
     /**
@@ -210,7 +213,6 @@ public class ShapiroWilk2NodeModel extends NodeModel {
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_shapiroFrancia.loadSettingsFrom(settings);
         m_usedCols.loadSettingsFrom(settings);
-        m_sortByPValue.loadSettingsFrom(settings);
     }
 
     /**
@@ -220,7 +222,6 @@ public class ShapiroWilk2NodeModel extends NodeModel {
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_usedCols.validateSettings(settings);
         m_shapiroFrancia.validateSettings(settings);
-        m_sortByPValue.validateSettings(settings);
     }
 
     /**

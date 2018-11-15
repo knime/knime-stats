@@ -59,15 +59,24 @@ public class ShapiroWilkStatistic {
 
     private double m_pvalue;
 
+    private String m_warning;
+
     /**
      * Creates a ShapiroWilkStatistic instance with the given values
      *
      * @param statistic the statistic of the shapiro-wilk test
      * @param pvalue the pvalue of the shapiro-wilk test
+     * @param warning the warning message to show
      */
-    ShapiroWilkStatistic(final double statistic, final double pvalue) {
+    ShapiroWilkStatistic(final double statistic, final double pvalue, final String warning) {
         this.m_statistic = statistic;
         this.m_pvalue = pvalue;
+        if (warning != null) {
+            this.m_warning = warning;
+        } else {
+            this.m_warning = "";
+        }
+
     }
 
     /**
@@ -82,5 +91,12 @@ public class ShapiroWilkStatistic {
      */
     public double getPvalue() {
         return m_pvalue;
+    }
+
+    /**
+     * @return the warning
+     */
+    public String getWarning() {
+        return m_warning;
     }
 }
