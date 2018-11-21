@@ -48,6 +48,8 @@
  */
 package org.knime.base.node.stats.shapirowilk2;
 
+import java.util.Optional;
+
 /**
  * Container for the the shapiro wilk normality test results
  *
@@ -55,11 +57,11 @@ package org.knime.base.node.stats.shapirowilk2;
  */
 public class ShapiroWilkStatistic {
 
-    private double m_statistic;
+    private final double m_statistic;
 
-    private double m_pvalue;
+    private final double m_pvalue;
 
-    private String m_warning;
+    private final Optional<String> m_warning;
 
     /**
      * Creates a ShapiroWilkStatistic instance with the given values
@@ -71,12 +73,19 @@ public class ShapiroWilkStatistic {
     ShapiroWilkStatistic(final double statistic, final double pvalue, final String warning) {
         this.m_statistic = statistic;
         this.m_pvalue = pvalue;
-        if (warning != null) {
-            this.m_warning = warning;
-        } else {
-            this.m_warning = "";
-        }
+        this.m_warning = Optional.ofNullable(warning);
+    }
 
+    /**
+     * Creates a ShapiroWilkStatistic instance with the given values
+     *
+     * @param statistic the statistic of the shapiro-wilk test
+     * @param pvalue the pvalue of the shapiro-wilk test
+     */
+    ShapiroWilkStatistic(final double statistic, final double pvalue) {
+        this.m_statistic = statistic;
+        this.m_pvalue = pvalue;
+        this.m_warning = Optional.empty();
     }
 
     /**
@@ -96,7 +105,7 @@ public class ShapiroWilkStatistic {
     /**
      * @return the warning
      */
-    public String getWarning() {
+    public Optional<String> getWarning() {
         return m_warning;
     }
 }

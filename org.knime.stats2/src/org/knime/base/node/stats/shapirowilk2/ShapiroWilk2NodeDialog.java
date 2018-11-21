@@ -10,6 +10,7 @@ import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnFilter2;
 import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
+import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 
 /**
  * <code>NodeDialog</code> for the "ShapiroWilk2" Node.
@@ -20,17 +21,18 @@ public class ShapiroWilk2NodeDialog extends DefaultNodeSettingsPane {
 
     private static final int INPUT_WIDTH = 5;
 
-    private DataTableSpec m_tableSpec;
+    private final SettingsModelColumnFilter2 m_usedCols = ShapiroWilk2NodeModel.createSettingsModelCols();
 
-    private final SettingsModelColumnFilter2 m_usedCols;
+    private final SettingsModelDoubleBounded m_alpha = ShapiroWilk2NodeModel.createSettingsModelAlpha();
+
+    private DataTableSpec m_tableSpec;
 
     /**
      * New pane for configuring the node.
      */
     protected ShapiroWilk2NodeDialog() {
-        addDialogComponent(new DialogComponentNumber(ShapiroWilk2NodeModel.createSettingsModelAlpha(),
+        addDialogComponent(new DialogComponentNumber(m_alpha,
             "Significance level alpha", 0.01, INPUT_WIDTH));
-        m_usedCols = ShapiroWilk2NodeModel.createSettingsModelCols();
         final DialogComponentBoolean shapFrancia = new DialogComponentBoolean(
             ShapiroWilk2NodeModel.createShapiroFranciaSettingsModel(), "Use Shapiro-Francia for leptokurtic samples");
         addDialogComponent(new DialogComponentColumnFilter2(m_usedCols, ShapiroWilk2NodeModel.PORT_IN_DATA));
@@ -41,6 +43,9 @@ public class ShapiroWilk2NodeDialog extends DefaultNodeSettingsPane {
     public void saveAdditionalSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         super.saveAdditionalSettingsTo(settings);
         ShapiroWilk2NodeModel.checkUsedColumns(m_usedCols, m_tableSpec);
+        if (m_alpha.getDoubleValue() <= 0 || m_alpha.getDoubleValue() >= 1) {
+            throw new InvalidSettingsException("The significance level should be between 0 and 1");
+        }
     }
 
     @Override

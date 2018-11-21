@@ -126,8 +126,6 @@ public class ShapiroWilk2NodeModel extends NodeModel {
         if (inTable.size() > MAX_ROWS_ERROR) {
             throw new InvalidSettingsException(
                 "The test is not applicable for data sets with more than 5000 data points.");
-        } else if (inTable.size() > Integer.MAX_VALUE) {
-            throw new InvalidSettingsException("Too many data points to calculate the statistic.");
         } else if (inTable.size() > MAX_ROWS_WARNING) {
             setWarningMessage("The test might be inaccurate for data sets with more than 50 data points.");
         }
@@ -139,8 +137,8 @@ public class ShapiroWilk2NodeModel extends NodeModel {
             ShapiroWilkStatistic stat = ShapiroWilkCalculator.calculateSWStatistic(exec, inTable, col,
                 m_shapiroFrancia.getBooleanValue(), progCnt / (3.0 * cols.length), progCnt++ / (3.0 * cols.length));
 
-            if (warning == null && stat.getWarning() != null && !stat.getWarning().isEmpty()) {
-                warning = stat.getWarning();
+            if (warning == null && stat.getWarning().isPresent()) {
+                warning = stat.getWarning().get();
             }
 
             pushFlowVariableDouble("shapiro-p-value", stat.getPvalue());
@@ -202,6 +200,7 @@ public class ShapiroWilk2NodeModel extends NodeModel {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
+        m_alpha.saveSettingsTo(settings);
         m_usedCols.saveSettingsTo(settings);
         m_shapiroFrancia.saveSettingsTo(settings);
     }
@@ -211,6 +210,7 @@ public class ShapiroWilk2NodeModel extends NodeModel {
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_alpha.loadSettingsFrom(settings);
         m_shapiroFrancia.loadSettingsFrom(settings);
         m_usedCols.loadSettingsFrom(settings);
     }
@@ -220,6 +220,7 @@ public class ShapiroWilk2NodeModel extends NodeModel {
      */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_alpha.validateSettings(settings);
         m_usedCols.validateSettings(settings);
         m_shapiroFrancia.validateSettings(settings);
     }

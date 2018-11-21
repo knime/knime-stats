@@ -10,15 +10,14 @@
     <fullDescription>
         <intro>
             The Shapiro-Wilk Normality Test checks if a sample comes from a normally distributed population. It is applicable for 3 to 5000 data points.
-            The node outputs two values: the test statistic <i>W</i> and the corresponding <i>p</i>-value. To test if the null hypothesis null hypothesis (H<sub>0</sub>: sample comes from a normally distributed population)
+            The node outputs two values: the test statistic <i>W</i> and the corresponding <i>p</i>-value. To test if the null hypothesis (H<sub>0</sub>: sample comes from a normally distributed population)
             can be rejected or not, the significance level &#945; is compared with the calculated <i>p</i>-value.
             Since the test is biased by sample size, the test may be statistically significant from a normal distribution in any large sample.
             More information about this test can be found on <a href="https://en.wikipedia.org/wiki/Shapiro–Wilk_test">Wikipedia</a>.
         </intro>
-        <option name="Significance level &#945;">Significance level at which the null hypothesis can be rejected, 0 &lt; &#945; &lt; 1</option>
+        <option name="Significance level &#945;">Significance level at which the null hypothesis can be rejected, 0 &lt; &#945; &lt; 1.</option>
         <option name="Test Columns">The columns to test.</option>
-        <option name="Use Shapiro-Francia">If the Shapiro-Francia test should be used for leptokurtic samples instead of the Shapiro-Wilk test</option>
-        <option name="Sort results">If the results should be sorted after the <i>p</i>-value.</option>
+        <option name="Use Shapiro-Francia">If the Shapiro-Francia test should be used for leptokurtic samples. In case samples are found to be not leptokurtic, Shapiro-Wilk will be used.</option>
     </fullDescription>
     
     <ports>

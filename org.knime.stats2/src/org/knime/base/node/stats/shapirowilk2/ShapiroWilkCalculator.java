@@ -129,6 +129,10 @@ public class ShapiroWilkCalculator {
         if (n < MIN_ROWS) {
             throw new InvalidSettingsException("Not enough data points to calculate the statistic.");
         }
+        String warning = null;
+        if (missingStat.getNumberMissingValues(col) > 0) {
+            warning = "Input contains missing values. They will be ignored";
+        }
 
         double sum = 0;
         for (int i = 0; i < n; i++) {
@@ -136,18 +140,12 @@ public class ShapiroWilkCalculator {
         }
         final double sqrtSumInv = 1.0 / Math.sqrt(sum);
 
-        double w;
-
-        String warning = null;
-
         // Shapiro-Francia test is better for leptokurtic samples
         if (shapiroFrancia) {
             final Kurtosis kurtosisStat = new Kurtosis(col);
             new StatisticCalculator(inSpec, kurtosisStat).evaluate(inTable, exec.createSubExecutionContext(maxProg2));
             final double kurtosis = kurtosisStat.getResult(col);
-            if (kurtosis <= SHAPIRO_FRANCIA_KURTOSIS) {
-                warning = "Some samples are not leptokurtic. Shapiro-Wil test was be used for them instead.";
-            } else {
+            if (kurtosis > SHAPIRO_FRANCIA_KURTOSIS) {
                 double weightedSum = 0;
                 int counter = 0;
                 double sum4Var = 0;
@@ -158,18 +156,18 @@ public class ShapiroWilkCalculator {
                         weightedSum += sqrtSumInv * getM(counter + 1, n) * val;
                         sum4Var += Math.pow(val - mean, 2);
                         counter++;
-                    } else if (warning == null) {
-                        warning = "Input contains missing values. They will be ignored";
                     }
                 }
-                w = weightedSum * weightedSum / sum4Var;
+                final double w = weightedSum * weightedSum / sum4Var;
 
                 final double pVal = 1 - shapiroFranciaPvalue(w, n);
 
-                return new ShapiroWilkStatistic(w, pVal, warning);
+                if (warning != null) {
+                    return new ShapiroWilkStatistic(w, pVal, warning);
+                }
+                return new ShapiroWilkStatistic(w, pVal);
             }
         }
-
         // Shapiro-Wilk test is better for platykurtic samples
         final double cn = sqrtSumInv * getM(n, n);
         final double cn1 = sqrtSumInv * getM(n - 1, n);
@@ -229,21 +227,25 @@ public class ShapiroWilkCalculator {
                 weightedSum += weight * val;
                 sum4Var += Math.pow(val - mean, 2);
                 counter++;
-            } else if (warning == null) {
-                warning = "Input contains missing values. They will be ignored";
             }
         }
-        w = Math.pow(weightedSum, 2) / sum4Var;
+        final double w = Math.pow(weightedSum, 2) / sum4Var;
 
         final double pVal = shapiroWilkPvalue(w, n);
 
-        return new ShapiroWilkStatistic(w, pVal, warning);
+        if (warning != null) {
+            return new ShapiroWilkStatistic(w, pVal, warning);
+        }
+        return new ShapiroWilkStatistic(w, pVal);
     }
 
     /**
-     * @param w
-     * @param n
-     * @return
+     * Calculates the p-value of the shapiro-francia test.
+     * References:
+     * Shapiro SS, Francia R. An approximate analysis of variance test for normality.
+     * Journal of the American Statistical Association.
+     * 1972;67(337):215-6. Royston P. Atoolkit for testing for non-normality in complete and censored samples.
+     * The Statistician. 1993; 42(1):37.
      */
     private static double shapiroFranciaPvalue(final double w, final int n) {
         final double u = Math.log(n);
