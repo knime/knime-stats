@@ -67,6 +67,11 @@ public class ShapiroWilk2NodeModel extends NodeModel {
     static final String TEST_COL_CFG = "testCols";
 
     /**
+     * The configuration key for the class column. Only for old nodes, since new ones use the columnfilter.
+     */
+    static final String SIGNIFICANCE_ALPHA_CFG = "Alpha";
+
+    /**
      * Constructor for the node model.
      */
     protected ShapiroWilk2NodeModel() {
@@ -79,7 +84,7 @@ public class ShapiroWilk2NodeModel extends NodeModel {
      * @return the settings model
      */
     static SettingsModelDoubleBounded createSettingsModelAlpha() {
-        return new SettingsModelDoubleBounded("Alpha", 0.05, 0, 1);
+        return new SettingsModelDoubleBounded(SIGNIFICANCE_ALPHA_CFG, 0.05, 0, 1) ;
     }
 
     /**
@@ -192,6 +197,7 @@ public class ShapiroWilk2NodeModel extends NodeModel {
                     + "in the input table. At least one numeric column is needed to perform the test.");
             }
         }
+        checkAlphaRange(m_alpha.getDoubleValue());
         return new PortObjectSpec[]{createSpec()};
     }
 
@@ -242,6 +248,12 @@ public class ShapiroWilk2NodeModel extends NodeModel {
     protected void saveInternals(final File internDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
         //nothing to do
+    }
+
+    static void checkAlphaRange(final double alpha) throws InvalidSettingsException {
+        if (alpha <= 0 || alpha >= 1) {
+            throw new InvalidSettingsException("The significance level should not be exactly 0 or 1. Please change it to a value in the range of (0, 1).");
+        }
     }
 
     static int checkUsedColumns(final SettingsModelColumnFilter2 usedCols, final DataTableSpec tableSpec)

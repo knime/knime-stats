@@ -1,5 +1,9 @@
 package org.knime.base.node.stats.shapirowilk2;
 
+import java.awt.Color;
+
+import javax.swing.JPanel;
+
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
@@ -8,6 +12,7 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnFilter2;
+import org.knime.core.node.defaultnodesettings.DialogComponentLabel;
 import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
 import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
@@ -25,14 +30,28 @@ public class ShapiroWilk2NodeDialog extends DefaultNodeSettingsPane {
 
     private final SettingsModelDoubleBounded m_alpha = ShapiroWilk2NodeModel.createSettingsModelAlpha();
 
+    private final DialogComponentLabel m_invalidAlphaLabel = new DialogComponentLabel("");
+
     private DataTableSpec m_tableSpec;
 
     /**
      * New pane for configuring the node.
      */
     protected ShapiroWilk2NodeDialog() {
-        addDialogComponent(new DialogComponentNumber(m_alpha,
-            "Significance level alpha", 0.01, INPUT_WIDTH));
+        JPanel panel = m_invalidAlphaLabel.getComponentPanel();
+        synchronized (panel.getTreeLock()) {
+            panel.getComponent(0).setForeground(Color.RED);
+        }
+        m_alpha.addChangeListener(e -> {
+            try {
+                ShapiroWilk2NodeModel.checkAlphaRange(m_alpha.getDoubleValue());
+                m_invalidAlphaLabel.setText("");
+            } catch (InvalidSettingsException ex) {
+                m_invalidAlphaLabel.setText(ex.getMessage());
+            }
+        });
+        addDialogComponent(new DialogComponentNumber(m_alpha, "Significance level alpha", 0.01, INPUT_WIDTH));
+        addDialogComponent(m_invalidAlphaLabel);
         final DialogComponentBoolean shapFrancia = new DialogComponentBoolean(
             ShapiroWilk2NodeModel.createShapiroFranciaSettingsModel(), "Use Shapiro-Francia for leptokurtic samples");
         addDialogComponent(new DialogComponentColumnFilter2(m_usedCols, ShapiroWilk2NodeModel.PORT_IN_DATA));
@@ -43,9 +62,7 @@ public class ShapiroWilk2NodeDialog extends DefaultNodeSettingsPane {
     public void saveAdditionalSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         super.saveAdditionalSettingsTo(settings);
         ShapiroWilk2NodeModel.checkUsedColumns(m_usedCols, m_tableSpec);
-        if (m_alpha.getDoubleValue() <= 0 || m_alpha.getDoubleValue() >= 1) {
-            throw new InvalidSettingsException("The significance level should be between 0 and 1");
-        }
+        ShapiroWilk2NodeModel.checkAlphaRange(m_alpha.getDoubleValue());
     }
 
     @Override
