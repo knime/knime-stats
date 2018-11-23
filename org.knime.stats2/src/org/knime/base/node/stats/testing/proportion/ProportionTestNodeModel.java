@@ -85,7 +85,7 @@ import org.knime.stats.StatsUtil;
  *
  * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
  */
-public class ProportionTestNodeModel extends NodeModel {
+final class ProportionTestNodeModel extends NodeModel {
 
     final NodeLogger LOGGER = NodeLogger.getLogger(ProportionTestNodeModel.class);
 
@@ -110,7 +110,7 @@ public class ProportionTestNodeModel extends NodeModel {
     /**
      * Constructor for the node model.
      */
-    protected ProportionTestNodeModel() {
+    ProportionTestNodeModel() {
         super(1, 1);
     }
 
@@ -141,7 +141,7 @@ public class ProportionTestNodeModel extends NodeModel {
          * for further explanation.
          */
 
-        double progCnt = 0;
+        long progCnt = 0;
         int nobs = 0;
         int count = 0;
         int numMissing = 0;
@@ -164,7 +164,10 @@ public class ProportionTestNodeModel extends NodeModel {
                 numMissing++;
             }
             progCnt++;
-            exec.setProgress(progCnt / data.size());
+            exec.checkCanceled();
+            long progCntFinal = progCnt;
+            exec.setProgress((double)progCnt / data.size(),
+                () -> String.format("Row %d/%d (\"%s\")", progCntFinal, data.size(), row.getKey().toString()));
         }
 
         if (nobs < 2) {

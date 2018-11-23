@@ -82,7 +82,7 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
  *
  * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
  */
-public class ProportionTestNodeDialog extends DefaultNodeSettingsPane {
+final class ProportionTestNodeDialog extends DefaultNodeSettingsPane {
 
     private static final int INPUT_WIDTH = 5;
 
