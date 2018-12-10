@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
+<knimeNode icon="./g_test.png" type="Manipulator">
+    <name>G-Test</name>
+    
+    <shortDescription>
+		G-Tests of independence
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>
+         The <a href="https://en.wikipedia.org/wiki/G-test">G-Test</a> is the proposed successor of the Chi-square-test as it handles small samples more robustly. It can test for the goodness of a fit to a distribution.
+         
+         The Null Hypothesis H0 is that the compared columns are different.
+        </intro>
+        <tab name="Options">
+			<option name="Observed">The column containing the observed frequency data under test.</option>
+			<option name="Expected">The column containing the expeced data, e.g. the data a model predicted.</option>
+			<option name="Observed 2">The column containing the other observed data under test.</option>
+			<option name="Significance level &#945;">H<sub>0</sub> is rejected, if <i>p</i>-Value &lt; &#945; (0 &lt; &#945; &lt; 1)</option>
+		</tab>
+    </fullDescription>
+    <ports>
+        <inPort index="0" name="Input data">The table containing expected and observed data.</inPort>
+        <outPort index="0" name="Evaluation">G-test evaluation</outPort>
+    </ports>
+</knimeNode>

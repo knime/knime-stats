@@ -8,6 +8,10 @@
       	    factory-class="org.knime.base.node.stats.testing.kolmogorovsmirnov.KolmogorovSmirnovTestNodeFactory" >
       </node>
       <node
+      	    category-path="/labs/statistics"
+      	    factory-class="org.knime.base.node.stats.testing.gtest.GTestNodeFactory" >
+      </node>
+      <node
             category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.testing.friedman.FriedmanTestNodeFactory"/>
       <node
