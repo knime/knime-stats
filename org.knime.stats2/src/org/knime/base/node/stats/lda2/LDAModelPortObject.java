@@ -76,7 +76,9 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
     public static final class Serializer extends AbstractSimplePortObjectSerializer<LDAModelPortObject> {
     }
 
-    private static final String W_ROW_KEYPREFIX = "transformation_matrix_row";
+    private static final String W_ROW_KEYPREFIX = "transformation_matrix_row_";
+
+    private static final String W_KEY = "transformation_matrix";
 
     private static final String COLUMN_NAMES_KEY = "column_names";
 
@@ -89,8 +91,6 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
     private String[] m_inputColumnNames;
 
     private RealMatrix m_w;
-
-    private String m_classCol;
 
     /**
      * empty constructor.
@@ -115,18 +115,16 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
      */
     @Override
     protected void load(final ModelContentRO model, final PortObjectSpec spec, final ExecutionMonitor exec)
-            throws InvalidSettingsException, CanceledExecutionException {
+        throws InvalidSettingsException, CanceledExecutionException {
         m_inputColumnNames = model.getStringArray(COLUMN_NAMES_KEY);
 
-        final double[][] w = new double[m_inputColumnNames.length][];
-        for (int i = 0; i < m_inputColumnNames.length; i++) {
-            try {
-                w[i] = model.getDoubleArray(W_ROW_KEYPREFIX + i);
-            } catch (final InvalidSettingsException e) {
-                break;
-            }
+        final ModelContentRO mc = model.getModelContent(W_KEY);
+        final int numRows = mc.getChildCount();
+        final double[][] w = new double[numRows][];
+        for (int i = 0; i < numRows; i++) {
+            w[i] = mc.getDoubleArray(W_ROW_KEYPREFIX + i);
         }
-        m_w = MatrixUtils.createRealMatrix(w).transpose();
+        m_w = MatrixUtils.createRealMatrix(w);
     }
 
     /**
@@ -135,18 +133,15 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
     @Override
     protected void save(final ModelContentWO model, final ExecutionMonitor exec) throws CanceledExecutionException {
         model.addStringArray(COLUMN_NAMES_KEY, m_inputColumnNames);
-        RealMatrix w = m_w.transpose();
+        final ModelContentWO mc = model.addModelContent(W_KEY);
+        final RealMatrix w = m_w;
         for (int i = 0; i < w.getRowDimension(); i++) {
-            model.addDoubleArray(W_ROW_KEYPREFIX + i, w.getRow(i));
+            mc.addDoubleArray(W_ROW_KEYPREFIX + i, w.getRow(i));
         }
     }
 
     RealMatrix getTransformationMatrix() {
         return m_w;
-    }
-
-    String getClassCol() {
-        return m_classCol;
     }
 
     /**
@@ -162,9 +157,27 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
      */
     @Override
     public JComponent[] getViews() {
-        final String description = "<html>" + getSummary() + "</html>";
+        final StringBuilder stb = new StringBuilder("<html>LDA transformation matrix with ");
+        stb.append(getSummary());
+        stb.append(":<br><table>");
+        // give the eigenvectors as well
+        // start at -1 to include a header row
+        for (int i = -1; i < m_w.getRowDimension(); i++) {
+            stb.append("<tr>");
+            for (int j = 0; j < m_w.getColumnDimension(); j++) {
+                if (i == -1) {
+                    stb.append("<th>");
+                    stb.append(j + 1);
+                    stb.append(". eigenvector");
+                } else {
+                    stb.append("<td>");
+                    stb.append(m_w.getEntry(i, j));
+                }
+            }
+        }
+        stb.append("</table></html>");
 
-        final JLabel label = new JLabel(description);
+        final JLabel label = new JLabel(stb.toString());
         label.setName("LDA port");
         return new JComponent[]{label};
     }
@@ -174,6 +187,7 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
      */
     @Override
     public String getSummary() {
-        return m_w.getColumnDimension() + " eigenvectors";
+        final int numEVs = m_w.getColumnDimension();
+        return numEVs + " eigenvector" + (numEVs == 1 ? "" : "s");
     }
 }

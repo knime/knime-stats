@@ -68,6 +68,7 @@ import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.util.CheckUtils;
 
 /**
  *
@@ -81,11 +82,13 @@ final class LDA2 {
     private static final String MISSING_VALUE_WARNING =
         "Missing values are not supported. Please replace them using a  \"Missing Value\" node.";
 
-    private final int[] m_indices;
+    private final int[] m_predVarIndices;
 
     private RealMatrix m_w;
 
     private List<EigenValue> m_eigenValues;
+
+    private int m_k = 0;
 
     /**
      * Constructor for creation from an existing transformation matrix, used only for prediction.
@@ -95,7 +98,7 @@ final class LDA2 {
      */
     LDA2(final int[] colIndices, final RealMatrix w) {
         // variables used for the projection
-        m_indices = colIndices;
+        m_predVarIndices = colIndices;
         m_w = w;
     }
 
@@ -106,10 +109,21 @@ final class LDA2 {
      * @throws InvalidSettingsException when the table has no data
      */
     LDA2(final int[] colIndices) throws InvalidSettingsException {
-        if (colIndices.length == 0) {
+        if (colIndices == null || colIndices.length == 0) {
             throw new InvalidSettingsException("No column is given to calculate the transformation matrix.");
         }
-        m_indices = colIndices;
+        m_predVarIndices = colIndices;
+    }
+
+    /**
+     * Calculates the projection of the data in the row.
+     *
+     * @param row the row to calculate the projection for. Included fields are those that were given the constructor.
+     * @return an array of double cells that constitutes the projection of the data.
+     * @throws InvalidSettingsException when there are missing values
+     */
+    DoubleCell[] getProjection(final DataRow row, final int dim) throws InvalidSettingsException {
+        return writeCells(calculateProjection(row), dim);
     }
 
     /**
@@ -120,17 +134,31 @@ final class LDA2 {
      * @throws InvalidSettingsException when there are missing values
      */
     DoubleCell[] getProjection(final DataRow row) throws InvalidSettingsException {
+        final RealVector y = calculateProjection(row);
+        return writeCells(y, y.getDimension());
+    }
+
+    private RealVector calculateProjection(final DataRow row) throws InvalidSettingsException {
         if (m_w == null) {
             throw new IllegalStateException("The transformation matrix has not been calculated");
         }
         final RealVector x = rowToRealVector(row);
         final RealVector y = m_w.operate(x);
+        return y;
+    }
 
-        final DoubleCell[] cells = new DoubleCell[y.getDimension()];
-        for (int i = 0; i < y.getDimension(); i++) {
-            cells[i] = new DoubleCell(y.getEntry(i));
+
+    private static DoubleCell[] writeCells(final RealVector res, final int dim) {
+        final DoubleCell[] cells = new DoubleCell[dim];
+        for (int i = 0; i < dim; i++) {
+            cells[i] = new DoubleCell(res.getEntry(i));
         }
         return cells;
+    }
+
+    int getMaxDim() {
+        CheckUtils.checkArgument(m_k>0, "Run calculateTransformationMatrix before calling this method");
+        return m_k;
     }
 
     /**
@@ -206,7 +234,7 @@ final class LDA2 {
 
             // will be null in the first iteration
             if (!classStats.containsKey(cl)) {
-                classStats.put(cl, new ClassStats(m_indices.length));
+                classStats.put(cl, new ClassStats(m_predVarIndices.length));
             }
             classStats.get(cl).add(d);
         }
@@ -231,29 +259,58 @@ final class LDA2 {
      * @throws CanceledExecutionException when the execution is cancelled by the user.
      * @throws InvalidSettingsException when the settings are not suitable for the data.
      */
-    void calculateTransformationMatrix(ExecutionContext exec, final BufferedDataTable inTable, final int k,
+    void calculateTransformationMatrix(final ExecutionContext exec, final BufferedDataTable inTable,
         final int classColIndex) throws CanceledExecutionException, InvalidSettingsException {
-        if (k == 0) {
-            throw new InvalidSettingsException("0 is not a valid value for the number of dimensions to reduce to.");
-        }
-        if (classColIndex < 0) {
-            throw new InvalidSettingsException("No valid class column is given.");
-        }
+        checkClassColIdx(classColIndex);
+        final Map<String, ClassStats> classStats =
+            calculateClassStats(exec.createSubExecutionContext(0.5), inTable, -1, classColIndex);
+        m_k = Math.min(classStats.size() - 1, m_predVarIndices.length);
+        CheckUtils.checkArgument(m_k > 0, "The class column \"%s\" contains only a single class.",
+            classStats.keySet().iterator().next());
+        calcTransformationMatrix(exec, inTable, classStats, classColIndex);
+    }
 
+    /**
+     * Calculates the transformation matrix for the projection of data into the smaller space.
+     *
+     * @param exec the execution context.
+     * @throws CanceledExecutionException when the execution is cancelled by the user.
+     * @throws InvalidSettingsException when the settings are not suitable for the data.
+     */
+    void calculateTransformationMatrix(final ExecutionContext exec, final BufferedDataTable inTable, final int k,
+        final int classColIndex) throws CanceledExecutionException, InvalidSettingsException {
+        checkClassColIdx(classColIndex);
+        CheckUtils.checkSetting(k > 0, "Cannot reduce the number of dimensions to less than one.");
+        m_k = k;
         // Map for storing the per-class sum and count to calculate the mean
         final Map<String, ClassStats> classStats =
-            calculateClassStats(exec.createSubExecutionContext(0.5), inTable, k, classColIndex);
+            calculateClassStats(exec.createSubExecutionContext(0.5), inTable, m_k, classColIndex);
 
+        calcTransformationMatrix(exec, inTable, classStats, classColIndex);
+    }
+
+    /**
+     * @param exec
+     * @param inTable
+     * @param classStats
+     * @param k
+     * @param classColIndex
+     * @throws InvalidSettingsException
+     * @throws CanceledExecutionException
+     */
+    private void calcTransformationMatrix(ExecutionContext exec, final BufferedDataTable inTable,
+        final Map<String, ClassStats> classStats, final int classColIndex)
+        throws InvalidSettingsException, CanceledExecutionException {
         // calculate the mean
-        final RealVector totalMean = new ArrayRealVector(m_indices.length, 0.0);
+        final RealVector totalMean = new ArrayRealVector(m_predVarIndices.length, 0.0);
 
         for (final Map.Entry<String, ClassStats> entry : classStats.entrySet()) {
             final int count = entry.getValue().getCount();
-            if (count < m_indices.length) {
+            if (count < m_predVarIndices.length) {
                 throw new InvalidSettingsException(
                     "The size of the smallest group must be larger than the number of predictor variables ("
-                        + m_indices.length + "). Class \"" + entry.getKey() + "\" has only " + count + " instance"
-                        + (count == 1 ? "." : "s."));
+                        + m_predVarIndices.length + "). Class \"" + entry.getKey() + "\" has only " + count
+                        + " instance" + (count == 1 ? "." : "s."));
             }
             totalMean.combineToSelf(1, 1, entry.getValue().getSum());
 
@@ -314,10 +371,10 @@ final class LDA2 {
         final RealMatrix mat = solver.getInverse().multiply(sb);
         final EigenDecomposition ed = new EigenDecomposition(mat);
         final double[] eigenValues = ed.getRealEigenvalues();
-        final double[][] eigenVectors = new double[m_indices.length][eigenValues.length];
+        final double[][] eigenVectors = new double[m_predVarIndices.length][eigenValues.length];
         for (int i = 0; i < eigenValues.length; i++) {
             final double[] vec = ed.getEigenvector(i).toArray();
-            for (int j = 0; j < m_indices.length; j++) {
+            for (int j = 0; j < m_predVarIndices.length; j++) {
                 eigenVectors[j][i] = vec[j];
             }
         }
@@ -325,8 +382,8 @@ final class LDA2 {
         m_eigenValues = EigenValue.createSortedList(eigenVectors, eigenValues);
 
         // Create the transformation matrix.
-        final double[][] w = new double[k][];
-        for (int i = 0; i < k; i++) {
+        final double[][] w = new double[m_k][];
+        for (int i = 0; i < m_k; i++) {
             final double[] vec = m_eigenValues.get(i).getEigenVector();
             w[i] = vec;
         }
@@ -334,10 +391,18 @@ final class LDA2 {
         m_w = MatrixUtils.createRealMatrix(w);
     }
 
+    /**
+     * @param classColIndex
+     * @throws InvalidSettingsException
+     */
+    private void checkClassColIdx(final int classColIndex) throws InvalidSettingsException {
+        CheckUtils.checkSetting(classColIndex > 0, "No valid class column is given.");
+    }
+
     private RealVector rowToRealVector(final DataRow row) throws InvalidSettingsException {
-        final RealVector d = new ArrayRealVector(m_indices.length);
-        for (int c = 0; c < m_indices.length; c++) {
-            final DataCell cell = row.getCell(m_indices[c]);
+        final RealVector d = new ArrayRealVector(m_predVarIndices.length);
+        for (int c = 0; c < m_predVarIndices.length; c++) {
+            final DataCell cell = row.getCell(m_predVarIndices[c]);
             if (cell.isMissing()) {
                 throw new InvalidSettingsException(MISSING_VALUE_WARNING);
             }

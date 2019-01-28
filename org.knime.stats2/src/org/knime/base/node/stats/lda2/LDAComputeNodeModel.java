@@ -48,8 +48,7 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
     protected PortObject[] doExecute(final BufferedDataTable inTable, final ExecutionContext exec)
         throws IllegalArgumentException, InvalidSettingsException, CanceledExecutionException {
         final LDA2 lda = new LDA2(m_indices);
-        lda.calculateTransformationMatrix(exec.createSubExecutionContext(0.9), inTable, m_k.getIntValue(),
-            m_classColIdx);
+        lda.calculateTransformationMatrix(exec.createSubExecutionContext(0.9), inTable, m_classColIdx);
 
         // return the spectral decomposition and the models PortObject
         return new PortObject[]{createDecompositionTable(exec.createSubExecutionContext(0.1), lda),
@@ -88,10 +87,11 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
 
         final DataTableSpec outSpec = createDecompositionTableSpec(m_usedColumnNames);
         final BufferedDataContainer result = exec.createDataContainer(outSpec);
-        for (int i = 0; i < m_k.getIntValue(); i++) {
+        final int k = lda.getMaxDim();
+        for (int i = 0; i < k; i++) {
             exec.checkCanceled();
-            exec.setProgress((double)i / m_k.getIntValue(),
-                "Adding Eigenvalue-Eigenvector pair " + i + "/" + m_k + ".");
+            exec.setProgress((double)i / k,
+                "Adding Eigenvalue-Eigenvector pair " + i + "/" + k + ".");
 
             final EigenValue ev = sortedEV.get(i);
             final DataCell[] values = new DataCell[sortedEV.size() + 1];
@@ -127,7 +127,7 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
     @Override
     protected PortObjectSpec[] doConfigure(final DataTableSpec inSpec) throws InvalidSettingsException {
         return new PortObjectSpec[]{createDecompositionTableSpec(m_usedColumnNames),
-            new LDAModelPortObjectSpec(m_usedColumnNames, m_k.getIntValue())};
+            new LDAModelPortObjectSpec(m_usedColumnNames, Integer.MAX_VALUE)};
     }
 
     /**

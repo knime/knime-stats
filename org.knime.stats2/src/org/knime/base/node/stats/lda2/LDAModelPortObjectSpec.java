@@ -61,18 +61,18 @@ import org.knime.core.node.port.AbstractSimplePortObjectSpec;
 public final class LDAModelPortObjectSpec extends AbstractSimplePortObjectSpec {
     /**
      * @noreference This class is not intended to be referenced by clients.
-     * @since 3.7
+     * @since 3.8
      */
     public static final class Serializer extends AbstractSimplePortObjectSpecSerializer<LDAModelPortObjectSpec> {
     }
 
     private static final String CFG_COL_NAMES = "column_names";
 
-    private static final String CFG_TARGET_DIMENSIONS = "targer_dimensions";
+    private static final String CFG_TARGET_DIMENSIONS = "target_dimensions";
 
     private String[] m_columnNames;
 
-    private int m_targetDimensions;
+    private int m_maxDimensions;
 
     /**
      * Empty constructor.
@@ -82,28 +82,28 @@ public final class LDAModelPortObjectSpec extends AbstractSimplePortObjectSpec {
     }
 
     /**
-     * create object spec.
+     * Create object spec.
      *
      * @param columnNames names of input columns
-     * @param k number of dimensions reduced to
+     * @param maxK number of dimensions reduced to
      */
-    public LDAModelPortObjectSpec(final String[] columnNames, final int k) {
+    public LDAModelPortObjectSpec(final String[] columnNames, final int maxK) {
         m_columnNames = columnNames;
-        m_targetDimensions = k;
+        m_maxDimensions = maxK;
     }
 
     /**
      * @return names of input columns
      */
-    public String[] getColumnNames() {
+    String[] getColumnNames() {
         return m_columnNames;
     }
 
     /**
      * @return the number of dimensions reduced to
      */
-    public int getTargetDimensions() {
-        return m_targetDimensions;
+    int getMaxDimensions() {
+        return m_maxDimensions;
     }
 
     /**
@@ -112,7 +112,7 @@ public final class LDAModelPortObjectSpec extends AbstractSimplePortObjectSpec {
     @Override
     protected void save(final ModelContentWO model) {
         model.addStringArray(CFG_COL_NAMES, m_columnNames);
-        model.addInt(CFG_TARGET_DIMENSIONS, m_targetDimensions);
+        model.addInt(CFG_TARGET_DIMENSIONS, m_maxDimensions);
     }
 
     /**
@@ -121,6 +121,6 @@ public final class LDAModelPortObjectSpec extends AbstractSimplePortObjectSpec {
     @Override
     protected void load(final ModelContentRO model) throws InvalidSettingsException {
         m_columnNames = model.getStringArray(CFG_COL_NAMES);
-        m_targetDimensions = model.getInt(CFG_TARGET_DIMENSIONS);
+        m_maxDimensions = model.getInt(CFG_TARGET_DIMENSIONS);
     }
 }

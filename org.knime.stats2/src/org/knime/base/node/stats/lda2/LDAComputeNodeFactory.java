@@ -51,6 +51,6 @@ public final class LDAComputeNodeFactory extends NodeFactory<LDAComputeNodeModel
     @Override
     public NodeDialogPane createNodeDialogPane() {
         return new LDAComputeNodeDialog(AbstractLDANodeModel.createClassColSettingsModel(),
-            AbstractLDANodeModel.createUsedColsSettingsModel(), AbstractLDANodeModel.createKSettingsModel());
+            AbstractLDANodeModel.createUsedColsSettingsModel());
     }
 }

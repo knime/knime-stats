@@ -14,6 +14,7 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
+import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
@@ -44,6 +45,25 @@ final class LDAApplyNodeModel extends NodeModel {
     private static final String REMOVE_USED_COLS_CFG = "remove_used_columns";
 
     /**
+     * The configuration key for the number of dimensions.
+     */
+    private static final String K_CFG = "k";
+
+    /**
+     * Settings model for the dimension to reduce to.
+     */
+    final SettingsModelInteger m_k = createKSettingsModel();
+
+    /**
+     * Creates a settings model for k.
+     *
+     * @return the settings model
+     */
+    static SettingsModelInteger createKSettingsModel() {
+        return new SettingsModelInteger(K_CFG, 1);
+    }
+
+    /**
      * Constructor for the node model.
      */
     LDAApplyNodeModel() {
@@ -62,8 +82,6 @@ final class LDAApplyNodeModel extends NodeModel {
     private final SettingsModelBoolean m_removeUsedCols = createRemoveUsedColsSettingsModel();
 
     private int[] m_indices;
-
-    private int m_k;
 
     String[] m_usedColumnNames;
 
@@ -111,19 +129,18 @@ final class LDAApplyNodeModel extends NodeModel {
             m_indices[i] = dataSpec.findColumnIndex(m_usedColumnNames[i]);
         }
 
-        m_k = modelSpec.getTargetDimensions();
         return new PortObjectSpec[]{createColumnRearranger(null, dataSpec).createSpec()};
     }
 
     private ColumnRearranger createColumnRearranger(final LDAModelPortObject inModel,
         final DataTableSpec dataSpec) {
         if (inModel == null) {
-            return AbstractLDANodeModel.createColumnRearranger(dataSpec, null, m_k,
+            return AbstractLDANodeModel.createColumnRearranger(dataSpec, null, m_k.getIntValue(),
                 m_removeUsedCols.getBooleanValue(), m_usedColumnNames);
         }
         final LDA2 lda = new LDA2(m_indices, inModel.getTransformationMatrix());
 
-        return AbstractLDANodeModel.createColumnRearranger(dataSpec, lda, m_k,
+        return AbstractLDANodeModel.createColumnRearranger(dataSpec, lda, m_k.getIntValue(),
             m_removeUsedCols.getBooleanValue(), m_usedColumnNames);
     }
 
@@ -170,6 +187,7 @@ final class LDAApplyNodeModel extends NodeModel {
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_k.loadSettingsFrom(settings);
         m_removeUsedCols.loadSettingsFrom(settings);
 
     }
@@ -179,6 +197,7 @@ final class LDAApplyNodeModel extends NodeModel {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
+        m_k.saveSettingsTo(settings);
         m_removeUsedCols.saveSettingsTo(settings);
     }
 
@@ -187,6 +206,7 @@ final class LDAApplyNodeModel extends NodeModel {
      */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_k.validateSettings(settings);
         m_removeUsedCols.validateSettings(settings);
     }
 

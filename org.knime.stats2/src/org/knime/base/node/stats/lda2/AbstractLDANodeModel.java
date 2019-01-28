@@ -70,7 +70,6 @@ import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
-import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
@@ -86,11 +85,6 @@ import org.knime.core.util.UniqueNameGenerator;
 abstract class AbstractLDANodeModel extends NodeModel {
 
     static final int PORT_IN_DATA = 0;
-
-    /**
-     * The configuration key for the number of dimensions.
-     */
-    private static final String K_CFG = "k";
 
     /**
      * The configuration key for the used columns.
@@ -121,14 +115,6 @@ abstract class AbstractLDANodeModel extends NodeModel {
         return new SettingsModelString(CLASS_COL_CFG, null);
     }
 
-    /**
-     * Creates a settings model for k.
-     *
-     * @return the settings model
-     */
-    static SettingsModelInteger createKSettingsModel() {
-        return new SettingsModelInteger(K_CFG, 1);
-    }
 
     /**
      * Settings model for the used columns.
@@ -141,10 +127,6 @@ abstract class AbstractLDANodeModel extends NodeModel {
      */
     final SettingsModelString m_classColumn = createClassColSettingsModel();
 
-    /**
-     * Settings model for the dimension to reduce to.
-     */
-    final SettingsModelInteger m_k = createKSettingsModel();
 
     /**
      * Indices where to find the used columns in the table.
@@ -298,8 +280,6 @@ abstract class AbstractLDANodeModel extends NodeModel {
             }
         }
 
-        // Sanity check settings even though dialog checks, in case any flow variables went bad.
-        calcBoundedMaxDim(inSpec, m_classColumn.getStringValue(), m_indices.length, m_k.getIntValue());
 
         return doConfigure(inSpec);
     }
@@ -320,7 +300,6 @@ abstract class AbstractLDANodeModel extends NodeModel {
      */
     @Override
     protected final void saveSettingsTo(final NodeSettingsWO settings) {
-        m_k.saveSettingsTo(settings);
         m_classColumn.saveSettingsTo(settings);
         m_usedCols.saveSettingsTo(settings);
         saveAdditionalSettingsTo(settings);
@@ -339,7 +318,6 @@ abstract class AbstractLDANodeModel extends NodeModel {
      */
     @Override
     protected final void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_k.loadSettingsFrom(settings);
         m_classColumn.loadSettingsFrom(settings);
         m_usedCols.loadSettingsFrom(settings);
         loadAdditionalValidatedSettingsFrom(settings);
@@ -360,7 +338,6 @@ abstract class AbstractLDANodeModel extends NodeModel {
      */
     @Override
     protected final void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_k.validateSettings(settings);
         m_classColumn.validateSettings(settings);
         m_usedCols.validateSettings(settings);
         validateAdditionalSettings(settings);
@@ -424,7 +401,7 @@ abstract class AbstractLDANodeModel extends NodeModel {
             @Override
             public DataCell[] getCells(final DataRow row) {
                 try {
-                    return lda.getProjection(row);
+                    return lda.getProjection(row, k);
                 } catch (final InvalidSettingsException e) {
                     return null;
                 }
@@ -434,51 +411,5 @@ abstract class AbstractLDANodeModel extends NodeModel {
         return cr;
     }
 
-    /**
-     * Calculates the maximum possible dimension to reduce to and checks that the current selected dimensions are not
-     * out of bounds.
-     */
-    private static final int calcBoundedMaxDim(final DataTableSpec inSpec, final String classColName,
-        final int numSelectedColumns, final int selectedDims) throws InvalidSettingsException {
-        final int maxDim = calcPositiveMaxDim(inSpec, classColName, numSelectedColumns);
 
-        if (selectedDims <= 0) {
-            throw new InvalidSettingsException(
-                "The number of dimensions to project to must be a positive integer larger than 0, " + selectedDims
-                    + " is invalid.");
-        } else if (selectedDims > maxDim) {
-            // classSpec & domain must be valid as checked in the beginning
-            final DataColumnSpec classSpec = inSpec.getColumnSpec(classColName);
-            final int selectedClasses = classSpec.getDomain().getValues().size();
-            throw new InvalidSettingsException(
-                LDA2.createTooHighDimWarning(selectedDims, maxDim, selectedClasses, numSelectedColumns, classColName));
-        }
-
-        return maxDim;
-    }
-
-    /**
-     * Calculates the maximum possible dimension that can be reduced to from the current settings and checks that it is
-     * not less than 1.
-     */
-    private static final int calcPositiveMaxDim(final DataTableSpec inSpec, final String classColName,
-        final int numSelectedColumns) throws InvalidSettingsException {
-        // get the selected Classes, columns and calculate maxDim - much like updateSettings() in the dialog
-        final DataColumnSpec classSpec = inSpec.getColumnSpec(classColName);
-        if (classSpec == null) {
-            throw new InvalidSettingsException("The selected class column \"" + classColName + "\" does not exist.");
-        }
-
-        // initialize to flag value indicating an uncalculated domain
-        final int selectedClasses = classSpec.getDomain().hasValues() ? classSpec.getDomain().getValues().size() : -1;
-
-        final int maxDim = Math.min((selectedClasses - 1), numSelectedColumns);
-
-        if (maxDim <= 0) {
-            throw new InvalidSettingsException(
-                LDA2.createMaxDimZeroWarning(selectedClasses, numSelectedColumns, classColName));
-        }
-
-        return maxDim;
-    }
 }
