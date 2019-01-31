@@ -1,9 +1,14 @@
-package org.knime.base.node.stats.lda2;
+package org.knime.base.node.stats.lda2.compute;
 
 import java.util.List;
 
 import org.apache.commons.math3.linear.RealMatrix;
 import org.knime.base.node.mine.pca.EigenValue;
+import org.knime.base.node.stats.lda2.AbstractLDANodeModel;
+import org.knime.base.node.stats.lda2.algorithm.LDA2;
+import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
+import org.knime.base.node.stats.lda2.port.LDAModelPortObject;
+import org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -55,7 +60,6 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
             createLDAModelPortObject(lda)};
     }
 
-
     /**
      * Create table spec for output of the LDA spectral decomposition.
      *
@@ -90,8 +94,7 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
         final int k = lda.getMaxDim();
         for (int i = 0; i < k; i++) {
             exec.checkCanceled();
-            exec.setProgress((double)i / k,
-                "Adding Eigenvalue-Eigenvector pair " + i + "/" + k + ".");
+            exec.setProgress((double)i / k, "Adding Eigenvalue-Eigenvector pair " + i + "/" + k + ".");
 
             final EigenValue ev = sortedEV.get(i);
             final DataCell[] values = new DataCell[sortedEV.size() + 1];
@@ -126,8 +129,9 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
      */
     @Override
     protected PortObjectSpec[] doConfigure(final DataTableSpec inSpec) throws InvalidSettingsException {
-        return new PortObjectSpec[]{createDecompositionTableSpec(m_usedColumnNames),
-            new LDAModelPortObjectSpec(m_usedColumnNames, Integer.MAX_VALUE)};
+        return new PortObjectSpec[]{createDecompositionTableSpec(m_usedColumnNames), new LDAModelPortObjectSpec(
+            m_usedColumnNames,
+            LDAUtils.calcPositiveMaxDim(inSpec, m_computeSettings.getClassModel().getStringValue(), m_indices.length))};
     }
 
     /**

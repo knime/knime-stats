@@ -46,7 +46,7 @@
  *   04.10.2006 (uwe): created
  */
 
-package org.knime.base.node.stats.lda2;
+package org.knime.base.node.stats.lda2.port;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -105,7 +105,7 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
      * @param inputColumnNames names of input columns
      * @param w the transformation matrix
      */
-    LDAModelPortObject(final String[] inputColumnNames, final RealMatrix w) {
+    public LDAModelPortObject(final String[] inputColumnNames, final RealMatrix w) {
         m_inputColumnNames = inputColumnNames;
         m_w = w;
     }
@@ -140,7 +140,12 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
         }
     }
 
-    RealMatrix getTransformationMatrix() {
+    /**
+     * Returns the transformation matrix.
+     *
+     * @return the transformation matrix
+     */
+    public RealMatrix getTransformationMatrix() {
         return m_w;
     }
 
@@ -148,7 +153,7 @@ public final class LDAModelPortObject extends AbstractSimplePortObject {
      * {@inheritDoc}
      */
     @Override
-    public PortObjectSpec getSpec() {
+    public LDAModelPortObjectSpec getSpec() {
         return new LDAModelPortObjectSpec(m_inputColumnNames, m_w.getRowDimension());
     }
 

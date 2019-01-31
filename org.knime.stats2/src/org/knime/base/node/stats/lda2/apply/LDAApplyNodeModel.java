@@ -1,8 +1,14 @@
-package org.knime.base.node.stats.lda2;
+package org.knime.base.node.stats.lda2.apply;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.knime.base.node.stats.lda2.algorithm.LDA2;
+import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
+import org.knime.base.node.stats.lda2.port.LDAModelPortObject;
+import org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec;
+import org.knime.base.node.stats.lda2.settings.LDAApplySettings;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
@@ -13,8 +19,6 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
-import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
@@ -26,6 +30,7 @@ import org.knime.core.node.streamable.PortObjectInput;
 import org.knime.core.node.streamable.PortOutput;
 import org.knime.core.node.streamable.StreamableFunction;
 import org.knime.core.node.streamable.StreamableOperator;
+import org.knime.core.node.util.CheckUtils;
 
 /**
  * This is the model implementation of the LDA Apply node.
@@ -35,33 +40,11 @@ import org.knime.core.node.streamable.StreamableOperator;
  */
 final class LDAApplyNodeModel extends NodeModel {
 
-    private static final int PORT_IN_MODEL = 0;
+    static final int PORT_IN_MODEL = 0;
 
     private static final int PORT_IN_DATA = 1;
 
-    /**
-     * The configuration key whether to remove the used columns.
-     */
-    private static final String REMOVE_USED_COLS_CFG = "remove_used_columns";
-
-    /**
-     * The configuration key for the number of dimensions.
-     */
-    private static final String K_CFG = "k";
-
-    /**
-     * Settings model for the dimension to reduce to.
-     */
-    final SettingsModelInteger m_k = createKSettingsModel();
-
-    /**
-     * Creates a settings model for k.
-     *
-     * @return the settings model
-     */
-    static SettingsModelInteger createKSettingsModel() {
-        return new SettingsModelInteger(K_CFG, 1);
-    }
+    private final LDAApplySettings m_applySettings = new LDAApplySettings();
 
     /**
      * Constructor for the node model.
@@ -69,21 +52,6 @@ final class LDAApplyNodeModel extends NodeModel {
     LDAApplyNodeModel() {
         super(new PortType[]{LDAModelPortObject.TYPE, BufferedDataTable.TYPE}, new PortType[]{BufferedDataTable.TYPE});
     }
-
-    /**
-     * Creates a settings model whether to remove the used columns.
-     *
-     * @return the settings model
-     */
-    static SettingsModelBoolean createRemoveUsedColsSettingsModel() {
-        return new SettingsModelBoolean(REMOVE_USED_COLS_CFG, false);
-    }
-
-    private final SettingsModelBoolean m_removeUsedCols = createRemoveUsedColsSettingsModel();
-
-    private int[] m_indices;
-
-    String[] m_usedColumnNames;
 
     /**
      * {@inheritDoc}
@@ -102,7 +70,8 @@ final class LDAApplyNodeModel extends NodeModel {
         final BufferedDataTable inTable = (BufferedDataTable)inData[PORT_IN_DATA];
         final LDAModelPortObject inModel = (LDAModelPortObject)inData[PORT_IN_MODEL];
 
-        final ColumnRearranger cr = createColumnRearranger(inModel, inTable.getDataTableSpec());
+        final ColumnRearranger cr =
+            createColumnRearranger(inModel, inModel.getSpec().getColumnNames(), inTable.getDataTableSpec());
 
         final BufferedDataTable out = exec.createColumnRearrangeTable(inTable, cr, exec);
         return new PortObject[]{out};
@@ -117,31 +86,39 @@ final class LDAApplyNodeModel extends NodeModel {
         final LDAModelPortObjectSpec modelSpec = (LDAModelPortObjectSpec)inSpecs[PORT_IN_MODEL];
 
         // check existing column names and find out their indices
-        m_usedColumnNames = modelSpec.getColumnNames();
-        final int numIncludedColumns = m_usedColumnNames.length;
-        m_indices = new int[numIncludedColumns];
+        final String[] usedColumnNames = modelSpec.getColumnNames();
+        final int numIncludedColumns = usedColumnNames.length;
         for (int i = 0; i < numIncludedColumns; i++) {
-            final String columnName = m_usedColumnNames[i];
-            if (!dataSpec.containsName(columnName)) {
+            final String columnName = usedColumnNames[i];
+            if (dataSpec.findColumnIndex(columnName) == -1) {
                 throw new InvalidSettingsException(
                     "The model is expecting column \"" + columnName + "\" which is missing in the input table.");
             }
-            m_indices[i] = dataSpec.findColumnIndex(m_usedColumnNames[i]);
         }
 
-        return new PortObjectSpec[]{createColumnRearranger(null, dataSpec).createSpec()};
+        // sanity check for flow variables
+        CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() > 0,
+            "The number of dimensions to project to must be a positive integer larger than 0, %s is invalid",
+            m_applySettings.getDimModel().getIntValue());
+        CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() <= modelSpec.getMaxDimensions(),
+            "The number of dimensions to project to must be less than or equal %s", modelSpec.getMaxDimensions());
+
+        return new PortObjectSpec[]{createColumnRearranger(null, usedColumnNames, dataSpec).createSpec()};
     }
 
-    private ColumnRearranger createColumnRearranger(final LDAModelPortObject inModel,
+    private ColumnRearranger createColumnRearranger(final LDAModelPortObject inModel, final String[] usedColumnNames,
         final DataTableSpec dataSpec) {
         if (inModel == null) {
-            return AbstractLDANodeModel.createColumnRearranger(dataSpec, null, m_k.getIntValue(),
-                m_removeUsedCols.getBooleanValue(), m_usedColumnNames);
+            return LDAUtils.createColumnRearranger(dataSpec, null, m_applySettings.getDimModel().getIntValue(),
+                m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames);
         }
-        final LDA2 lda = new LDA2(m_indices, inModel.getTransformationMatrix());
+        final int[] cIndices = Arrays.stream(usedColumnNames)//
+            .mapToInt(cName -> dataSpec.findColumnIndex(cName))//
+            .toArray();
+        final LDA2 lda = new LDA2(cIndices, inModel.getTransformationMatrix());
 
-        return AbstractLDANodeModel.createColumnRearranger(dataSpec, lda, m_k.getIntValue(),
-            m_removeUsedCols.getBooleanValue(), m_usedColumnNames);
+        return LDAUtils.createColumnRearranger(dataSpec, lda, m_applySettings.getDimModel().getIntValue(),
+            m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames);
     }
 
     /**
@@ -158,7 +135,8 @@ final class LDAApplyNodeModel extends NodeModel {
                 final LDAModelPortObject inModel =
                     (LDAModelPortObject)((PortObjectInput)inputs[PORT_IN_MODEL]).getPortObject();
 
-                final ColumnRearranger cr = createColumnRearranger(inModel, (DataTableSpec)inSpecs[PORT_IN_DATA]);
+                final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getSpec().getColumnNames(),
+                    (DataTableSpec)inSpecs[PORT_IN_DATA]);
 
                 final StreamableFunction func = cr.createStreamableFunction(PORT_IN_DATA, 0);
                 func.runFinal(inputs, outputs, exec);
@@ -187,8 +165,7 @@ final class LDAApplyNodeModel extends NodeModel {
      */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_k.loadSettingsFrom(settings);
-        m_removeUsedCols.loadSettingsFrom(settings);
+        m_applySettings.loadValidatedSettingsFrom(settings);
 
     }
 
@@ -197,8 +174,7 @@ final class LDAApplyNodeModel extends NodeModel {
      */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
-        m_k.saveSettingsTo(settings);
-        m_removeUsedCols.saveSettingsTo(settings);
+        m_applySettings.saveSettingsTo(settings);
     }
 
     /**
@@ -206,8 +182,7 @@ final class LDAApplyNodeModel extends NodeModel {
      */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_k.validateSettings(settings);
-        m_removeUsedCols.validateSettings(settings);
+        m_applySettings.validateSettings(settings);
     }
 
     /**

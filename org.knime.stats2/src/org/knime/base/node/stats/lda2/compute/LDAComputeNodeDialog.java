@@ -1,10 +1,12 @@
-package org.knime.base.node.stats.lda2;
+package org.knime.base.node.stats.lda2.compute;
 
 import java.awt.Dimension;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
+import org.knime.base.node.stats.lda2.AbstractLDANodeModel;
+import org.knime.base.node.stats.lda2.settings.LDAComputeSettings;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.NominalValue;
 import org.knime.core.data.container.ColumnRearranger;
@@ -43,15 +45,12 @@ class LDAComputeNodeDialog extends NodeDialogPane {
 
     /**
      * New pane for configuring the node with given settings models.
-     *
-     * @param classColModel
-     * @param usedColsModel
      */
     @SuppressWarnings("unchecked")
-    protected LDAComputeNodeDialog(final SettingsModelString classColModel,
-        final SettingsModelColumnFilter2 usedColsModel) {
-        m_classColModel = classColModel;
-        m_usedColsModel = usedColsModel;
+    protected LDAComputeNodeDialog() {
+        final LDAComputeSettings s = new LDAComputeSettings();
+        m_classColModel = s.getClassModel();
+        m_usedColsModel = s.getPredModel();
 
         m_classColModel.addChangeListener(l -> {
             try {
@@ -91,9 +90,6 @@ class LDAComputeNodeDialog extends NodeDialogPane {
         m_classColComponent.loadSettingsFrom(settings, specs);
         m_usedColsComponent.loadSettingsFrom(settings, new DataTableSpec[]{removeTargetColumnFromLastSpec()});
     }
-
-
-
 
     /**
      * Adrian Nembachs trick to not show the selected class column in the used column twinlist: save the current

@@ -40,17 +40,17 @@
             />
       <node 
       		category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.lda2.LDA2NodeFactory"
+            factory-class="org.knime.base.node.stats.lda2.perform.LDA2NodeFactory"
             />      
       <node 
       		after="org.knime.base.node.stats.lda2.LDA2NodeFactory"
       		category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.lda2.LDAComputeNodeFactory"
+            factory-class="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
             />
       <node 
       		after="org.knime.base.node.stats.lda2.LDAComputeNodeFactory"
       		category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.lda2.LDAApplyNodeFactory"
+            factory-class="org.knime.base.node.stats.lda2.apply.LDAApplyNodeFactory"
             />
       <node
             category-path="/labs/statistics"
@@ -108,10 +108,10 @@
               color="#9911FF"
               hidden="true"
               name="LDA"
-              objectClass="org.knime.base.node.stats.lda2.LDAModelPortObject" 
-              objectSerializer="org.knime.base.node.stats.lda2.LDAModelPortObject$Serializer"
-              specClass="org.knime.base.node.stats.lda2.LDAModelPortObjectSpec"
-              specSerializer="org.knime.base.node.stats.lda2.LDAModelPortObjectSpec$Serializer">
+              objectClass="org.knime.base.node.stats.lda2.port.LDAModelPortObject" 
+              objectSerializer="org.knime.base.node.stats.lda2.port.LDAModelPortObject$Serializer"
+              specClass="org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec"
+              specSerializer="org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec$Serializer">
         </portType>
    </extension>     
    <extension point="org.knime.workbench.repository.categories">

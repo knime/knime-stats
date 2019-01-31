@@ -46,7 +46,7 @@
  *   04.10.2006 (uwe): created
  */
 
-package org.knime.base.node.stats.lda2;
+package org.knime.base.node.stats.lda2.port;
 
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.ModelContentRO;
@@ -95,14 +95,14 @@ public final class LDAModelPortObjectSpec extends AbstractSimplePortObjectSpec {
     /**
      * @return names of input columns
      */
-    String[] getColumnNames() {
+    public String[] getColumnNames() {
         return m_columnNames;
     }
 
     /**
      * @return the number of dimensions reduced to
      */
-    int getMaxDimensions() {
+    public int getMaxDimensions() {
         return m_maxDimensions;
     }
 
