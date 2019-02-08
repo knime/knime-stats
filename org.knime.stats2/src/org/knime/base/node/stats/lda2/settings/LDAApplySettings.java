@@ -53,6 +53,7 @@ import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
+import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
 
 /**
  * Class storing the LDA apply settings.
@@ -68,7 +69,7 @@ public class LDAApplySettings {
     private static final String REMOVE_USED_COLS_CFG = "remove_used_columns";
 
     /** Settings model for the dimension to reduce to. */
-    private final SettingsModelInteger m_k = new SettingsModelInteger(K_CFG, 1);
+    private final SettingsModelInteger m_k = new SettingsModelIntegerBounded(K_CFG, 1, 1, Integer.MAX_VALUE);
 
     /** Settings model indicating whether or not to remove the used columns. */
     private final SettingsModelBoolean m_removeUsedCols = new SettingsModelBoolean(REMOVE_USED_COLS_CFG, false);
