@@ -43,7 +43,7 @@
             factory-class="org.knime.base.node.stats.lda2.perform.LDA2NodeFactory"
             />      
       <node 
-      		after="org.knime.base.node.stats.lda2.LDA2NodeFactory"
+      		after="org.knime.base.node.stats.lda2.perform.LDA2NodeFactory"
       		category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
             />
