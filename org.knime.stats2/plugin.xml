@@ -48,7 +48,7 @@
             factory-class="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
             />
       <node 
-      		after="org.knime.base.node.stats.lda2.LDAComputeNodeFactory"
+      		after="org.knime.base.node.stats.lda2.perform.LDA2NodeFactory"
       		category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.lda2.apply.LDAApplyNodeFactory"
             />
@@ -58,7 +58,7 @@
             factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory">
       </node>
       <node
-            after="org.knime.base.node.stats.lda2.LDA2NodeFactory"
+            after="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
             category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.shapirowilk2.ShapiroWilk2NodeFactory">
       </node>
