@@ -80,7 +80,7 @@ import org.knime.core.node.util.CheckUtils;
 public final class LDA2 {
 
     private static final String MISSING_VALUE_WARNING =
-        "Missing values are not supported. Please replace them using a  \"Missing Value\" node.";
+        "Missing values are not supported. Please replace them using a \"Missing Value\" node.";
 
     private final int[] m_predVarIndices;
 
@@ -280,9 +280,10 @@ public final class LDA2 {
         }
 
         if (k >= classStats.size()) {
-            throw new InvalidSettingsException("Not enough classes (" + classStats.size() + ") in the class column \""
-                + inTable.getSpec().getColumnSpec(classColIndex).getName() + "\": The data can only be reduced to "
-                + (classStats.size() - 1) + " or fewer dimensions.");
+            throw new InvalidSettingsException(
+                "Not enough distinct classes in the class column \""
+                    + inTable.getSpec().getColumnSpec(classColIndex).getName() + "\": The data can only be reduced to "
+                    + (classStats.size() - 1) + " or fewer dimensions.");
         }
 
         return classStats;

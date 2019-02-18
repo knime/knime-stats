@@ -62,14 +62,14 @@ import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
  */
 public class LDAApplySettings {
 
-    /** The configuration key for the number of dimensions. */
-    private static final String K_CFG = "k";
+    /** The configuration key for the number of dimensions to reduce to. */
+    private static final String K_CFG = "number_of_dimensions";
 
     /** The configuration key whether to remove the used columns. */
     private static final String REMOVE_USED_COLS_CFG = "remove_used_columns";
 
     /** Settings model for the dimension to reduce to. */
-    private final SettingsModelInteger m_k = new SettingsModelIntegerBounded(K_CFG, 1, 1, Integer.MAX_VALUE);
+    private final SettingsModelInteger m_dims = new SettingsModelIntegerBounded(K_CFG, 1, 1, Integer.MAX_VALUE);
 
     /** Settings model indicating whether or not to remove the used columns. */
     private final SettingsModelBoolean m_removeUsedCols = new SettingsModelBoolean(REMOVE_USED_COLS_CFG, false);
@@ -80,7 +80,7 @@ public class LDAApplySettings {
      * @return model storing the number of dimension to reduce to
      */
     public SettingsModelInteger getDimModel() {
-        return m_k;
+        return m_dims;
     }
 
     /**
@@ -99,7 +99,7 @@ public class LDAApplySettings {
      * @throws InvalidSettingsException - If the validation failed
      */
     public void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_k.validateSettings(settings);
+        m_dims.validateSettings(settings);
         m_removeUsedCols.validateSettings(settings);
     }
 
@@ -110,7 +110,7 @@ public class LDAApplySettings {
      * @throws InvalidSettingsException - If loading failed
      */
     public void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        m_k.loadSettingsFrom(settings);
+        m_dims.loadSettingsFrom(settings);
         m_removeUsedCols.loadSettingsFrom(settings);
     }
 
@@ -120,7 +120,7 @@ public class LDAApplySettings {
      * @param settings settings to save to
      */
     public void saveSettingsTo(final NodeSettingsWO settings) {
-        m_k.saveSettingsTo(settings);
+        m_dims.saveSettingsTo(settings);
         m_removeUsedCols.saveSettingsTo(settings);
     }
 }

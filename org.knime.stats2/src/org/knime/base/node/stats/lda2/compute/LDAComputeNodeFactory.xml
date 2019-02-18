@@ -21,15 +21,14 @@
 			to each other, but far from data points of other classes.
 		</intro>
 
-		<option name="Class column">The column containing class information</option>
-		<option name="Column selection">The columns of the original dimensions</option>
+		<option name="Class column">The column containing class information.</option>
+		<option name="Column selection">The columns of the original dimensions.</option>
 	</fullDescription>
 
 	<ports>
-		<inPort index="0" name="Input data">Input data for the LDA</inPort>
+		<inPort index="0" name="Input data">Input data for the Linear Discriminant Analysis.</inPort>
 		<outPort index="0" name="Spectral decomposition">Table containing the spectral
-			decomposition. Rows are ordered according to the eigenvalues (first
-			column).</outPort>
+			decomposition. Rows are ordered according to eigenvalues (first column).</outPort>
 		<outPort index="1" name="LDA model">Model with projection to the reduced
 			space, used in the "Linear Discriminant Analysis Apply" node to apply
 			the transformation to, e.g. another validation set.</outPort>

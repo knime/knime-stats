@@ -11,26 +11,26 @@
 		<intro>
 			This node applies a
 			<a href="http://en.wikipedia.org/wiki/Linear_discriminant_analysis">Linear Discriminant Analysis (LDA)</a>
-			on the given input data. The data model of the LDA computation node
+			on the given input data. The data model of the Linear Discriminant Analysis Compute node
 			can be applied to arbitrary data to reduce it to a given number of
 			dimensions.
-			<p>The column names, however, have to coincide with those used to
-				calculate the model.</p>
+			<p><b>The column names, however, have to correspond to those that have been used 
+			to calculate the model.</b></p>
 		</intro>
-		<option name="Dimensions">The number of dimensions to reduce to. This can be
-			at most minimum of the number of classes minus one and the number of
-			predictor columns used by the model.
+		<option name="Dimensions">The number of dimensions to reduce to. This can either be the number
+		of classes minus one or the number of selected columns depending on which one is
+		smaller.
 		</option>
 		<option name="Remove original data columns">If checked, the columns containing the input data
 			are removed.</option>
 	</fullDescription>
 
 	<ports>
-		<inPort index="0" name="Model">The Model to reduce the dimensions with
+		<inPort index="0" name="Model">The Model used to reduce the data's dimensionality.
 		</inPort>
-		<inPort index="1" name="Table to transform">The data to reduce the dimensions of
+		<inPort index="1" name="Table to transform">The data whose dimensionality shall be reduced.
 		</inPort>
 		<outPort index="0" name="Projected data">The original data (if not excluded)
-			plus columns for the projected dimensions</outPort>
+			plus columns for the projected dimensions.</outPort>
 	</ports>
 </knimeNode>

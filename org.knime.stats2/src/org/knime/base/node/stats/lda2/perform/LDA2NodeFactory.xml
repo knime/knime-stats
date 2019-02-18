@@ -26,22 +26,22 @@
 			</p>
 		</intro>
 
-		<option name="Dimensions">The number of dimensions to reduce to. This can be
-			at most minimum of the number of classes minus one and the number of
-			selected columns.
+		<option name="Dimensions">The number of dimensions to reduce to. This can either be the number
+		of classes minus one or the number of selected columns depending on which one is
+		smaller.
 		</option>
-		<option name="Class column">The column containing class information</option>
-		<option name="Column selection">The columns of the original dimensions</option>
+		<option name="Class column">The column containing class information.</option>
+		<option name="Column selection">The columns of the original dimensions.</option>
 		<option name="Remove original data columns">If checked, the columns containing the input data
 			are removed.
 		</option>
 	</fullDescription>
 
 	<ports>
-		<inPort index="0" name="Table to transform">The data to reduce the dimensions of
+		<inPort index="0" name="Table to transform">The data whose dimensionality shall be reduced.
 		</inPort>
 		<outPort index="0" name="Projected data">The original data (if not excluded)
-			plus columns for the projected dimensions
+			plus columns for the projected dimensions.
 		</outPort>
 	</ports>
 </knimeNode>
