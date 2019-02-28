@@ -418,7 +418,7 @@ public final class LDA2 {
         final double[] eigenValues = ed.getRealEigenvalues();
         final double[][] eigenVectors = new double[m_predVarIndices.length][eigenValues.length];
         for (int i = 0; i < eigenValues.length; i++) {
-            final double[] vec = ed.getEigenvector(i).toArray();
+            final double[] vec = ed.getEigenvector(i).mapMultiply(1.0 / ed.getEigenvector(i).getNorm()).toArray();
             for (int j = 0; j < m_predVarIndices.length; j++) {
                 eigenVectors[j][i] = vec[j];
             }
