@@ -67,7 +67,7 @@ import org.knime.core.util.UniqueNameGenerator;
  */
 public final class LDAUtils {
 
-    public static final String LDA_COL_PREFIX = "LDA dimension";
+    public static final String LDA_COL_PREFIX = "LDA dimension ";
 
     /** Constructor. */
     private LDAUtils() {
@@ -97,6 +97,22 @@ public final class LDAUtils {
      */
     public static ColumnRearranger createColumnRearranger(final DataTableSpec inSpec, final LDA2 lda, final int k,
         final boolean removeUsedCols, final String[] usedColumnNames) {
+        return createColumnRearranger(inSpec, lda, k, removeUsedCols, usedColumnNames, LDA_COL_PREFIX);
+    }
+
+    /**
+     * Create a column rearranger that applies the LDA, if given
+     *
+     * @param inSpec the inspec of the table
+     * @param lda the transformation or null if called from configure
+     * @param k number of dimensions to reduce to (number of rows in w)
+     * @param removeUsedCols whether to remove the input data
+     * @param usedColumnNames the names of the used columns, needed for removal
+     * @param colPrefix the create column prefix
+     * @return the column re-arranger
+     */
+    public static ColumnRearranger createColumnRearranger(final DataTableSpec inSpec, final LDA2 lda, final int k,
+        final boolean removeUsedCols, final String[] usedColumnNames, final String colPrefix) {
         // use the columnrearranger to exclude the used columns if checked
         final ColumnRearranger cr = new ColumnRearranger(inSpec);
 
@@ -109,7 +125,7 @@ public final class LDAUtils {
 
         final DataColumnSpec[] specs = new DataColumnSpec[k];
         for (int i = 0; i < k; i++) {
-            specs[i] = ung.newColumn(LDA_COL_PREFIX + " " + i, DoubleCell.TYPE);
+            specs[i] = ung.newColumn(colPrefix + i, DoubleCell.TYPE);
         }
 
         cr.append(new AbstractCellFactory(true, specs) {

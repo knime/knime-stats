@@ -9,6 +9,7 @@ import org.knime.base.node.mine.pca.PCAModelPortObject;
 import org.knime.base.node.mine.pca.PCAModelPortObjectSpec;
 import org.knime.base.node.stats.lda2.AbstractLDANodeModel;
 import org.knime.base.node.stats.lda2.algorithm.LDA2;
+import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -35,10 +36,12 @@ import org.knime.core.node.port.PortType;
  * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
  */
 final class LDAComputeNodeModel extends AbstractLDANodeModel {
+
     /**
      *
      */
     private static final String INTRA_CLASS_SCATTER_MATRIX = "Intra class scatter matrix";
+
     /**
      *
      */
@@ -156,7 +159,7 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
         }
         return new PCAModelPortObject(w.getData(),
             lda.getEigenvalues().stream().limit(w.getColumnDimension()).mapToDouble(e -> e.getValue()).toArray(),
-            m_usedColumnNames, new double[w.getRowDimension()]);
+            m_usedColumnNames, new double[w.getRowDimension()], LDAUtils.LDA_COL_PREFIX);
     }
 
     /**
@@ -166,7 +169,8 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
     protected PortObjectSpec[] doConfigure(final DataTableSpec inSpec) throws InvalidSettingsException {
         return new PortObjectSpec[]{createScatterTableSpec(INTRA_CLASS_SCATTER_MATRIX, m_usedColumnNames),
             createScatterTableSpec(INTER_CLASS_SCATTER_MATRIX, m_usedColumnNames),
-            createDecompositionTableSpec(m_usedColumnNames), new PCAModelPortObjectSpec(m_usedColumnNames)};
+            createDecompositionTableSpec(m_usedColumnNames),
+            new PCAModelPortObjectSpec(m_usedColumnNames, LDAUtils.LDA_COL_PREFIX)};
     }
 
     /**

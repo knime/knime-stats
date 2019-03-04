@@ -71,8 +71,8 @@ final class LDAApplyNodeModel extends NodeModel {
         final BufferedDataTable inTable = (BufferedDataTable)inData[PORT_IN_DATA];
         final PCAModelPortObject inModel = (PCAModelPortObject)inData[PORT_IN_MODEL];
 
-        final ColumnRearranger cr =
-            createColumnRearranger(inModel, inModel.getInputColumnNames(), inTable.getDataTableSpec());
+        final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getInputColumnNames(),
+            inTable.getDataTableSpec(), inModel.getSpec().getColPrefix());
 
         final BufferedDataTable out = exec.createColumnRearrangeTable(inTable, cr, exec);
         return new PortObject[]{out};
@@ -101,12 +101,11 @@ final class LDAApplyNodeModel extends NodeModel {
         CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() > 0,
             "The number of dimensions to project to must be a positive integer larger than 0, %s is invalid",
             m_applySettings.getDimModel().getIntValue());
-        //TODO: fix this
         final int maxDim = getMaxDim(modelSpec);
         CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() <= maxDim,
             "The number of dimensions to project to must be less than or equal %s", maxDim);
 
-        return new PortObjectSpec[]{createColumnRearranger(null, usedColumnNames, dataSpec).createSpec()};
+        return new PortObjectSpec[]{createColumnRearranger(null, usedColumnNames, dataSpec, modelSpec.getColPrefix()).createSpec()};
     }
 
     /**
@@ -123,10 +122,10 @@ final class LDAApplyNodeModel extends NodeModel {
     }
 
     private ColumnRearranger createColumnRearranger(final PCAModelPortObject inModel, final String[] usedColumnNames,
-        final DataTableSpec dataSpec) {
+        final DataTableSpec dataSpec, final String colPrefix) {
         if (inModel == null) {
             return LDAUtils.createColumnRearranger(dataSpec, null, m_applySettings.getDimModel().getIntValue(),
-                m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames);
+                m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames, colPrefix);
         }
         final int[] cIndices = Arrays.stream(usedColumnNames)//
             .mapToInt(cName -> dataSpec.findColumnIndex(cName))//
@@ -135,7 +134,7 @@ final class LDAApplyNodeModel extends NodeModel {
             m_applySettings.getFailOnMissingsModel().getBooleanValue());
 
         return LDAUtils.createColumnRearranger(dataSpec, lda, m_applySettings.getDimModel().getIntValue(),
-            m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames);
+            m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames, colPrefix);
     }
 
     /**
@@ -153,7 +152,7 @@ final class LDAApplyNodeModel extends NodeModel {
                     (PCAModelPortObject)((PortObjectInput)inputs[PORT_IN_MODEL]).getPortObject();
 
                 final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getInputColumnNames(),
-                    (DataTableSpec)inSpecs[PORT_IN_DATA]);
+                    (DataTableSpec)inSpecs[PORT_IN_DATA], inModel.getSpec().getColPrefix());
 
                 final StreamableFunction func = cr.createStreamableFunction(PORT_IN_DATA, 0);
                 func.runFinal(inputs, outputs, exec);
