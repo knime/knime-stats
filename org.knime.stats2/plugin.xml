@@ -48,10 +48,15 @@
             factory-class="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
             />
       <node 
-      		after="org.knime.base.node.stats.lda2.perform.LDA2NodeFactory"
+      		after="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
       		category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.lda2.apply.LDAApplyNodeFactory"
             />
+      <node
+            after="org.knime.base.node.stats.lda2.apply.LDAApplyNodeFactory"
+            category-path="/labs/statistics"
+            factory-class="org.knime.base.node.stats.lda2.reverse.LDAReverseNodeFactory">
+      </node>
       <node
             category-path="/labs/statistics"
             deprecated="true"
@@ -102,18 +107,6 @@
             factory-class="org.knime.base.node.stats.kaplanmeier2.KaplanMeierNodeFactory">
       </node>
    </extension>
-        <extension
-           point="org.knime.core.PortType">
-           <portType
-              color="#9911FF"
-              hidden="true"
-              name="LDA"
-              objectClass="org.knime.base.node.stats.lda2.port.LDAModelPortObject" 
-              objectSerializer="org.knime.base.node.stats.lda2.port.LDAModelPortObject$Serializer"
-              specClass="org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec"
-              specSerializer="org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec$Serializer">
-        </portType>
-   </extension>     
    <extension point="org.knime.workbench.repository.categories">
       <category
             icon="icons/category_statistics.png"

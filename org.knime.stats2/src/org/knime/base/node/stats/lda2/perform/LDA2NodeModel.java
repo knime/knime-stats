@@ -40,7 +40,7 @@ final class LDA2NodeModel extends AbstractLDANodeModel {
         throws IllegalArgumentException, InvalidSettingsException, CanceledExecutionException {
         final DataTableSpec inSpec = inTable.getDataTableSpec();
 
-        final LDA2 lda = new LDA2(m_indices);
+        final LDA2 lda = new LDA2(m_indices, m_computeSettings.getFailOnMissingsModel().getBooleanValue());
         lda.calculateTransformationMatrix(exec.createSubExecutionContext(0.5), inTable,
             m_applySettings.getDimModel().getIntValue(), m_classColIdx);
 

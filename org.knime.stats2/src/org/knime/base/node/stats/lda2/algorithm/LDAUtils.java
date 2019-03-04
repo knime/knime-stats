@@ -67,6 +67,8 @@ import org.knime.core.util.UniqueNameGenerator;
  */
 public final class LDAUtils {
 
+    public static final String LDA_COL_PREFIX = "LDA dimension";
+
     /** Constructor. */
     private LDAUtils() {
         // nothing to do
@@ -107,7 +109,7 @@ public final class LDAUtils {
 
         final DataColumnSpec[] specs = new DataColumnSpec[k];
         for (int i = 0; i < k; i++) {
-            specs[i] = ung.newColumn("LDA dimension " + i, DoubleCell.TYPE);
+            specs[i] = ung.newColumn(LDA_COL_PREFIX + " " + i, DoubleCell.TYPE);
         }
 
         cr.append(new AbstractCellFactory(true, specs) {
@@ -122,18 +124,6 @@ public final class LDAUtils {
         });
 
         return cr;
-    }
-
-    /**
-     * Warning if the selected dimensions are too high, without explanation.
-     *
-     * @param currentDim the current dimension
-     * @param maximumDim the maximum dimension
-     * @return the too high dim warning
-     */
-    public static final String createTooHighDimBaseWarning(final int currentDim, final int maximumDim) {
-        return "The current number of selected dimensions (" + currentDim
-            + ") is higher than the maximum allowed value of " + maximumDim + ".";
     }
 
     /**
@@ -202,6 +192,18 @@ public final class LDAUtils {
             stb.append("nly " + selectedColumns + " column" + (selectedColumns == 1 ? " is" : "s are") + " selected.");
         }
         return stb.toString();
+    }
+
+    /**
+     * Warning if the selected dimensions are too high, without explanation.
+     *
+     * @param currentDim the current dimension
+     * @param maximumDim the maximum dimension
+     * @return the too high dim warning
+     */
+    public static final String createTooHighDimBaseWarning(final int currentDim, final int maximumDim) {
+        return "The current number of selected dimensions (" + currentDim
+            + ") is higher than the maximum allowed value of " + maximumDim + ".";
     }
 
     /**

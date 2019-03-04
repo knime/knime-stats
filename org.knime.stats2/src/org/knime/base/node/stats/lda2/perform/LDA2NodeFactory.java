@@ -5,7 +5,7 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * <code>NodeFactory</code> for the "Linear Discriminant Analysis" Node.
+ * <code>NodeFactory</code> for the "Linear Discriminant Analysis" node.
  *
  *
  * @author Alexander Fillbrunn

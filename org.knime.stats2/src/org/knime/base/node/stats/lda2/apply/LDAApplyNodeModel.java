@@ -4,10 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.knime.base.node.mine.pca.PCAModelPortObject;
+import org.knime.base.node.mine.pca.PCAModelPortObjectSpec;
 import org.knime.base.node.stats.lda2.algorithm.LDA2;
 import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
-import org.knime.base.node.stats.lda2.port.LDAModelPortObject;
-import org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec;
 import org.knime.base.node.stats.lda2.settings.LDAApplySettings;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.ColumnRearranger;
@@ -50,7 +51,7 @@ final class LDAApplyNodeModel extends NodeModel {
      * Constructor for the node model.
      */
     LDAApplyNodeModel() {
-        super(new PortType[]{LDAModelPortObject.TYPE, BufferedDataTable.TYPE}, new PortType[]{BufferedDataTable.TYPE});
+        super(new PortType[]{PCAModelPortObject.TYPE, BufferedDataTable.TYPE}, new PortType[]{BufferedDataTable.TYPE});
     }
 
     /**
@@ -60,7 +61,7 @@ final class LDAApplyNodeModel extends NodeModel {
      */
     @Override
     protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec) throws Exception {
-        if (!(inData[PORT_IN_MODEL] instanceof LDAModelPortObject)) {
+        if (!(inData[PORT_IN_MODEL] instanceof PCAModelPortObject)) {
             throw new IllegalArgumentException("LDAModelPortObject as first input expected");
         }
         if (!(inData[PORT_IN_DATA] instanceof BufferedDataTable)) {
@@ -68,10 +69,10 @@ final class LDAApplyNodeModel extends NodeModel {
         }
 
         final BufferedDataTable inTable = (BufferedDataTable)inData[PORT_IN_DATA];
-        final LDAModelPortObject inModel = (LDAModelPortObject)inData[PORT_IN_MODEL];
+        final PCAModelPortObject inModel = (PCAModelPortObject)inData[PORT_IN_MODEL];
 
         final ColumnRearranger cr =
-            createColumnRearranger(inModel, inModel.getSpec().getColumnNames(), inTable.getDataTableSpec());
+            createColumnRearranger(inModel, inModel.getInputColumnNames(), inTable.getDataTableSpec());
 
         final BufferedDataTable out = exec.createColumnRearrangeTable(inTable, cr, exec);
         return new PortObject[]{out};
@@ -83,7 +84,7 @@ final class LDAApplyNodeModel extends NodeModel {
     @Override
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
         final DataTableSpec dataSpec = (DataTableSpec)inSpecs[PORT_IN_DATA];
-        final LDAModelPortObjectSpec modelSpec = (LDAModelPortObjectSpec)inSpecs[PORT_IN_MODEL];
+        final PCAModelPortObjectSpec modelSpec = (PCAModelPortObjectSpec)inSpecs[PORT_IN_MODEL];
 
         // check existing column names and find out their indices
         final String[] usedColumnNames = modelSpec.getColumnNames();
@@ -100,13 +101,28 @@ final class LDAApplyNodeModel extends NodeModel {
         CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() > 0,
             "The number of dimensions to project to must be a positive integer larger than 0, %s is invalid",
             m_applySettings.getDimModel().getIntValue());
-        CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() <= modelSpec.getMaxDimensions(),
-            "The number of dimensions to project to must be less than or equal %s", modelSpec.getMaxDimensions());
+        //TODO: fix this
+        final int maxDim = getMaxDim(modelSpec);
+        CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() <= maxDim,
+            "The number of dimensions to project to must be less than or equal %s", maxDim);
 
         return new PortObjectSpec[]{createColumnRearranger(null, usedColumnNames, dataSpec).createSpec()};
     }
 
-    private ColumnRearranger createColumnRearranger(final LDAModelPortObject inModel, final String[] usedColumnNames,
+    /**
+     * Returns the maximum number of dimensions to project to.
+     *
+     * @param modelSpec the model spec
+     * @return the maximum number of dimensions to project to
+     */
+    static int getMaxDim(final PCAModelPortObjectSpec modelSpec) {
+        if (modelSpec.getEigenValues() != null) {
+            return modelSpec.getEigenValues().length;
+        }
+        return modelSpec.getColumnNames().length;
+    }
+
+    private ColumnRearranger createColumnRearranger(final PCAModelPortObject inModel, final String[] usedColumnNames,
         final DataTableSpec dataSpec) {
         if (inModel == null) {
             return LDAUtils.createColumnRearranger(dataSpec, null, m_applySettings.getDimModel().getIntValue(),
@@ -115,7 +131,8 @@ final class LDAApplyNodeModel extends NodeModel {
         final int[] cIndices = Arrays.stream(usedColumnNames)//
             .mapToInt(cName -> dataSpec.findColumnIndex(cName))//
             .toArray();
-        final LDA2 lda = new LDA2(cIndices, inModel.getTransformationMatrix());
+        final LDA2 lda = new LDA2(cIndices, MatrixUtils.createRealMatrix(inModel.getEigenVectors()),
+            m_applySettings.getFailOnMissingsModel().getBooleanValue());
 
         return LDAUtils.createColumnRearranger(dataSpec, lda, m_applySettings.getDimModel().getIntValue(),
             m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames);
@@ -132,10 +149,10 @@ final class LDAApplyNodeModel extends NodeModel {
             public void runFinal(final PortInput[] inputs, final PortOutput[] outputs, final ExecutionContext exec)
                 throws Exception {
 
-                final LDAModelPortObject inModel =
-                    (LDAModelPortObject)((PortObjectInput)inputs[PORT_IN_MODEL]).getPortObject();
+                final PCAModelPortObject inModel =
+                    (PCAModelPortObject)((PortObjectInput)inputs[PORT_IN_MODEL]).getPortObject();
 
-                final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getSpec().getColumnNames(),
+                final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getInputColumnNames(),
                     (DataTableSpec)inSpecs[PORT_IN_DATA]);
 
                 final StreamableFunction func = cr.createStreamableFunction(PORT_IN_DATA, 0);

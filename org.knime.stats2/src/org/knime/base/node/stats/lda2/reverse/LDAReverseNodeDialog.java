@@ -1,7 +1,8 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME AG, Zurich, Switzerland
- *  Website: http://www.knime.com; Email: contact@knime.com
+ *  Website: http://www.knime.org; Email: contact@knime.org
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -40,87 +41,26 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * -------------------------------------------------------------------
+ * ---------------------------------------------------------------------
  *
  * History
- *   04.10.2006 (uwe): created
+ *   Mar 1, 2019 (Mark Ortmann, KNIME GmbH, Berlin, Germany): created
  */
+package org.knime.base.node.stats.lda2.reverse;
 
-package org.knime.base.node.stats.lda2.port;
-
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.ModelContentRO;
-import org.knime.core.node.ModelContentWO;
-import org.knime.core.node.port.AbstractSimplePortObjectSpec;
+import org.knime.base.node.mine.pca.PCAReverseNodeDialog;
 
 /**
- * Spec for the Linear Discriminant Analysis (LDA) model port object.
+ * The LDA reverse node dialog.
  *
- * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
+ * @author Mark Ortmann, KNIME GmbH, Berlin, Germany
  */
-public final class LDAModelPortObjectSpec extends AbstractSimplePortObjectSpec {
-    /**
-     * @noreference This class is not intended to be referenced by clients.
-     * @since 3.8
-     */
-    public static final class Serializer extends AbstractSimplePortObjectSpecSerializer<LDAModelPortObjectSpec> {
-    }
-
-    private static final String CFG_COL_NAMES = "column_names";
-
-    private static final String CFG_TARGET_DIMENSIONS = "target_dimensions";
-
-    private String[] m_columnNames;
-
-    private int m_maxDimensions;
+final class LDAReverseNodeDialog extends PCAReverseNodeDialog {
 
     /**
-     * Empty constructor.
+     * Constructor.
      */
-    public LDAModelPortObjectSpec() {
-        // nothing to do
-    }
-
-    /**
-     * Create object spec.
-     *
-     * @param columnNames names of input columns
-     * @param maxK number of dimensions reduced to
-     */
-    public LDAModelPortObjectSpec(final String[] columnNames, final int maxK) {
-        m_columnNames = columnNames;
-        m_maxDimensions = maxK;
-    }
-
-    /**
-     * @return names of input columns
-     */
-    public String[] getColumnNames() {
-        return m_columnNames;
-    }
-
-    /**
-     * @return the number of dimensions reduced to
-     */
-    public int getMaxDimensions() {
-        return m_maxDimensions;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void save(final ModelContentWO model) {
-        model.addStringArray(CFG_COL_NAMES, m_columnNames);
-        model.addInt(CFG_TARGET_DIMENSIONS, m_maxDimensions);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void load(final ModelContentRO model) throws InvalidSettingsException {
-        m_columnNames = model.getStringArray(CFG_COL_NAMES);
-        m_maxDimensions = model.getInt(CFG_TARGET_DIMENSIONS);
+    LDAReverseNodeDialog() {
+        super(LDAReverseNodeModel.CFG_COLS, LDAReverseNodeModel.CFG_REM_COLS, "LDA");
     }
 }

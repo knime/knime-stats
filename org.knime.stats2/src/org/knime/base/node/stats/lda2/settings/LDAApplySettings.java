@@ -65,14 +65,20 @@ public class LDAApplySettings {
     /** The configuration key for the number of dimensions to reduce to. */
     private static final String K_CFG = "number_of_dimensions";
 
-    /** The configuration key whether to remove the used columns. */
+    /** The configuration key of the remove used columns flag. */
     private static final String REMOVE_USED_COLS_CFG = "remove_used_columns";
+
+    /** The configuration key of the fail on missings flag. */
+    private static final String FAIL_ON_MISSING_CFG = "fail_on_missings";
 
     /** Settings model for the dimension to reduce to. */
     private final SettingsModelInteger m_dims = new SettingsModelIntegerBounded(K_CFG, 1, 1, Integer.MAX_VALUE);
 
     /** Settings model indicating whether or not to remove the used columns. */
     private final SettingsModelBoolean m_removeUsedCols = new SettingsModelBoolean(REMOVE_USED_COLS_CFG, false);
+
+    /** Settings model indicating whether or not to fail the computation if the input table contains missing values. */
+    private final SettingsModelBoolean m_failOnMissings = new SettingsModelBoolean(FAIL_ON_MISSING_CFG, false);
 
     /**
      * Returns the model storing the number of dimensions to reduce to.
@@ -93,6 +99,15 @@ public class LDAApplySettings {
     }
 
     /**
+     * Returns the model storing the fail on missings flag.
+     *
+     * @return model storing the fail on missings flag
+     */
+    public SettingsModelBoolean getFailOnMissingsModel() {
+        return m_failOnMissings;
+    }
+
+    /**
      * Validates the settings.
      *
      * @param settings the settings to validate
@@ -101,6 +116,7 @@ public class LDAApplySettings {
     public void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_dims.validateSettings(settings);
         m_removeUsedCols.validateSettings(settings);
+        m_failOnMissings.validateSettings(settings);
     }
 
     /**
@@ -112,6 +128,7 @@ public class LDAApplySettings {
     public void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_dims.loadSettingsFrom(settings);
         m_removeUsedCols.loadSettingsFrom(settings);
+        m_failOnMissings.loadSettingsFrom(settings);
     }
 
     /**
@@ -122,5 +139,6 @@ public class LDAApplySettings {
     public void saveSettingsTo(final NodeSettingsWO settings) {
         m_dims.saveSettingsTo(settings);
         m_removeUsedCols.saveSettingsTo(settings);
+        m_failOnMissings.saveSettingsTo(settings);
     }
 }

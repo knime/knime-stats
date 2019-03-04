@@ -62,6 +62,8 @@ final class LDA2NodeDialog extends NodeDialogPane {
 
     private final DialogComponentBoolean m_remUsedColsComp;
 
+    private final DialogComponentBoolean m_failOnMissingsComp;
+
     private int m_selectedClasses;
 
     private int m_selectedColumns;
@@ -120,6 +122,9 @@ final class LDA2NodeDialog extends NodeDialogPane {
         m_remUsedColsComp =
             new DialogComponentBoolean(applySettings.getRemoveUsedColsModel(), "Remove original data columns");
 
+        m_failOnMissingsComp = new DialogComponentBoolean(compSettings.getFailOnMissingsModel(),
+            "Fail if missing values are encountered");
+
         m_panel = new JPanel();
         final BoxLayout bl = new BoxLayout(m_panel, 1);
         m_panel.setLayout(bl);
@@ -127,6 +132,7 @@ final class LDA2NodeDialog extends NodeDialogPane {
         m_panel.add(m_classColComponent.getComponentPanel());
         m_panel.add(m_usedColsComponent.getComponentPanel());
         m_panel.add(m_remUsedColsComp.getComponentPanel());
+        m_panel.add(m_failOnMissingsComp.getComponentPanel());
         m_panel.add(m_maxDimZeroLabel.getComponentPanel());
         m_panel.add(m_tooHighDimLabel.getComponentPanel());
         addTab("Settings", m_panel);
@@ -151,6 +157,7 @@ final class LDA2NodeDialog extends NodeDialogPane {
         m_usedColsComponent.saveSettingsTo(settings);
         m_dimensionComponent.saveSettingsTo(settings);
         m_remUsedColsComp.saveSettingsTo(settings);
+        m_failOnMissingsComp.saveSettingsTo(settings);
     }
 
     @Override
@@ -161,7 +168,7 @@ final class LDA2NodeDialog extends NodeDialogPane {
         m_classColComponent.loadSettingsFrom(settings, specs);
         m_usedColsComponent.loadSettingsFrom(settings, new DataTableSpec[]{removeTargetColumnFromLastSpec()});
         m_remUsedColsComp.loadSettingsFrom(settings, specs);
-
+        m_failOnMissingsComp.loadSettingsFrom(settings, specs);
         updateSettings();
 
         // for the case of a too large maxDim - do not fire the changeListener, else the dimension will be reset

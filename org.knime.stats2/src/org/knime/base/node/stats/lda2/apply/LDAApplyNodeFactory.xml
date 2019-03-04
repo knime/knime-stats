@@ -22,7 +22,12 @@
 		smaller.
 		</option>
 		<option name="Remove original data columns">If checked, the columns containing the input data
-			are removed.</option>
+			are removed.
+		</option>
+		<option name="Fail if missing values are encountered">
+			If checked, execution fails, when the selected columns contain missing
+			values. Otherwise, rows containing missing values are ignored during the computation.
+		</option>
 	</fullDescription>
 
 	<ports>

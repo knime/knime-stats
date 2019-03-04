@@ -23,13 +23,23 @@
 
 		<option name="Class column">The column containing class information.</option>
 		<option name="Column selection">The columns of the original dimensions.</option>
+		<option name="Fail if missing values are encountered">
+			If checked, execution fails, when the selected columns contain missing
+			values. Otherwise, rows containing missing values are ignored during the computation. 
+		</option>
 	</fullDescription>
 
 	<ports>
 		<inPort index="0" name="Input data">Input data for the Linear Discriminant Analysis.</inPort>
-		<outPort index="0" name="Spectral decomposition">Table containing the spectral
+		<outPort index="0" name="Intra class scatter matrix">
+			The intra class scatter matrix
+		</outPort>
+		<outPort index="1" name="Inter class scatter matrix">
+			The inter class scatter matrix
+		</outPort>
+		<outPort index="2" name="Spectral decomposition">Table containing the spectral
 			decomposition. Rows are ordered according to eigenvalues (first column).</outPort>
-		<outPort index="1" name="LDA model">Model with projection to the reduced
+		<outPort index="3" name="LDA model">Model with projection to the reduced
 			space, used in the "Linear Discriminant Analysis Apply" node to apply
 			the transformation to, e.g. another validation set.</outPort>
 	</ports>

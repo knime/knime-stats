@@ -1,14 +1,14 @@
 package org.knime.base.node.stats.lda2.compute;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.linear.RealMatrix;
 import org.knime.base.node.mine.pca.EigenValue;
+import org.knime.base.node.mine.pca.PCAModelPortObject;
+import org.knime.base.node.mine.pca.PCAModelPortObjectSpec;
 import org.knime.base.node.stats.lda2.AbstractLDANodeModel;
 import org.knime.base.node.stats.lda2.algorithm.LDA2;
-import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
-import org.knime.base.node.stats.lda2.port.LDAModelPortObject;
-import org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -36,10 +36,20 @@ import org.knime.core.node.port.PortType;
  */
 final class LDAComputeNodeModel extends AbstractLDANodeModel {
     /**
+     *
+     */
+    private static final String INTRA_CLASS_SCATTER_MATRIX = "Intra class scatter matrix";
+    /**
+     *
+     */
+    private static final String INTER_CLASS_SCATTER_MATRIX = "Inter class scatter matrix";
+
+    /**
      * Constructor for the node model.
      */
     LDAComputeNodeModel() {
-        super(new PortType[]{BufferedDataTable.TYPE, LDAModelPortObject.TYPE});
+        super(new PortType[]{BufferedDataTable.TYPE, BufferedDataTable.TYPE, BufferedDataTable.TYPE,
+            PCAModelPortObject.TYPE});
     }
 
     /**
@@ -52,12 +62,14 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
     @Override
     protected PortObject[] doExecute(final BufferedDataTable inTable, final ExecutionContext exec)
         throws IllegalArgumentException, InvalidSettingsException, CanceledExecutionException {
-        final LDA2 lda = new LDA2(m_indices);
+        final LDA2 lda = new LDA2(m_indices, m_computeSettings.getFailOnMissingsModel().getBooleanValue());
         lda.calculateTransformationMatrix(exec.createSubExecutionContext(0.9), inTable, m_classColIdx);
 
         // return the spectral decomposition and the models PortObject
-        return new PortObject[]{createDecompositionTable(exec.createSubExecutionContext(0.1), lda),
-            createLDAModelPortObject(lda)};
+        return new PortObject[]{
+            createScatterTable(exec, INTRA_CLASS_SCATTER_MATRIX, m_usedColumnNames, lda.getIntraScatterMatrix()),
+            createScatterTable(exec, INTER_CLASS_SCATTER_MATRIX, m_usedColumnNames, lda.getInterScatterMatrix()),
+            createDecompositionTable(exec.createSubExecutionContext(0.1), lda), createModelPortObject(lda)};
     }
 
     /**
@@ -109,19 +121,42 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
         return result.getTable();
     }
 
+    private static DataTableSpec createScatterTableSpec(final String tableName, final String[] columnNames) {
+        final DataColumnSpec[] colSpecs = Arrays.stream(columnNames)
+            .map(s -> new DataColumnSpecCreator(s, DoubleCell.TYPE).createSpec()).toArray(DataColumnSpec[]::new);
+        return new DataTableSpec(tableName, colSpecs);
+    }
+
+    private static BufferedDataTable createScatterTable(final ExecutionContext exec, final String tableName, final String[] columnNames,
+        final RealMatrix matrix) throws CanceledExecutionException {
+        final DataTableSpec spec = createScatterTableSpec(tableName, columnNames);
+        final BufferedDataContainer scatterTable = exec.createDataContainer(spec);
+        final double nRow = matrix.getRowDimension();
+        for (int i = 0; i < matrix.getRowDimension(); i++) {
+            exec.checkCanceled();
+            exec.setProgress(i / nRow, "Adding row " + i + "/" + nRow + " to " + tableName);
+            final DataCell[] vals =
+                Arrays.stream(matrix.getRow(i)).mapToObj(d -> new DoubleCell(d)).toArray(DoubleCell[]::new);
+            scatterTable.addRowToTable(new DefaultRow(new RowKey(columnNames[i]), vals));
+        }
+        scatterTable.close();
+        return scatterTable.getTable();
+    }
+
     /**
      * Create the PortObject for this projection.
      *
      * @return the PortObject which can be applied via the ProjectionApply Node
      */
-    LDAModelPortObject createLDAModelPortObject(final LDA2 lda) {
+    PCAModelPortObject createModelPortObject(final LDA2 lda) {
         RealMatrix w = lda.getTransformationMatrix();
         if (w == null) {
             throw new IllegalStateException(
                 "Can't create port object: The transformation matrix has not been calculated");
         }
-
-        return new LDAModelPortObject(m_usedColumnNames, w);
+        return new PCAModelPortObject(w.getData(),
+            lda.getEigenvalues().stream().limit(w.getColumnDimension()).mapToDouble(e -> e.getValue()).toArray(),
+            m_usedColumnNames, new double[w.getRowDimension()]);
     }
 
     /**
@@ -129,9 +164,9 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
      */
     @Override
     protected PortObjectSpec[] doConfigure(final DataTableSpec inSpec) throws InvalidSettingsException {
-        return new PortObjectSpec[]{createDecompositionTableSpec(m_usedColumnNames), new LDAModelPortObjectSpec(
-            m_usedColumnNames,
-            LDAUtils.calcPositiveMaxDim(inSpec, m_computeSettings.getClassModel().getStringValue(), m_indices.length))};
+        return new PortObjectSpec[]{createScatterTableSpec(INTRA_CLASS_SCATTER_MATRIX, m_usedColumnNames),
+            createScatterTableSpec(INTER_CLASS_SCATTER_MATRIX, m_usedColumnNames),
+            createDecompositionTableSpec(m_usedColumnNames), new PCAModelPortObjectSpec(m_usedColumnNames)};
     }
 
     /**

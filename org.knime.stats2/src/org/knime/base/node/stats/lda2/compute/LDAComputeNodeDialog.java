@@ -16,6 +16,7 @@ import org.knime.core.node.NodeSettings;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
+import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnFilter2;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnNameSelection;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
@@ -38,6 +39,8 @@ class LDAComputeNodeDialog extends NodeDialogPane {
     private final SettingsModelColumnFilter2 m_usedColsModel;
 
     private final DialogComponentColumnFilter2 m_usedColsComponent;
+
+    private final DialogComponentBoolean m_failOnMissingsComp;
 
     private DataTableSpec[] m_lastSpecs;
 
@@ -66,11 +69,15 @@ class LDAComputeNodeDialog extends NodeDialogPane {
 
         m_usedColsComponent = new DialogComponentColumnFilter2(m_usedColsModel, AbstractLDANodeModel.PORT_IN_DATA);
 
+        m_failOnMissingsComp = new DialogComponentBoolean(s.getFailOnMissingsModel(),
+            "Fail if missing values are encountered");
+
         m_panel = new JPanel();
         final BoxLayout bl = new BoxLayout(m_panel, 1);
         m_panel.setLayout(bl);
         m_panel.add(m_classColComponent.getComponentPanel());
         m_panel.add(m_usedColsComponent.getComponentPanel());
+        m_panel.add(m_failOnMissingsComp.getComponentPanel());
         addTab("Settings", m_panel);
     }
 
@@ -81,6 +88,7 @@ class LDAComputeNodeDialog extends NodeDialogPane {
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         m_classColComponent.saveSettingsTo(settings);
         m_usedColsComponent.saveSettingsTo(settings);
+        m_failOnMissingsComp.saveSettingsTo(settings);
     }
 
     @Override
@@ -89,6 +97,7 @@ class LDAComputeNodeDialog extends NodeDialogPane {
         m_lastSpecs = specs; // Needed to get the number of classes.
         m_classColComponent.loadSettingsFrom(settings, specs);
         m_usedColsComponent.loadSettingsFrom(settings, new DataTableSpec[]{removeTargetColumnFromLastSpec()});
+        m_failOnMissingsComp.loadSettingsFrom(settings, specs);
     }
 
     /**

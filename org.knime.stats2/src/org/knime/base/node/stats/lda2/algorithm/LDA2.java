@@ -49,8 +49,12 @@
 package org.knime.base.node.stats.lda2.algorithm;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
@@ -62,6 +66,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.knime.base.node.mine.pca.EigenValue;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
+import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.def.DoubleCell;
 import org.knime.core.node.BufferedDataTable;
@@ -79,10 +84,19 @@ import org.knime.core.node.util.CheckUtils;
  */
 public final class LDA2 {
 
-    private static final String MISSING_VALUE_WARNING =
-        "Missing values are not supported. Please replace them using a \"Missing Value\" node.";
+    private static final String MISSING_CLASS_EXCEPTION =
+        "Missing values within the class column are not supported. Please replace them using a \"Missing Value\" node.";
+
+    private static final String MISSING_VALUE_EXCEPTION =
+        "Missing values are not supported. Please de-select <Fail if missing values are encountered>.";
 
     private final int[] m_predVarIndices;
+
+    /** The intra-scatter matrix. */
+    private RealMatrix m_sw;
+
+    /** The inter-scatter matrix. */
+    private RealMatrix m_sb;
 
     private RealMatrix m_w;
 
@@ -90,29 +104,46 @@ public final class LDA2 {
 
     private int m_k = 0;
 
+    private final boolean m_failOnMissings;
+
     /**
      * Constructor for creation from an existing transformation matrix, used only for prediction.
      *
      * @param colIndices the indices of the columns to use for the prediction
+     * @param failOnMissings if {@code true} rows containing missing cells cause an exception
      * @param w the transformation matrix
      */
-    public LDA2(final int[] colIndices, final RealMatrix w) {
+    public LDA2(final int[] colIndices, final RealMatrix w, final boolean failOnMissings) {
         // variables used for the projection
         m_predVarIndices = colIndices;
         m_w = w;
+        m_failOnMissings = failOnMissings;
     }
 
     /**
      * The constructor for an LDA analysis, used to calculate the transformation matrix prior to prediction.
      *
      * @param colIndices the class column's index, used to calculate the transformation and the prediction.
+     * @param failOnMissings if {@code true} rows containing missing cells cause an exception
      * @throws InvalidSettingsException when the table has no data
      */
-    public LDA2(final int[] colIndices) throws InvalidSettingsException {
+    public LDA2(final int[] colIndices, final boolean failOnMissings) throws InvalidSettingsException {
         if (colIndices == null || colIndices.length == 0) {
             throw new InvalidSettingsException("No column is given to calculate the transformation matrix.");
         }
         m_predVarIndices = colIndices;
+        m_failOnMissings = failOnMissings;
+    }
+
+    /**
+     * Calculates the projection of the data in the row.
+     *
+     * @param row the row to calculate the projection for. Included fields are those that were given the constructor.
+     * @return an array of double cells that constitutes the projection of the data.
+     * @throws InvalidSettingsException when there are missing values
+     */
+    public DataCell[] getProjection(final DataRow row) throws InvalidSettingsException {
+        return getProjection(row, m_k);
     }
 
     /**
@@ -123,33 +154,27 @@ public final class LDA2 {
      * @return an array of double cells that constitutes the projection of the data.
      * @throws InvalidSettingsException when there are missing values
      */
-    public DoubleCell[] getProjection(final DataRow row, final int dim) throws InvalidSettingsException {
-        return writeCells(calculateProjection(row), dim);
+    public DataCell[] getProjection(final DataRow row, final int dim) throws InvalidSettingsException {
+        final Optional<RealVector> rVec = rowToRealVector(row);
+        if (!rVec.isPresent()) {
+            if (m_failOnMissings) {
+                throw new IllegalArgumentException(MISSING_VALUE_EXCEPTION);
+            }
+            return Stream.generate(() -> DataType.getMissingCell()).limit(m_predVarIndices.length)
+                .toArray(DataCell[]::new);
+        }
+        return writeCells(calculateProjection(rVec.get()), dim);
     }
 
-    /**
-     * Calculates the projection of the data in the row.
-     *
-     * @param row the row to calculate the projection for. Included fields are those that were given the constructor.
-     * @return an array of double cells that constitutes the projection of the data.
-     * @throws InvalidSettingsException when there are missing values
-     */
-    public DoubleCell[] getProjection(final DataRow row) throws InvalidSettingsException {
-        final RealVector y = calculateProjection(row);
-        return writeCells(y, y.getDimension());
-    }
-
-    private RealVector calculateProjection(final DataRow row) throws InvalidSettingsException {
+    private RealVector calculateProjection(final RealVector rVec) throws InvalidSettingsException {
         if (m_w == null) {
             throw new IllegalStateException("The transformation matrix has not been calculated");
         }
-        final RealVector x = rowToRealVector(row);
-        final RealVector y = m_w.operate(x);
-        return y;
+        return m_w.preMultiply(rVec);
     }
 
-    private static DoubleCell[] writeCells(final RealVector res, final int dim) {
-        final DoubleCell[] cells = new DoubleCell[dim];
+    private static DataCell[] writeCells(final RealVector res, final int dim) {
+        final DataCell[] cells = new DoubleCell[dim];
         for (int i = 0; i < dim; i++) {
             cells[i] = new DoubleCell(res.getEntry(i));
         }
@@ -180,6 +205,24 @@ public final class LDA2 {
      */
     public List<EigenValue> getEigenvalues() {
         return m_eigenValues;
+    }
+
+    /**
+     * Returns the intra class scatter matrix.
+     *
+     * @return the intra class scatter matrix
+     */
+    public RealMatrix getIntraScatterMatrix() {
+        return m_sw;
+    }
+
+    /**
+     * Returns the inter class scatter matrix.
+     *
+     * @return the inter class scatter matrix
+     */
+    public RealMatrix getInterScatterMatrix() {
+        return m_sb;
     }
 
     /**
@@ -253,6 +296,7 @@ public final class LDA2 {
         final Map<String, ClassStats> classStats = new HashMap<>();
         // Values for calculating the total mean in the end
         long progressCount = 0;
+        final HashSet<String> classes = new HashSet<>();
         // First calculate the class means and counts and the total mean and count
         for (final DataRow row : inTable) {
             exec.checkCanceled();
@@ -262,30 +306,39 @@ public final class LDA2 {
 
             final DataCell cell = row.getCell(classColIndex);
             if (cell.isMissing()) {
-                throw new IllegalArgumentException(MISSING_VALUE_WARNING);
+                throw new IllegalArgumentException(MISSING_CLASS_EXCEPTION);
             }
             final String cl = cell.toString();
 
-            final RealVector d = rowToRealVector(row);
+            classes.add(cl);
+
+            final Optional<RealVector> d = rowToRealVector(row);
+            if (!d.isPresent()) {
+                if (m_failOnMissings) {
+                    throw new IllegalArgumentException(MISSING_VALUE_EXCEPTION);
+                }
+                continue;
+            }
 
             // will be null in the first iteration
             if (!classStats.containsKey(cl)) {
                 classStats.put(cl, new ClassStats(m_predVarIndices.length));
             }
-            classStats.get(cl).add(d);
+            classStats.get(cl).add(d.get());
         }
 
         if (classStats.size() == 0) {
-            throw new IllegalArgumentException("The table contains no classes");
+            throw new IllegalArgumentException("The table contains only rows contain missings data");
         }
 
         if (k >= classStats.size()) {
-            throw new InvalidSettingsException(
-                "Not enough distinct classes in the class column \""
-                    + inTable.getSpec().getColumnSpec(classColIndex).getName() + "\": The data can only be reduced to "
-                    + (classStats.size() - 1) + " or fewer dimensions.");
+            classes.removeAll(classStats.keySet());
+            throw new InvalidSettingsException("Not enough distinct classes in the class column \""
+                + inTable.getSpec().getColumnSpec(classColIndex).getName() + "\": The data can only be reduced to "
+                + (classStats.size() - 1) + " or fewer dimensions."
+                + ((classes.size() == 0) ? "" : " Note that all rows for class(es) ("
+                    + classes.stream().collect(Collectors.joining(",")) + ") contain missings"));
         }
-
         return classStats;
     }
 
@@ -346,6 +399,7 @@ public final class LDA2 {
         throws InvalidSettingsException, CanceledExecutionException {
         // calculate the mean
         final RealVector totalMean = new ArrayRealVector(m_predVarIndices.length, 0.0);
+        long nonMissingCnt = 0;
 
         for (final Map.Entry<String, ClassStats> entry : classStats.entrySet()) {
             final int count = entry.getValue().getCount();
@@ -353,20 +407,20 @@ public final class LDA2 {
                 throw new InvalidSettingsException(
                     "The size of the smallest group must be larger than the number of predictor variables ("
                         + m_predVarIndices.length + "). Class \"" + entry.getKey() + "\" has only " + count
-                        + " instance" + (count == 1 ? "." : "s.")
+                        + " non-missing instance" + (count == 1 ? "." : "s.")
                         + " Please reduce the number of selected predictor variables.");
             }
             totalMean.combineToSelf(1, 1, entry.getValue().getVector());
+            nonMissingCnt += entry.getValue().getCount();
 
             // finally, normalize the class stats, i.e., calculate the means
             entry.getValue().normalize();
         }
 
         // normalize, i.e., calculate the mean
-        totalMean.mapDivideToSelf(inTable.size());
+        totalMean.mapDivideToSelf(nonMissingCnt);
 
         // Calculate the inter-class scatter matrix (this is an nrPred x nrPred covariance-matrix)
-        RealMatrix sw = null;
         long progressCount = 0;
         exec = exec.createSubExecutionContext(0.5);
         for (final DataRow row : inTable) {
@@ -377,17 +431,23 @@ public final class LDA2 {
                     + " (\"" + row.getKey() + "\").");
 
             // subtract mean from data
-            final RealVector v = rowToRealVector(row).combineToSelf(1, -1,
-                classStats.get(row.getCell(classColIndex).toString()).getVector());
+            final Optional<RealVector> rVec = rowToRealVector(row);
+            if (!rVec.isPresent()) {
+                // no need to check throw exception since this would have been triggered already during #calcClassStats
+                if (!m_failOnMissings) {
+                    continue;
+                }
+            }
+            final RealVector v =
+                rVec.get().combineToSelf(1, -1, classStats.get(row.getCell(classColIndex).toString()).getVector());
 
             // make it to a matrix: do the outer product
             final RealMatrix si = v.outerProduct(v);
 
-            sw = (sw != null) ? sw.add(si) : si;
+            m_sw = (m_sw != null) ? m_sw.add(si) : si;
         }
 
         // Calculate the intra-class scatter matrix (nrPred x nrPred covariance-matrix)
-        RealMatrix sb = null;
         progressCount = 0;
         exec = exec.createSubExecutionContext(0.1);
         for (final Map.Entry<String, ClassStats> entry : classStats.entrySet()) {
@@ -401,11 +461,11 @@ public final class LDA2 {
             final RealVector v = entry.getValue().getVector().combineToSelf(1, -1, totalMean);
             final RealMatrix s = v.outerProduct(v).scalarMultiply(entry.getValue().getCount());
 
-            sb = (sb != null) ? sb.add(s) : s;
+            m_sb = (m_sb != null) ? m_sb.add(s) : s;
         }
 
         // check for reasonable inter-class scatter matrix and throw reasonable error (AP-6588)
-        final DecompositionSolver solver = new LUDecomposition(sw).getSolver();
+        final DecompositionSolver solver = new LUDecomposition(m_sw).getSolver();
         if (!solver.isNonSingular()) {
             throw new InvalidSettingsException(
                 "Cannot invert the inter-class scatter matrix as it is singular. Most likely, two input columns are"
@@ -413,7 +473,7 @@ public final class LDA2 {
         }
 
         // Now extract eigenvalues of sw^-1 * sb
-        final RealMatrix mat = solver.getInverse().multiply(sb);
+        final RealMatrix mat = solver.getInverse().multiply(m_sb);
         final EigenDecomposition ed = new EigenDecomposition(mat);
         final double[] eigenValues = ed.getRealEigenvalues();
         final double[][] eigenVectors = new double[m_predVarIndices.length][eigenValues.length];
@@ -424,6 +484,10 @@ public final class LDA2 {
             }
         }
 
+        // rescale to comply with python
+        m_sb = m_sb.scalarMultiply(1.0 / nonMissingCnt);
+        m_sw = m_sw.scalarMultiply(1.0 / nonMissingCnt);
+
         m_eigenValues = EigenValue.createSortedList(eigenVectors, eigenValues);
 
         // Create the transformation matrix.
@@ -433,7 +497,7 @@ public final class LDA2 {
             w[i] = vec;
         }
 
-        m_w = MatrixUtils.createRealMatrix(w);
+        m_w = MatrixUtils.createRealMatrix(w).transpose();
     }
 
     /**
@@ -453,17 +517,16 @@ public final class LDA2 {
      * @param row the data row
      * @return the predictor variables of that row
      */
-    private RealVector rowToRealVector(final DataRow row) {
+    private Optional<RealVector> rowToRealVector(final DataRow row) {
         final RealVector d = new ArrayRealVector(m_predVarIndices.length);
         for (int c = 0; c < m_predVarIndices.length; c++) {
             final DataCell cell = row.getCell(m_predVarIndices[c]);
             if (cell.isMissing()) {
-                throw new IllegalArgumentException(MISSING_VALUE_WARNING);
+                return Optional.empty();
             }
             d.setEntry(c, ((DoubleValue)cell).getDoubleValue());
         }
-
-        return d;
+        return Optional.of(d);
     }
 
 }

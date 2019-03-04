@@ -52,6 +52,7 @@ import org.knime.core.data.DoubleValue;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 
@@ -68,6 +69,9 @@ public final class LDAComputeSettings {
     /** The configuration key for the class column. */
     private static final String CLASS_COL_CFG = "class_column";
 
+    /** The configuration key of the fail on missings flag. */
+    private static final String FAIL_ON_MISSING_CFG = "fail_on_missings";
+
     /** Settings model for the used columns. */
     @SuppressWarnings("unchecked")
     private final SettingsModelColumnFilter2 m_usedCols =
@@ -78,6 +82,9 @@ public final class LDAComputeSettings {
      * make the LDA function properly.
      */
     private final SettingsModelString m_classCol = new SettingsModelString(CLASS_COL_CFG, null);
+
+    /** Settings model indicating whether or not to fail the computation if the input table contains missing values. */
+    private final SettingsModelBoolean m_failOnMissings = new SettingsModelBoolean(FAIL_ON_MISSING_CFG, false);
 
     /**
      * Returns the model storing the selected predictor columns.
@@ -98,6 +105,15 @@ public final class LDAComputeSettings {
     }
 
     /**
+     * Returns the model storing the fail on missings flag.
+     *
+     * @return model storing the fail on missings flag
+     */
+    public SettingsModelBoolean getFailOnMissingsModel() {
+        return m_failOnMissings;
+    }
+
+    /**
      * Validates the settings.
      *
      * @param settings the settings to validate
@@ -106,6 +122,7 @@ public final class LDAComputeSettings {
     public void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_usedCols.validateSettings(settings);
         m_classCol.validateSettings(settings);
+        m_failOnMissings.validateSettings(settings);
     }
 
     /**
@@ -117,6 +134,7 @@ public final class LDAComputeSettings {
     public void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_usedCols.loadSettingsFrom(settings);
         m_classCol.loadSettingsFrom(settings);
+        m_failOnMissings.loadSettingsFrom(settings);
     }
 
     /**
@@ -127,6 +145,7 @@ public final class LDAComputeSettings {
     public void saveSettingsTo(final NodeSettingsWO settings) {
         m_usedCols.saveSettingsTo(settings);
         m_classCol.saveSettingsTo(settings);
+        m_failOnMissings.saveSettingsTo(settings);
     }
 
 }

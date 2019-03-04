@@ -12,9 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.knime.base.node.mine.pca.PCAModelPortObjectSpec;
 import org.knime.base.node.stats.lda2.LDADialogComponentNumber;
 import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
-import org.knime.base.node.stats.lda2.port.LDAModelPortObjectSpec;
 import org.knime.base.node.stats.lda2.settings.LDAApplySettings;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
@@ -40,6 +40,8 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
 
     private final DialogComponentBoolean m_remUsedCols;
 
+    private final DialogComponentBoolean m_failOnMissingsComp;
+
     private final JLabel m_errorMsg;
 
     LDAApplyNodeDialog() {
@@ -50,6 +52,8 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
         m_maxDimDiaComp.getModel().addChangeListener(m_dimListener);
         m_remUsedCols =
             new DialogComponentBoolean(applySettings.getRemoveUsedColsModel(), "Remove original data columns");
+        m_failOnMissingsComp = new DialogComponentBoolean(applySettings.getFailOnMissingsModel(),
+                "Fail if missing values are encountered");
         m_errorMsg = new JLabel("");
         m_errorMsg.setForeground(Color.RED);
         addTab("Settings", createPanel());
@@ -70,6 +74,8 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
         p.add(m_maxDimDiaComp.getComponentPanel(), gbc);
         ++gbc.gridy;
         p.add(m_remUsedCols.getComponentPanel(), gbc);
+        ++gbc.gridy;
+        p.add(m_failOnMissingsComp.getComponentPanel(),gbc);
         ++gbc.gridy;
         gbc.insets = new Insets(0, 5, 0, 0);
         p.add(m_errorMsg, gbc);
@@ -92,6 +98,7 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
         }
         m_maxDimDiaComp.saveSettingsTo(settings);
         m_remUsedCols.saveSettingsTo(settings);
+        m_failOnMissingsComp.saveSettingsTo(settings);
     }
 
     /**
@@ -100,10 +107,10 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
         throws NotConfigurableException {
-        if(specs[LDAApplyNodeModel.PORT_IN_MODEL] == null) {
+        if (specs[LDAApplyNodeModel.PORT_IN_MODEL] == null) {
             throw new NotConfigurableException("Model input missing");
         }
-        final int maxDim = ((LDAModelPortObjectSpec)specs[LDAApplyNodeModel.PORT_IN_MODEL]).getMaxDimensions();
+        final int maxDim = LDAApplyNodeModel.getMaxDim((PCAModelPortObjectSpec)specs[LDAApplyNodeModel.PORT_IN_MODEL]);
         m_maxDimDiaComp.setToolTipText("Maximum dimension: " + maxDim);
 
         m_dimListener.setMaxDim(maxDim);
@@ -111,6 +118,7 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
 
         m_maxDimDiaComp.loadSettingsFrom(settings, specs);
         m_remUsedCols.loadSettingsFrom(settings, specs);
+        m_failOnMissingsComp.loadSettingsFrom(settings, specs);
 
         m_dimListener.validateOnly(false);
 
