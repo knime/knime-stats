@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -160,7 +161,7 @@ public final class LDA2 {
             if (m_failOnMissings) {
                 throw new IllegalArgumentException(MISSING_VALUE_EXCEPTION);
             }
-            return Stream.generate(() -> DataType.getMissingCell()).limit(m_predVarIndices.length)
+            return Stream.generate(() -> DataType.getMissingCell()).limit(dim)
                 .toArray(DataCell[]::new);
         }
         return writeCells(calculateProjection(rVec.get()), dim);
@@ -296,7 +297,7 @@ public final class LDA2 {
         final Map<String, ClassStats> classStats = new HashMap<>();
         // Values for calculating the total mean in the end
         long progressCount = 0;
-        final HashSet<String> classes = new HashSet<>();
+        final Set<String> classes = new HashSet<>();
         // First calculate the class means and counts and the total mean and count
         for (final DataRow row : inTable) {
             exec.checkCanceled();

@@ -37,14 +37,10 @@ import org.knime.core.node.port.PortType;
  */
 final class LDAComputeNodeModel extends AbstractLDANodeModel {
 
-    /**
-     *
-     */
+    /** The intra class scatter matrix table name. */
     private static final String INTRA_CLASS_SCATTER_MATRIX = "Intra class scatter matrix";
 
-    /**
-     *
-     */
+    /** The inter class scatter matrix table name. */
     private static final String INTER_CLASS_SCATTER_MATRIX = "Inter class scatter matrix";
 
     /**
@@ -130,8 +126,8 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
         return new DataTableSpec(tableName, colSpecs);
     }
 
-    private static BufferedDataTable createScatterTable(final ExecutionContext exec, final String tableName, final String[] columnNames,
-        final RealMatrix matrix) throws CanceledExecutionException {
+    private static BufferedDataTable createScatterTable(final ExecutionContext exec, final String tableName,
+        final String[] columnNames, final RealMatrix matrix) throws CanceledExecutionException {
         final DataTableSpec spec = createScatterTableSpec(tableName, columnNames);
         final BufferedDataContainer scatterTable = exec.createDataContainer(spec);
         final double nRow = matrix.getRowDimension();
