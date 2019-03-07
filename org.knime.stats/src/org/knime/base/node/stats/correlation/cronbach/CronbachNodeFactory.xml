@@ -13,13 +13,13 @@
 
 		<tab name="Manual Selection">
            <option name="Include">
-                This list contains the names of the columns in the input table
-                that are included in the Cronbach Value.
+                This list contains the names of those columns in the input table
+                to be included in the Cronbach Value.
             </option>
             
             <option name="Exclude">
-                This list contains the names of the columns in the input table
-                that are left out of the calculation.
+                This list contains the names of those columns in the input table
+                to be left out of the calculation.
             </option>
 
             <option name="Filter">
@@ -57,7 +57,7 @@
 				Type a search pattern which matches columns to move into the
 				Include list. You can use either Wildcards ('?' matching any
 				character, '*' matching a sequence of any characters) or Regex.
-				You can specify if your pattern should be case sensitive.
+				You can specify whether your pattern should be case sensitive.
 			</option>
         </tab>
 	</fullDescription>
