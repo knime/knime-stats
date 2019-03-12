@@ -27,16 +27,16 @@
 		<knime.svg.p2>${env.KNIME_SVG_P2}</knime.svg.p2>
 		<knime.javasnippet.p2>${env.KNIME_JAVASNIPPET_P2}</knime.javasnippet.p2>
 		<knime.expressions.p2>${env.KNIME_EXPRESSIONS_P2}</knime.expressions.p2>
-		<knime.workbench.core.p2>${env.KNIME_WORKBENCH_P2}</knime.workbench.core.p2>
 		<knime.shared.p2>${env.KNIME_SHARED_P2}</knime.shared.p2>
-		<knime.js.p2>${env.KNIME_JS_P2}</knime.js.p2>
+		<knime.js.core.p2>${env.KNIME_JS_CORE_P2}</knime.js.core.p2>
 		<knime.tp.p2>${env.KNIME_TP_P2}</knime.tp.p2>
 	</properties>
 
 	<modules>
-		<module>org.knime.features.stats2</module>
 		<module>org.knime.stats</module>
 		<module>org.knime.stats2</module>
+		<module>org.knime.features.stats2</module>
+		<module>org.knime.update.stats</module>
 	</modules>
 
 	<repositories>
@@ -56,14 +56,9 @@
 			<url>${knime.svg.p2}</url>
 		</repository>
 		<repository>
-			<id>knime.js.p2</id>
+			<id>knime.js.core.p2</id>
 			<layout>p2</layout>
-			<url>${knime.js.p2}</url>
-		</repository>
-		<repository>
-			<id>knime.workbench.core.p2</id>
-			<layout>p2</layout>
-			<url>${knime.workbench.core.p2}</url>
+			<url>${knime.js.core.p2}</url>
 		</repository>
 		<repository>
 			<id>knime.shared.p2</id>
