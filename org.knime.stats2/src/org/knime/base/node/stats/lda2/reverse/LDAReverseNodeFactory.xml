@@ -30,7 +30,7 @@
 			Input data containing LDA projected data.
 		</inPort>
 		<outPort index="0" name="Data in original space">
-			The original data (without LDA columns) including the re-constructed data from reverting the LDA projection.
+			The original data (without LDA columns) including the reconstructed data from inverting the LDA projection.
 		</outPort>
 		</ports>
 		</knimeNode>
