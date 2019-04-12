@@ -1,3 +1,6 @@
 */bin/
 */target/
 */build/
+org.knime.ext.tsne/org-knime-ext-tsne.jar
+.flattened-pom.xml
+*/**.flattened-pom.xml
