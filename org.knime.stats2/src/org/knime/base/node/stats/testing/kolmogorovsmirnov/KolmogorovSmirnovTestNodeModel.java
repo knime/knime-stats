@@ -17,7 +17,7 @@ import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.RowKey;
-import org.knime.core.data.container.CloseableRowIterator;
+import org.knime.core.data.container.filter.TableFilter;
 import org.knime.core.data.def.BooleanCell;
 import org.knime.core.data.def.BooleanCell.BooleanCellFactory;
 import org.knime.core.data.def.DefaultRow;
@@ -135,20 +135,16 @@ final class KolmogorovSmirnovTestNodeModel extends NodeModel {
         final double[] colData1 = new double[(int)m];
         final double[] colData2 = new double[(int)n];
 
-        try (CloseableRowIterator rowIterator =
-            inTable.iteratorBuilder().filterColumns(cellIndex1, cellIndex2).build()) {
-            while (rowIterator.hasNext()) {
-                final DataRow row = rowIterator.next();
-                progMon.setProgress(progCnt / (10.0 * inTable.size()));
-                progCnt++;
-                if (!row.getCell(cellIndex1).isMissing()) {
-                    colData1[count1] = ((DoubleValue)row.getCell(cellIndex1)).getDoubleValue();
-                    count1++;
-                }
-                if (!row.getCell(cellIndex2).isMissing()) {
-                    colData2[count2] = ((DoubleValue)row.getCell(cellIndex2)).getDoubleValue();
-                    count2++;
-                }
+        for (final DataRow row : inTable.filter(TableFilter.materializeCols(cellIndex1, cellIndex2))) {
+            progMon.setProgress(progCnt / (10.0 * inTable.size()));
+            progCnt++;
+            if (!row.getCell(cellIndex1).isMissing()) {
+                colData1[count1] = ((DoubleValue)row.getCell(cellIndex1)).getDoubleValue();
+                count1++;
+            }
+            if (!row.getCell(cellIndex2).isMissing()) {
+                colData2[count2] = ((DoubleValue)row.getCell(cellIndex2)).getDoubleValue();
+                count2++;
             }
         }
 
