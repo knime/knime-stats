@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
-<knimeNode icon="./lda.png" type="Manipulator">
+<knimeNode icon="./../../../lda/lda.png" type="Manipulator">
 	<name>Linear Discriminant Analysis</name>
 
 	<shortDescription>
@@ -26,7 +26,7 @@
 			</p>
 		</intro>
 
-		<option name="Dimensions">The number of dimensions to reduce to. This can either be the number
+		<option name="Target dimensions">The number of dimensions to reduce to. This can either be the number
 		of classes minus one or the number of selected columns depending on which one is
 		smaller.
 		</option>
@@ -36,8 +36,8 @@
 			are removed.
 		</option>
 		<option name="Fail if missing values are encountered">
-			If checked, execution fails, when the selected columns contain missing
-			values. Otherwise, rows containing missing values are ignored during the computation. 
+			If checked, execution fails, when the selected columns contain missing values. 
+			By default, rows containing missing values are ignored and not considered during the computation.
 		</option>
 	</fullDescription>
 

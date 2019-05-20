@@ -1,12 +1,12 @@
-package org.knime.base.node.stats.lda2.compute;
+package org.knime.base.node.stats.transformation.lda2.compute;
 
 import java.awt.Dimension;
 
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
-import org.knime.base.node.stats.lda2.AbstractLDANodeModel;
-import org.knime.base.node.stats.lda2.settings.LDAComputeSettings;
+import org.knime.base.node.stats.transformation.lda2.AbstractLDANodeModel;
+import org.knime.base.node.stats.transformation.lda2.settings.LDAComputeSettings;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.NominalValue;
 import org.knime.core.data.container.ColumnRearranger;
@@ -44,16 +44,16 @@ class LDAComputeNodeDialog extends NodeDialogPane {
 
     private DataTableSpec[] m_lastSpecs;
 
-    protected final JPanel m_panel;
+    private final JPanel m_panel;
 
     /**
      * New pane for configuring the node with given settings models.
      */
     @SuppressWarnings("unchecked")
-    protected LDAComputeNodeDialog() {
+    LDAComputeNodeDialog() {
         final LDAComputeSettings s = new LDAComputeSettings();
         m_classColModel = s.getClassModel();
-        m_usedColsModel = s.getPredModel();
+        m_usedColsModel = s.getUsedColsModel();
 
         m_classColModel.addChangeListener(l -> {
             try {
@@ -63,11 +63,11 @@ class LDAComputeNodeDialog extends NodeDialogPane {
             }
         });
         m_classColComponent = new DialogComponentColumnNameSelection(m_classColModel, "Class column",
-            AbstractLDANodeModel.PORT_IN_DATA, NominalValue.class);
+            AbstractLDANodeModel.DATA_IN_PORT, NominalValue.class);
         // Smaller size for long names, but with tooltips.
         m_classColComponent.getComponentPanel().getComponent(1).setPreferredSize(new Dimension(260, INPUT_HEIGHT));
 
-        m_usedColsComponent = new DialogComponentColumnFilter2(m_usedColsModel, AbstractLDANodeModel.PORT_IN_DATA);
+        m_usedColsComponent = new DialogComponentColumnFilter2(m_usedColsModel, AbstractLDANodeModel.DATA_IN_PORT);
 
         m_failOnMissingsComp = new DialogComponentBoolean(s.getFailOnMissingsModel(),
             "Fail if missing values are encountered");
@@ -81,9 +81,6 @@ class LDAComputeNodeDialog extends NodeDialogPane {
         addTab("Settings", m_panel);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         m_classColComponent.saveSettingsTo(settings);
@@ -121,7 +118,7 @@ class LDAComputeNodeDialog extends NodeDialogPane {
 
     private DataTableSpec removeTargetColumnFromLastSpec() {
         final String targetColumn = m_classColComponent.getSelected();
-        final ColumnRearranger cr = new ColumnRearranger(m_lastSpecs[AbstractLDANodeModel.PORT_IN_DATA]);
+        final ColumnRearranger cr = new ColumnRearranger(m_lastSpecs[AbstractLDANodeModel.DATA_IN_PORT]);
         cr.remove(targetColumn);
         return cr.createSpec();
     }

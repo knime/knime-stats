@@ -46,18 +46,11 @@
  * History
  *   Jan 7, 2019 (lukass): created
  */
-package org.knime.base.node.stats.lda2.algorithm;
+package org.knime.base.node.stats.transformation.lda2.util;
 
-import org.apache.commons.lang3.text.WordUtils;
-import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
-import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
-import org.knime.core.data.container.AbstractCellFactory;
-import org.knime.core.data.container.ColumnRearranger;
-import org.knime.core.data.def.DoubleCell;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.util.UniqueNameGenerator;
 
 /**
  *
@@ -67,79 +60,9 @@ import org.knime.core.util.UniqueNameGenerator;
  */
 public final class LDAUtils {
 
-    public static final String LDA_COL_PREFIX = "LDA dimension ";
-
     /** Constructor. */
     private LDAUtils() {
         // nothing to do
-    }
-
-    /**
-     * Brings the given text into a html-format such that it can be shown e.g. as a warning message in the config
-     * dialog.
-     *
-     * @param text the text
-     * @return wrapped text
-     */
-    public static String wrapText(final String text) {
-        return "<html>" + WordUtils.wrap(text, 75, "<br/>", true) + "</html>";
-    }
-
-    /**
-     * Create a column rearranger that applies the LDA, if given
-     *
-     * @param inSpec the inspec of the table
-     * @param lda the transformation or null if called from configure
-     * @param k number of dimensions to reduce to (number of rows in w)
-     * @param removeUsedCols whether to remove the input data
-     * @param usedColumnNames the names of the used columns, needed for removal
-     * @return the column re-arranger
-     */
-    public static ColumnRearranger createColumnRearranger(final DataTableSpec inSpec, final LDA2 lda, final int k,
-        final boolean removeUsedCols, final String[] usedColumnNames) {
-        return createColumnRearranger(inSpec, lda, k, removeUsedCols, usedColumnNames, LDA_COL_PREFIX);
-    }
-
-    /**
-     * Create a column rearranger that applies the LDA, if given
-     *
-     * @param inSpec the inspec of the table
-     * @param lda the transformation or null if called from configure
-     * @param k number of dimensions to reduce to (number of rows in w)
-     * @param removeUsedCols whether to remove the input data
-     * @param usedColumnNames the names of the used columns, needed for removal
-     * @param colPrefix the create column prefix
-     * @return the column re-arranger
-     */
-    public static ColumnRearranger createColumnRearranger(final DataTableSpec inSpec, final LDA2 lda, final int k,
-        final boolean removeUsedCols, final String[] usedColumnNames, final String colPrefix) {
-        // use the columnrearranger to exclude the used columns if checked
-        final ColumnRearranger cr = new ColumnRearranger(inSpec);
-
-        if (removeUsedCols) {
-            cr.remove(usedColumnNames);
-        }
-
-        // check that none of the newly put columns is already existing
-        final UniqueNameGenerator ung = new UniqueNameGenerator(cr.createSpec());
-
-        final DataColumnSpec[] specs = new DataColumnSpec[k];
-        for (int i = 0; i < k; i++) {
-            specs[i] = ung.newColumn(colPrefix + i, DoubleCell.TYPE);
-        }
-
-        cr.append(new AbstractCellFactory(true, specs) {
-            @Override
-            public DataCell[] getCells(final DataRow row) {
-                try {
-                    return lda.getProjection(row, k);
-                } catch (final InvalidSettingsException e) {
-                    return null;
-                }
-            }
-        });
-
-        return cr;
     }
 
     /**

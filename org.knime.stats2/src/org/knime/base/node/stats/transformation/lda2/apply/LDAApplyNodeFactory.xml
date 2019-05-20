@@ -17,21 +17,20 @@
 			<p><b>The column names, however, have to correspond to those that have been used 
 			to calculate the model.</b></p>
 		</intro>
-		<option name="Dimensions">The number of dimensions to reduce to. This can either be the number
+		<option name="Target dimensions">The number of dimensions to reduce to. This can either be the number
 		of classes minus one or the number of selected columns depending on which one is
 		smaller.
 		</option>
-		<option name="Remove original data columns">If checked, the columns containing the input data
-			are removed.
+		<option name="Remove original data columns">If checked, the columns containing the input data are removed.
 		</option>
 		<option name="Fail if missing values are encountered">
-			If checked, execution fails, when the selected columns contain missing
-			values. Otherwise, rows containing missing values are ignored during the computation.
+			If checked, execution fails, when the selected columns contain missing values. 
+			By default, rows containing missing values are ignored and not considered during the computation.
 		</option>
 	</fullDescription>
 
 	<ports>
-		<inPort index="0" name="Model">The Model used to reduce the data's dimensionality.
+		<inPort index="0" name="Transformation model">The Model used to reduce the data's dimensionality.
 		</inPort>
 		<inPort index="1" name="Table to transform">The data whose dimensionality shall be reduced.
 		</inPort>

@@ -1,4 +1,4 @@
-package org.knime.base.node.stats.lda2.perform;
+package org.knime.base.node.stats.transformation.lda2.perform;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -10,11 +10,11 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.DefaultEditor;
 
-import org.apache.commons.lang3.text.WordUtils;
-import org.knime.base.node.stats.lda2.AbstractLDANodeModel;
-import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
-import org.knime.base.node.stats.lda2.settings.LDAApplySettings;
-import org.knime.base.node.stats.lda2.settings.LDAComputeSettings;
+import org.knime.base.node.mine.transformation.settings.TransformationApplySettings;
+import org.knime.base.node.mine.transformation.util.TransformationUtils;
+import org.knime.base.node.stats.transformation.lda2.AbstractLDANodeModel;
+import org.knime.base.node.stats.transformation.lda2.settings.LDAComputeSettings;
+import org.knime.base.node.stats.transformation.lda2.util.LDAUtils;
 import org.knime.core.data.DataColumnDomain;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.NominalValue;
@@ -84,18 +84,18 @@ final class LDA2NodeDialog extends NodeDialogPane {
     @SuppressWarnings("unchecked")
     LDA2NodeDialog() {
         final LDAComputeSettings compSettings = new LDAComputeSettings();
-        final LDAApplySettings applySettings = new LDAApplySettings();
+        final TransformationApplySettings applySettings = new TransformationApplySettings();
         m_classColModel = compSettings.getClassModel();
-        m_usedColsModel = compSettings.getPredModel();
+        m_usedColsModel = compSettings.getUsedColsModel();
         m_dimensionModel = applySettings.getDimModel();
 
         m_dimensionModel.addChangeListener((e) -> {
             updateSpinner();
             updateWarnings();
         });
-        m_dimensionComponent = new DialogComponentNumber(m_dimensionModel, "Dimensions", 1, 5);
+        m_dimensionComponent = new DialogComponentNumber(m_dimensionModel, "Target dimensions", 1, 5);
 
-        m_tooHighDimLabel = new DialogComponentLabel(wrapText(""));
+        m_tooHighDimLabel = new DialogComponentLabel(TransformationUtils.wrapText(""));
         m_tooHighDimLabel.getComponentPanel().getComponent(0).setForeground(Color.red);
 
         m_classColModel.addChangeListener(l -> {
@@ -108,22 +108,22 @@ final class LDA2NodeDialog extends NodeDialogPane {
             }
         });
         m_classColComponent = new DialogComponentColumnNameSelection(m_classColModel, "Class column",
-            AbstractLDANodeModel.PORT_IN_DATA, NominalValue.class);
+            AbstractLDANodeModel.DATA_IN_PORT, NominalValue.class);
         // Smaller size for long names, but with tooltips.
         m_classColComponent.getComponentPanel().getComponent(1).setPreferredSize(new Dimension(260, INPUT_HEIGHT));
 
         m_usedColsModel.addChangeListener(l -> updateSettings());
-        m_usedColsComponent = new DialogComponentColumnFilter2(m_usedColsModel, AbstractLDANodeModel.PORT_IN_DATA);
+        m_usedColsComponent = new DialogComponentColumnFilter2(m_usedColsModel, AbstractLDANodeModel.DATA_IN_PORT);
 
         // This messages will be made more precise once shown.
-        m_maxDimZeroLabel = new DialogComponentLabel(wrapText(""));
+        m_maxDimZeroLabel = new DialogComponentLabel(TransformationUtils.wrapText(""));
         m_maxDimZeroLabel.getComponentPanel().getComponent(0).setForeground(Color.red);
 
         m_remUsedColsComp =
             new DialogComponentBoolean(applySettings.getRemoveUsedColsModel(), "Remove original data columns");
 
-        m_failOnMissingsComp = new DialogComponentBoolean(compSettings.getFailOnMissingsModel(),
-            "Fail if missing values are encountered");
+        m_failOnMissingsComp =
+            new DialogComponentBoolean(compSettings.getFailOnMissingsModel(), "Fail if missing values are encountered");
 
         m_panel = new JPanel();
         final BoxLayout bl = new BoxLayout(m_panel, 1);
@@ -184,15 +184,16 @@ final class LDA2NodeDialog extends NodeDialogPane {
 
         if (m_maximumDim <= 0) {
             // AP-10106 case 1
-            maxDimZeroComponent.setText(wrapText(LDAUtils.createMaxDimZeroWarning(m_selectedClasses, m_selectedColumns,
-                m_classColComponent.getSelected())));
+            maxDimZeroComponent.setText(TransformationUtils.wrapText(LDAUtils.createMaxDimZeroWarning(m_selectedClasses,
+                m_selectedColumns, m_classColComponent.getSelected())));
             maxDimZeroComponent.setVisible(true);
 
             tooHighDimComponent.setVisible(false);
         } else if (m_dimensionModel.getIntValue() > m_maximumDim) {
             // AP-10106 case 2
-            tooHighDimComponent.setText(wrapText(LDAUtils.createTooHighDimWarning(m_dimensionModel.getIntValue(),
-                m_maximumDim, m_selectedClasses, m_selectedColumns, m_classColComponent.getSelected())));
+            tooHighDimComponent
+                .setText(TransformationUtils.wrapText(LDAUtils.createTooHighDimWarning(m_dimensionModel.getIntValue(),
+                    m_maximumDim, m_selectedClasses, m_selectedColumns, m_classColComponent.getSelected())));
             tooHighDimComponent.setVisible(true);
 
             maxDimZeroComponent.setVisible(false);
@@ -208,7 +209,7 @@ final class LDA2NodeDialog extends NodeDialogPane {
         if ((m_lastSpecs != null) && (m_lastSpecs.length > 0) && (m_classColComponent.getSelected() != null)
             && (m_classColComponent.getSelected().length() > 0)) {
             m_selectedColumns = m_usedColsModel.applyTo(removeTargetColumnFromLastSpec()).getIncludes().length;
-            final DataColumnDomain domain = m_lastSpecs[AbstractLDANodeModel.PORT_IN_DATA]
+            final DataColumnDomain domain = m_lastSpecs[AbstractLDANodeModel.DATA_IN_PORT]
                 .getColumnSpec(m_classColComponent.getSelected()).getDomain();
             if (domain.hasValues()) {
                 m_selectedClasses = domain.getValues().size();
@@ -246,17 +247,6 @@ final class LDA2NodeDialog extends NodeDialogPane {
     }
 
     /**
-     *
-     * Brings the given text into a html-format such that it can be shown as a red warning message in the config dialog.
-     *
-     * @param text
-     * @return wrapped text
-     */
-    private static String wrapText(final String text) {
-        return "<html>" + WordUtils.wrap(text, 75, "<br/>", true) + "</html>";
-    }
-
-    /**
      * Adrian Nembachs trick to not show the selected class column in the used column twinlist: save the current
      * twinlist settings and reload them with a fitting featureSpec which excludes the class column.
      *
@@ -277,7 +267,7 @@ final class LDA2NodeDialog extends NodeDialogPane {
 
     private DataTableSpec removeTargetColumnFromLastSpec() {
         final String targetColumn = m_classColComponent.getSelected();
-        final ColumnRearranger cr = new ColumnRearranger(m_lastSpecs[AbstractLDANodeModel.PORT_IN_DATA]);
+        final ColumnRearranger cr = new ColumnRearranger(m_lastSpecs[AbstractLDANodeModel.DATA_IN_PORT]);
         cr.remove(targetColumn);
         return cr.createSpec();
     }

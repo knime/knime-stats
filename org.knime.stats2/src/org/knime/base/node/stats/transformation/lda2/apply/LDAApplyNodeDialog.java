@@ -1,4 +1,4 @@
-package org.knime.base.node.stats.lda2.apply;
+package org.knime.base.node.stats.transformation.lda2.apply;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -9,19 +9,21 @@ import java.awt.Insets;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.knime.base.node.mine.pca.PCAModelPortObjectSpec;
-import org.knime.base.node.stats.lda2.LDADialogComponentNumber;
-import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
-import org.knime.base.node.stats.lda2.settings.LDAApplySettings;
+import org.knime.base.node.mine.transformation.port.TransformationPortObjectSpec;
+import org.knime.base.node.mine.transformation.settings.TransformationApplySettings;
+import org.knime.base.node.mine.transformation.util.TransformationUtils;
+import org.knime.base.node.stats.transformation.lda2.util.LDAUtils;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
+import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
 import org.knime.core.node.defaultnodesettings.SettingsModelInteger;
 import org.knime.core.node.port.PortObjectSpec;
 
@@ -36,7 +38,7 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
 
     private final DimensionChangeListener m_dimListener;
 
-    private final LDADialogComponentNumber m_maxDimDiaComp;
+    private final DialogComponentNumber m_maxDimDiaComp;
 
     private final DialogComponentBoolean m_remUsedCols;
 
@@ -45,23 +47,25 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
     private final JLabel m_errorMsg;
 
     LDAApplyNodeDialog() {
-        final LDAApplySettings applySettings = new LDAApplySettings();
+        final TransformationApplySettings applySettings = new TransformationApplySettings();
         m_maxDimModel = applySettings.getDimModel();
-        m_maxDimDiaComp = new LDADialogComponentNumber(m_maxDimModel, "Dimensions", 1, 5);
+        m_maxDimDiaComp = new DialogComponentNumber(m_maxDimModel, "Target dimensions", 1, 5) {
+            @Override
+            protected void clearError(final JTextField field) {
+                return;
+            }
+        };
         m_dimListener = new DimensionChangeListener();
         m_maxDimDiaComp.getModel().addChangeListener(m_dimListener);
         m_remUsedCols =
             new DialogComponentBoolean(applySettings.getRemoveUsedColsModel(), "Remove original data columns");
         m_failOnMissingsComp = new DialogComponentBoolean(applySettings.getFailOnMissingsModel(),
-                "Fail if missing values are encountered");
+            "Fail if missing values are encountered");
         m_errorMsg = new JLabel("");
         m_errorMsg.setForeground(Color.RED);
         addTab("Settings", createPanel());
     }
 
-    /**
-     * @return
-     */
     private Component createPanel() {
         final JPanel p = new JPanel();
         p.setLayout(new GridBagLayout());
@@ -75,7 +79,7 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
         ++gbc.gridy;
         p.add(m_remUsedCols.getComponentPanel(), gbc);
         ++gbc.gridy;
-        p.add(m_failOnMissingsComp.getComponentPanel(),gbc);
+        p.add(m_failOnMissingsComp.getComponentPanel(), gbc);
         ++gbc.gridy;
         gbc.insets = new Insets(0, 5, 0, 0);
         p.add(m_errorMsg, gbc);
@@ -86,11 +90,6 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
         return p;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws InvalidSettingsException
-     */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) throws InvalidSettingsException {
         if (m_errorMsg.isVisible()) {
@@ -101,19 +100,17 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
         m_failOnMissingsComp.saveSettingsTo(settings);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void loadSettingsFrom(final NodeSettingsRO settings, final PortObjectSpec[] specs)
         throws NotConfigurableException {
-        if (specs[LDAApplyNodeModel.PORT_IN_MODEL] == null) {
+        if (specs[LDAApplyNodeModel.MODEL_IN_PORT] == null) {
             throw new NotConfigurableException("Model input missing");
         }
-        final int maxDim = LDAApplyNodeModel.getMaxDim((PCAModelPortObjectSpec)specs[LDAApplyNodeModel.PORT_IN_MODEL]);
-        m_maxDimDiaComp.setToolTipText("Maximum dimension: " + maxDim);
+        final int maxDimToReduceTo =
+            ((TransformationPortObjectSpec)specs[LDAApplyNodeModel.MODEL_IN_PORT]).getMaxDimToReduceTo();
+        m_maxDimDiaComp.setToolTipText("Maximum dimensions to reduce to: " + maxDimToReduceTo);
 
-        m_dimListener.setMaxDim(maxDim);
+        m_dimListener.setMaxDim(maxDimToReduceTo);
         m_dimListener.validateOnly(true);
 
         m_maxDimDiaComp.loadSettingsFrom(settings, specs);
@@ -170,7 +167,7 @@ final class LDAApplyNodeDialog extends NodeDialogPane {
 
         private void setErrorMsg(final int curDim, final int maxDim) {
             m_maxDimDiaComp.getSpinner().getEditor().getComponent(0).setForeground(Color.RED);
-            m_errorMsg.setText(LDAUtils.wrapText(LDAUtils.createTooHighDimBaseWarning(curDim, maxDim)));
+            m_errorMsg.setText(TransformationUtils.wrapText(LDAUtils.createTooHighDimBaseWarning(curDim, maxDim)));
             m_errorMsg.setVisible(true);
         }
 

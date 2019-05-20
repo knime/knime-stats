@@ -46,21 +46,15 @@
  * History
  *   Mar 1, 2019 (Mark Ortmann, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.base.node.stats.lda2.reverse;
+package org.knime.base.node.stats.transformation.lda2.reverse;
 
-import org.knime.base.node.mine.pca.PCAReverseNodeDialog;
+import org.knime.base.node.mine.transformation.pca.reverse.PCA2ReverseNodeFactory;
 
 /**
- * The LDA reverse node dialog.
+ * <code>NodeFactory</code> for the "Linear Discriminant Analysis Invert" node.
  *
  * @author Mark Ortmann, KNIME GmbH, Berlin, Germany
  */
-final class LDAReverseNodeDialog extends PCAReverseNodeDialog {
+public final class LDAReverseNodeFactory extends PCA2ReverseNodeFactory {
 
-    /**
-     * Constructor.
-     */
-    LDAReverseNodeDialog() {
-        super(LDAReverseNodeModel.CFG_COLS, LDAReverseNodeModel.CFG_REM_COLS, "LDA");
-    }
 }

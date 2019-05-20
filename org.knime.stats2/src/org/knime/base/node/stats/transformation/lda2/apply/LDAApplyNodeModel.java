@@ -1,15 +1,13 @@
-package org.knime.base.node.stats.lda2.apply;
+package org.knime.base.node.stats.transformation.lda2.apply;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.knime.base.node.mine.pca.PCAModelPortObject;
-import org.knime.base.node.mine.pca.PCAModelPortObjectSpec;
-import org.knime.base.node.stats.lda2.algorithm.LDA2;
-import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
-import org.knime.base.node.stats.lda2.settings.LDAApplySettings;
+import org.knime.base.node.mine.transformation.port.TransformationPortObject;
+import org.knime.base.node.mine.transformation.port.TransformationPortObjectSpec;
+import org.knime.base.node.mine.transformation.port.TransformationPortObjectSpec.TransformationType;
+import org.knime.base.node.mine.transformation.settings.TransformationApplySettings;
+import org.knime.base.node.mine.transformation.util.TransformationUtils;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
@@ -41,53 +39,46 @@ import org.knime.core.node.util.CheckUtils;
  */
 final class LDAApplyNodeModel extends NodeModel {
 
-    static final int PORT_IN_MODEL = 0;
+    static final int MODEL_IN_PORT = 0;
 
-    private static final int PORT_IN_DATA = 1;
+    private static final int DATA_IN_PORT = 1;
 
-    private final LDAApplySettings m_applySettings = new LDAApplySettings();
+    private final TransformationApplySettings m_applySettings = new TransformationApplySettings();
 
     /**
      * Constructor for the node model.
      */
     LDAApplyNodeModel() {
-        super(new PortType[]{PCAModelPortObject.TYPE, BufferedDataTable.TYPE}, new PortType[]{BufferedDataTable.TYPE});
+        super(new PortType[]{TransformationPortObject.TYPE, BufferedDataTable.TYPE},
+            new PortType[]{BufferedDataTable.TYPE});
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws Exception
-     */
     @Override
     protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec) throws Exception {
-        if (!(inData[PORT_IN_MODEL] instanceof PCAModelPortObject)) {
+        if (!(inData[MODEL_IN_PORT] instanceof TransformationPortObject)) {
             throw new IllegalArgumentException("LDAModelPortObject as first input expected");
         }
-        if (!(inData[PORT_IN_DATA] instanceof BufferedDataTable)) {
+        if (!(inData[DATA_IN_PORT] instanceof BufferedDataTable)) {
             throw new IllegalArgumentException("Datatable as second input expected");
         }
 
-        final BufferedDataTable inTable = (BufferedDataTable)inData[PORT_IN_DATA];
-        final PCAModelPortObject inModel = (PCAModelPortObject)inData[PORT_IN_MODEL];
+        final BufferedDataTable inTable = (BufferedDataTable)inData[DATA_IN_PORT];
+        final TransformationPortObject inModel = (TransformationPortObject)inData[MODEL_IN_PORT];
 
-        final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getInputColumnNames(),
-            inTable.getDataTableSpec(), inModel.getSpec().getColPrefix());
+        final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getSpec().getInputColumnNames(),
+            inTable.getDataTableSpec(), inModel.getSpec().getTransformationType());
 
         final BufferedDataTable out = exec.createColumnRearrangeTable(inTable, cr, exec);
         return new PortObject[]{out};
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        final DataTableSpec dataSpec = (DataTableSpec)inSpecs[PORT_IN_DATA];
-        final PCAModelPortObjectSpec modelSpec = (PCAModelPortObjectSpec)inSpecs[PORT_IN_MODEL];
+        final DataTableSpec dataSpec = (DataTableSpec)inSpecs[DATA_IN_PORT];
+        final TransformationPortObjectSpec modelSpec = (TransformationPortObjectSpec)inSpecs[MODEL_IN_PORT];
 
         // check existing column names and find out their indices
-        final String[] usedColumnNames = modelSpec.getColumnNames();
+        final String[] usedColumnNames = modelSpec.getInputColumnNames();
         final int numIncludedColumns = usedColumnNames.length;
         for (int i = 0; i < numIncludedColumns; i++) {
             final String columnName = usedColumnNames[i];
@@ -101,45 +92,21 @@ final class LDAApplyNodeModel extends NodeModel {
         CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() > 0,
             "The number of dimensions to project to must be a positive integer larger than 0, %s is invalid",
             m_applySettings.getDimModel().getIntValue());
-        final int maxDim = getMaxDim(modelSpec);
+        final int maxDim = modelSpec.getMaxDimToReduceTo();
         CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() <= maxDim,
             "The number of dimensions to project to must be less than or equal %s", maxDim);
 
-        return new PortObjectSpec[]{createColumnRearranger(null, usedColumnNames, dataSpec, modelSpec.getColPrefix()).createSpec()};
+        return new PortObjectSpec[]{
+            createColumnRearranger(null, usedColumnNames, dataSpec, modelSpec.getTransformationType()).createSpec()};
     }
 
-    /**
-     * Returns the maximum number of dimensions to project to.
-     *
-     * @param modelSpec the model spec
-     * @return the maximum number of dimensions to project to
-     */
-    static int getMaxDim(final PCAModelPortObjectSpec modelSpec) {
-        if (modelSpec.getEigenValues() != null) {
-            return modelSpec.getEigenValues().length;
-        }
-        return modelSpec.getColumnNames().length;
+    private ColumnRearranger createColumnRearranger(final TransformationPortObject inModel,
+        final String[] usedColumnNames, final DataTableSpec dataSpec, final TransformationType transType) {
+        return TransformationUtils.createColumnRearranger(dataSpec,
+            inModel == null ? null : inModel.getTransformationMatrix(), m_applySettings.getDimModel().getIntValue(),
+            m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames, transType);
     }
 
-    private ColumnRearranger createColumnRearranger(final PCAModelPortObject inModel, final String[] usedColumnNames,
-        final DataTableSpec dataSpec, final String colPrefix) {
-        if (inModel == null) {
-            return LDAUtils.createColumnRearranger(dataSpec, null, m_applySettings.getDimModel().getIntValue(),
-                m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames, colPrefix);
-        }
-        final int[] cIndices = Arrays.stream(usedColumnNames)//
-            .mapToInt(cName -> dataSpec.findColumnIndex(cName))//
-            .toArray();
-        final LDA2 lda = new LDA2(cIndices, MatrixUtils.createRealMatrix(inModel.getEigenVectors()),
-            m_applySettings.getFailOnMissingsModel().getBooleanValue());
-
-        return LDAUtils.createColumnRearranger(dataSpec, lda, m_applySettings.getDimModel().getIntValue(),
-            m_applySettings.getRemoveUsedColsModel().getBooleanValue(), usedColumnNames, colPrefix);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public StreamableOperator createStreamableOperator(final PartitionInfo partitionInfo,
         final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
@@ -148,79 +115,55 @@ final class LDAApplyNodeModel extends NodeModel {
             public void runFinal(final PortInput[] inputs, final PortOutput[] outputs, final ExecutionContext exec)
                 throws Exception {
 
-                final PCAModelPortObject inModel =
-                    (PCAModelPortObject)((PortObjectInput)inputs[PORT_IN_MODEL]).getPortObject();
+                final TransformationPortObject inModel =
+                    (TransformationPortObject)((PortObjectInput)inputs[MODEL_IN_PORT]).getPortObject();
 
-                final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getInputColumnNames(),
-                    (DataTableSpec)inSpecs[PORT_IN_DATA], inModel.getSpec().getColPrefix());
+                final ColumnRearranger cr = createColumnRearranger(inModel, inModel.getSpec().getInputColumnNames(),
+                    (DataTableSpec)inSpecs[DATA_IN_PORT], inModel.getSpec().getTransformationType());
 
-                final StreamableFunction func = cr.createStreamableFunction(PORT_IN_DATA, 0);
+                final StreamableFunction func = cr.createStreamableFunction(DATA_IN_PORT, 0);
                 func.runFinal(inputs, outputs, exec);
             }
         };
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public InputPortRole[] getInputPortRoles() {
         return new InputPortRole[]{InputPortRole.NONDISTRIBUTED_NONSTREAMABLE, InputPortRole.DISTRIBUTED_STREAMABLE};
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public OutputPortRole[] getOutputPortRoles() {
         return new OutputPortRole[]{OutputPortRole.DISTRIBUTED};
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_applySettings.loadValidatedSettingsFrom(settings);
 
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void saveSettingsTo(final NodeSettingsWO settings) {
         m_applySettings.saveSettingsTo(settings);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_applySettings.validateSettings(settings);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void reset() {
         // nothing to do
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void saveInternals(final File arg0, final ExecutionMonitor arg1)
         throws IOException, CanceledExecutionException {
         // nothing to do
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void loadInternals(final File arg0, final ExecutionMonitor arg1)
         throws IOException, CanceledExecutionException {

@@ -46,13 +46,13 @@
  * History
  *   Oct 29, 2018 (lukass): created
  */
-package org.knime.base.node.stats.lda2;
+package org.knime.base.node.stats.transformation.lda2;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.knime.base.node.stats.lda2.settings.LDAComputeSettings;
+import org.knime.base.node.stats.transformation.lda2.settings.LDAComputeSettings;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.NominalValue;
@@ -79,7 +79,7 @@ public abstract class AbstractLDANodeModel extends NodeModel {
     /**
      * The data in-port index.
      */
-    public static final int PORT_IN_DATA = 0;
+    public static final int DATA_IN_PORT = 0;
 
     /**
      * The missing nominal value column exception text.
@@ -125,9 +125,6 @@ public abstract class AbstractLDANodeModel extends NodeModel {
         super(inPortTypes, outPortTypes);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void reset() {
         // clear members
@@ -136,24 +133,14 @@ public abstract class AbstractLDANodeModel extends NodeModel {
         m_usedColumnNames = null;
     }
 
-    /**
-     * Validates and returns the input data.
-     *
-     * @param inData
-     * @param exec
-     * @return the input as a BufferedDataTable
-     * @throws IllegalArgumentException
-     * @throws InvalidSettingsException
-     * @throws CanceledExecutionException
-     */
     @Override
     protected final PortObject[] execute(final PortObject[] inData, final ExecutionContext exec)
         throws IllegalArgumentException, InvalidSettingsException, CanceledExecutionException {
-        if (!(inData[PORT_IN_DATA] instanceof BufferedDataTable)) {
+        if (!(inData[DATA_IN_PORT] instanceof BufferedDataTable)) {
             throw new IllegalArgumentException("Datatable as input expected");
         }
 
-        final BufferedDataTable inTable = (BufferedDataTable)inData[PORT_IN_DATA];
+        final BufferedDataTable inTable = (BufferedDataTable)inData[DATA_IN_PORT];
         if (inTable.size() == 0) {
             throw new InvalidSettingsException("Cannot produce an LDA model for an empty table.");
         }
@@ -164,9 +151,9 @@ public abstract class AbstractLDANodeModel extends NodeModel {
     /**
      * Will be called after execute, which prepared the data. Calculates the resulting LDA.
      *
-     * @param inTable
-     * @param exec
-     * @return The created PortObject[].
+     * @param inTable the input table
+     * @param exec the execution context
+     * @return the created port objects
      * @throws IllegalArgumentException
      * @throws InvalidSettingsException
      * @throws CanceledExecutionException
@@ -185,11 +172,11 @@ public abstract class AbstractLDANodeModel extends NodeModel {
      */
     @Override
     protected final PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        if (!(inSpecs[PORT_IN_DATA] instanceof DataTableSpec)) {
+        if (!(inSpecs[DATA_IN_PORT] instanceof DataTableSpec)) {
             throw new IllegalArgumentException("Datatable as input expected");
         }
 
-        final DataTableSpec inSpec = (DataTableSpec)inSpecs[PORT_IN_DATA];
+        final DataTableSpec inSpec = (DataTableSpec)inSpecs[DATA_IN_PORT];
 
         // find valid column if needed and it exists
         if (m_computeSettings.getClassModel().getStringValue() == null) {
@@ -209,7 +196,7 @@ public abstract class AbstractLDANodeModel extends NodeModel {
         m_classColIdx = inSpec.findColumnIndex(m_computeSettings.getClassModel().getStringValue());
 
         // m_usedCols has all valid columns included per default. Exclude the class column, though
-        m_usedColumnNames = ArrayUtils.removeElement(m_computeSettings.getPredModel().applyTo(inSpec).getIncludes(),
+        m_usedColumnNames = ArrayUtils.removeElement(m_computeSettings.getUsedColsModel().applyTo(inSpec).getIncludes(),
             m_computeSettings.getClassModel().getStringValue());
 
         // check number of columns and get the used column indices
@@ -240,9 +227,6 @@ public abstract class AbstractLDANodeModel extends NodeModel {
      */
     protected abstract PortObjectSpec[] doConfigure(final DataTableSpec inSpec) throws InvalidSettingsException;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected final void saveSettingsTo(final NodeSettingsWO settings) {
         m_computeSettings.saveSettingsTo(settings);
@@ -256,9 +240,6 @@ public abstract class AbstractLDANodeModel extends NodeModel {
      */
     protected abstract void saveAdditionalSettingsTo(final NodeSettingsWO settings);
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected final void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_computeSettings.loadValidatedSettingsFrom(settings);
@@ -274,9 +255,6 @@ public abstract class AbstractLDANodeModel extends NodeModel {
     protected abstract void loadAdditionalValidatedSettingsFrom(final NodeSettingsRO settings)
         throws InvalidSettingsException;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected final void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_computeSettings.validateSettings(settings);
@@ -291,18 +269,12 @@ public abstract class AbstractLDANodeModel extends NodeModel {
      */
     protected abstract void validateAdditionalSettings(final NodeSettingsRO settings) throws InvalidSettingsException;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void loadInternals(final File internDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
         // nothing to do
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void saveInternals(final File internDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {

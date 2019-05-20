@@ -24,8 +24,8 @@
 		<option name="Class column">The column containing class information.</option>
 		<option name="Column selection">The columns of the original dimensions.</option>
 		<option name="Fail if missing values are encountered">
-			If checked, execution fails, when the selected columns contain missing
-			values. Otherwise, rows containing missing values are ignored during the computation. 
+			If checked, execution fails, when the selected columns contain missing values. 
+			By default, rows containing missing values are ignored and not considered during the computation.
 		</option>
 	</fullDescription>
 
@@ -39,8 +39,9 @@
 		</outPort>
 		<outPort index="2" name="Spectral decomposition">Table containing the spectral
 			decomposition. Rows are ordered according to eigenvalues (first column).</outPort>
-		<outPort index="3" name="LDA model">Model with projection to the reduced
-			space, used in the "Linear Discriminant Analysis Apply" node to apply
-			the transformation to, e.g. another validation set.</outPort>
+		<outPort index="3" name="Transformation model"> Model holding the LDA transformation
+			used by the "Linear Discriminant Analysis Apply" node to apply the transformation
+			to, e.g. another validation set.
+		</outPort>
 	</ports>
 </knimeNode>

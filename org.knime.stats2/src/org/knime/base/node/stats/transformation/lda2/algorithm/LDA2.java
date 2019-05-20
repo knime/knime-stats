@@ -46,30 +46,24 @@
  * History
  *   14.04.2015 (Alexander): created
  */
-package org.knime.base.node.stats.lda2.algorithm;
+package org.knime.base.node.stats.transformation.lda2.algorithm;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.LUDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.knime.base.node.mine.pca.EigenValue;
+import org.knime.base.data.statistics.TransformationMatrix;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataRow;
-import org.knime.core.data.DataType;
 import org.knime.core.data.DoubleValue;
-import org.knime.core.data.def.DoubleCell;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
@@ -99,87 +93,25 @@ public final class LDA2 {
     /** The inter-scatter matrix. */
     private RealMatrix m_sb;
 
-    private RealMatrix m_w;
+    private TransformationMatrix m_transMtx;
 
-    private List<EigenValue> m_eigenValues;
-
-    private int m_k = 0;
+    private int m_maxDimToReduceTo = 0;
 
     private final boolean m_failOnMissings;
 
     /**
-     * Constructor for creation from an existing transformation matrix, used only for prediction.
-     *
-     * @param colIndices the indices of the columns to use for the prediction
-     * @param failOnMissings if {@code true} rows containing missing cells cause an exception
-     * @param w the transformation matrix
-     */
-    public LDA2(final int[] colIndices, final RealMatrix w, final boolean failOnMissings) {
-        // variables used for the projection
-        m_predVarIndices = colIndices;
-        m_w = w;
-        m_failOnMissings = failOnMissings;
-    }
-
-    /**
      * The constructor for an LDA analysis, used to calculate the transformation matrix prior to prediction.
      *
-     * @param colIndices the class column's index, used to calculate the transformation and the prediction.
+     * @param usedColIndices the class column's index, used to calculate the transformation and the prediction.
      * @param failOnMissings if {@code true} rows containing missing cells cause an exception
      * @throws InvalidSettingsException when the table has no data
      */
-    public LDA2(final int[] colIndices, final boolean failOnMissings) throws InvalidSettingsException {
-        if (colIndices == null || colIndices.length == 0) {
+    public LDA2(final int[] usedColIndices, final boolean failOnMissings) throws InvalidSettingsException {
+        if (usedColIndices == null || usedColIndices.length == 0) {
             throw new InvalidSettingsException("No column is given to calculate the transformation matrix.");
         }
-        m_predVarIndices = colIndices;
+        m_predVarIndices = usedColIndices;
         m_failOnMissings = failOnMissings;
-    }
-
-    /**
-     * Calculates the projection of the data in the row.
-     *
-     * @param row the row to calculate the projection for. Included fields are those that were given the constructor.
-     * @return an array of double cells that constitutes the projection of the data.
-     * @throws InvalidSettingsException when there are missing values
-     */
-    public DataCell[] getProjection(final DataRow row) throws InvalidSettingsException {
-        return getProjection(row, m_k);
-    }
-
-    /**
-     * Calculates the projection of the data in the row.
-     *
-     * @param row the row to calculate the projection for. Included fields are those that were given the constructor.
-     * @param dim the number of dimensions of the projection
-     * @return an array of double cells that constitutes the projection of the data.
-     * @throws InvalidSettingsException when there are missing values
-     */
-    public DataCell[] getProjection(final DataRow row, final int dim) throws InvalidSettingsException {
-        final Optional<RealVector> rVec = rowToRealVector(row);
-        if (!rVec.isPresent()) {
-            if (m_failOnMissings) {
-                throw new IllegalArgumentException(MISSING_VALUE_EXCEPTION);
-            }
-            return Stream.generate(() -> DataType.getMissingCell()).limit(dim)
-                .toArray(DataCell[]::new);
-        }
-        return writeCells(calculateProjection(rVec.get()), dim);
-    }
-
-    private RealVector calculateProjection(final RealVector rVec) throws InvalidSettingsException {
-        if (m_w == null) {
-            throw new IllegalStateException("The transformation matrix has not been calculated");
-        }
-        return m_w.preMultiply(rVec);
-    }
-
-    private static DataCell[] writeCells(final RealVector res, final int dim) {
-        final DataCell[] cells = new DoubleCell[dim];
-        for (int i = 0; i < dim; i++) {
-            cells[i] = new DoubleCell(res.getEntry(i));
-        }
-        return cells;
     }
 
     /**
@@ -188,24 +120,17 @@ public final class LDA2 {
      * @return maximum number of dimensions to reduce to
      */
     public int getMaxDim() {
-        if (m_k <= 0) {
+        if (m_maxDimToReduceTo <= 0) {
             throw new IllegalStateException("Run calculateTransformationMatrix before calling this method");
         }
-        return m_k;
+        return m_maxDimToReduceTo;
     }
 
     /**
      * @return The transformation matrix or {@code null} if not (yet) calculated.
      */
-    public RealMatrix getTransformationMatrix() {
-        return m_w;
-    }
-
-    /**
-     * @return the eigenvalues and -vectors as a sorted list
-     */
-    public List<EigenValue> getEigenvalues() {
-        return m_eigenValues;
+    public TransformationMatrix getTransformationMatrix() {
+        return m_transMtx;
     }
 
     /**
@@ -357,8 +282,8 @@ public final class LDA2 {
         checkClassColIdx(classColIndex, inTable.getSpec().getNumColumns());
         final Map<String, ClassStats> classStats =
             calculateClassStats(exec.createSubExecutionContext(0.5), inTable, -1, classColIndex);
-        m_k = Math.min(classStats.size() - 1, m_predVarIndices.length);
-        CheckUtils.checkArgument(m_k > 0, "The class column \"%s\" contains only a single class.",
+        m_maxDimToReduceTo = Math.min(classStats.size() - 1, m_predVarIndices.length);
+        CheckUtils.checkArgument(m_maxDimToReduceTo > 0, "The class column \"%s\" contains only a single class.",
             classStats.keySet().iterator().next());
         calcTransformationMatrix(exec, inTable, classStats, classColIndex);
     }
@@ -377,10 +302,10 @@ public final class LDA2 {
         final int classColIndex) throws CanceledExecutionException, InvalidSettingsException {
         checkClassColIdx(classColIndex, inTable.getSpec().getNumColumns());
         CheckUtils.checkSetting(k > 0, "Cannot reduce the number of dimensions to less than one.");
-        m_k = k;
+        m_maxDimToReduceTo = k;
         // Map for storing the per-class sum and count to calculate the mean
         final Map<String, ClassStats> classStats =
-            calculateClassStats(exec.createSubExecutionContext(0.5), inTable, m_k, classColIndex);
+            calculateClassStats(exec.createSubExecutionContext(0.5), inTable, m_maxDimToReduceTo, classColIndex);
 
         calcTransformationMatrix(exec, inTable, classStats, classColIndex);
     }
@@ -474,31 +399,11 @@ public final class LDA2 {
         }
 
         // Now extract eigenvalues of sw^-1 * sb
-        final RealMatrix mat = solver.getInverse().multiply(m_sb);
-        final EigenDecomposition ed = new EigenDecomposition(mat);
-        final double[] eigenValues = ed.getRealEigenvalues();
-        final double[][] eigenVectors = new double[m_predVarIndices.length][eigenValues.length];
-        for (int i = 0; i < eigenValues.length; i++) {
-            final double[] vec = ed.getEigenvector(i).mapMultiply(1.0 / ed.getEigenvector(i).getNorm()).toArray();
-            for (int j = 0; j < m_predVarIndices.length; j++) {
-                eigenVectors[j][i] = vec[j];
-            }
-        }
+        m_transMtx = new TransformationMatrix(solver.getInverse().multiply(m_sb), m_maxDimToReduceTo);
 
         // rescale to comply with python
         m_sb = m_sb.scalarMultiply(1.0 / nonMissingCnt);
         m_sw = m_sw.scalarMultiply(1.0 / nonMissingCnt);
-
-        m_eigenValues = EigenValue.createSortedList(eigenVectors, eigenValues);
-
-        // Create the transformation matrix.
-        final double[][] w = new double[m_k][];
-        for (int i = 0; i < m_k; i++) {
-            final double[] vec = m_eigenValues.get(i).getEigenVector();
-            w[i] = vec;
-        }
-
-        m_w = MatrixUtils.createRealMatrix(w).transpose();
     }
 
     /**

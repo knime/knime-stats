@@ -44,44 +44,57 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Mar 1, 2019 (Mark Ortmann, KNIME GmbH, Berlin, Germany): created
+ *   Jan 28, 2019 (Mark Ortmann, KNIME GmbH, Berlin, Germany): created
  */
-package org.knime.base.node.stats.lda2.reverse;
+package org.knime.base.node.stats.transformation.lda2.settings;
 
-import org.knime.core.node.NodeDialogPane;
-import org.knime.core.node.NodeFactory;
-import org.knime.core.node.NodeView;
+import org.knime.base.node.mine.transformation.settings.TransformationComputeSettings;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeSettingsRO;
+import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.defaultnodesettings.SettingsModelString;
 
 /**
- * <code>NodeFactory</code> for the "Linear Discriminant Analysis Invert" node.
+ * Class storing the LDA compute settings.
  *
  * @author Mark Ortmann, KNIME GmbH, Berlin, Germany
  */
-public final class LDAReverseNodeFactory extends NodeFactory<LDAReverseNodeModel> {
+public final class LDAComputeSettings extends TransformationComputeSettings {
 
-    @Override
-    public LDAReverseNodeModel createNodeModel() {
-        return new LDAReverseNodeModel();
+    /** The configuration key for the class column. */
+    private static final String CLASS_COL_CFG = "class_column";
+
+    /**
+     * Settings model for the class column. Must have a calculated domain and contain at least two distinct classes to
+     * make the LDA function properly.
+     */
+    private final SettingsModelString m_classCol = new SettingsModelString(CLASS_COL_CFG, null);
+
+    /**
+     * Returns the model storing the selected class column
+     *
+     * @return model storing the class column
+     */
+    public SettingsModelString getClassModel() {
+        return m_classCol;
     }
 
     @Override
-    protected int getNrNodeViews() {
-        return 0;
+    public void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        super.validateSettings(settings);
+        m_classCol.validateSettings(settings);
     }
 
     @Override
-    public NodeView<LDAReverseNodeModel> createNodeView(final int viewIndex, final LDAReverseNodeModel nodeModel) {
-        return null;
+    public void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+        super.loadValidatedSettingsFrom(settings);
+        m_classCol.loadSettingsFrom(settings);
     }
 
     @Override
-    protected boolean hasDialog() {
-        return true;
-    }
-
-    @Override
-    protected NodeDialogPane createNodeDialogPane() {
-        return new LDAReverseNodeDialog();
+    public void saveSettingsTo(final NodeSettingsWO settings) {
+        super.saveSettingsTo(settings);
+        m_classCol.saveSettingsTo(settings);
     }
 
 }

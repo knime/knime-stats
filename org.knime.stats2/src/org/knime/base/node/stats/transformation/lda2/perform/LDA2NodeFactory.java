@@ -1,24 +1,25 @@
-package org.knime.base.node.stats.lda2.compute;
+package org.knime.base.node.stats.transformation.lda2.perform;
 
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
 
 /**
- * <code>NodeFactory</code> for the "Linear Discriminant Analysis Compute" node.
+ * <code>NodeFactory</code> for the "Linear Discriminant Analysis" node.
  *
  *
  * @author Alexander Fillbrunn
  * @author Lukas Siedentop, KNIME GmbH, Konstanz, Germany
  */
-public final class LDAComputeNodeFactory extends NodeFactory<LDAComputeNodeModel> {
+public final class LDA2NodeFactory
+        extends NodeFactory<LDA2NodeModel> {
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public LDAComputeNodeModel createNodeModel() {
-        return new LDAComputeNodeModel();
+    public LDA2NodeModel createNodeModel() {
+        return new LDA2NodeModel();
     }
 
     /**
@@ -33,7 +34,8 @@ public final class LDAComputeNodeFactory extends NodeFactory<LDAComputeNodeModel
      * {@inheritDoc}
      */
     @Override
-    public NodeView<LDAComputeNodeModel> createNodeView(final int viewIndex, final LDAComputeNodeModel nodeModel) {
+    public NodeView<LDA2NodeModel> createNodeView(final int viewIndex,
+            final LDA2NodeModel nodeModel) {
         return null;
     }
 
@@ -50,6 +52,8 @@ public final class LDAComputeNodeFactory extends NodeFactory<LDAComputeNodeModel
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new LDAComputeNodeDialog();
+        return new LDA2NodeDialog();
     }
+
 }
+

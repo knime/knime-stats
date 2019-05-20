@@ -40,22 +40,22 @@
             />
       <node 
       		category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.lda2.perform.LDA2NodeFactory"
+            factory-class="org.knime.base.node.stats.transformation.lda2.perform.LDA2NodeFactory"
             />      
       <node 
-      		after="org.knime.base.node.stats.lda2.perform.LDA2NodeFactory"
+      		after="org.knime.base.node.stats.transformation.lda2.perform.LDA2NodeFactory"
       		category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
+            factory-class="org.knime.base.node.stats.transformation.lda2.compute.LDAComputeNodeFactory"
             />
       <node 
-      		after="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
+      		after="org.knime.base.node.stats.transformation.lda2.compute.LDAComputeNodeFactory"
       		category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.lda2.apply.LDAApplyNodeFactory"
+            factory-class="org.knime.base.node.stats.transformation.lda2.apply.LDAApplyNodeFactory"
             />
       <node
-            after="org.knime.base.node.stats.lda2.apply.LDAApplyNodeFactory"
+            after="org.knime.base.node.stats.transformation.lda2.apply.LDAApplyNodeFactory"
             category-path="/labs/statistics"
-            factory-class="org.knime.base.node.stats.lda2.reverse.LDAReverseNodeFactory">
+            factory-class="org.knime.base.node.stats.transformation.lda2.reverse.LDAReverseNodeFactory">
       </node>
       <node
             category-path="/labs/statistics"
@@ -63,7 +63,7 @@
             factory-class="org.knime.base.node.stats.shapirowilk.ShapiroWilkNodeFactory">
       </node>
       <node
-            after="org.knime.base.node.stats.lda2.compute.LDAComputeNodeFactory"
+            after="org.knime.base.node.stats.transformation.lda2.reverse.LDAReverseNodeFactory"
             category-path="/labs/statistics"
             factory-class="org.knime.base.node.stats.shapirowilk2.ShapiroWilk2NodeFactory">
       </node>

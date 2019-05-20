@@ -1,9 +1,11 @@
-package org.knime.base.node.stats.lda2.perform;
+package org.knime.base.node.stats.transformation.lda2.perform;
 
-import org.knime.base.node.stats.lda2.AbstractLDANodeModel;
-import org.knime.base.node.stats.lda2.algorithm.LDA2;
-import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
-import org.knime.base.node.stats.lda2.settings.LDAApplySettings;
+import org.knime.base.node.mine.transformation.port.TransformationPortObjectSpec.TransformationType;
+import org.knime.base.node.mine.transformation.settings.TransformationApplySettings;
+import org.knime.base.node.mine.transformation.util.TransformationUtils;
+import org.knime.base.node.stats.transformation.lda2.AbstractLDANodeModel;
+import org.knime.base.node.stats.transformation.lda2.algorithm.LDA2;
+import org.knime.base.node.stats.transformation.lda2.util.LDAUtils;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
@@ -26,7 +28,7 @@ import org.knime.core.node.util.CheckUtils;
  */
 final class LDA2NodeModel extends AbstractLDANodeModel {
 
-    private final LDAApplySettings m_applySettings = new LDAApplySettings();
+    private final TransformationApplySettings m_applySettings = new TransformationApplySettings();
 
     /**
      * Constructor for the node model.
@@ -44,9 +46,9 @@ final class LDA2NodeModel extends AbstractLDANodeModel {
         lda.calculateTransformationMatrix(exec.createSubExecutionContext(0.5), inTable,
             m_applySettings.getDimModel().getIntValue(), m_classColIdx);
 
-        final ColumnRearranger cr =
-            LDAUtils.createColumnRearranger(inSpec, lda, m_applySettings.getDimModel().getIntValue(),
-                m_applySettings.getRemoveUsedColsModel().getBooleanValue(), m_usedColumnNames);
+        final ColumnRearranger cr = TransformationUtils.createColumnRearranger(inSpec, lda.getTransformationMatrix(),
+            m_applySettings.getDimModel().getIntValue(), m_applySettings.getRemoveUsedColsModel().getBooleanValue(),
+            m_usedColumnNames, TransformationType.LDA);
 
         final BufferedDataTable out = exec.createColumnRearrangeTable(inTable, cr, exec.createSubProgress(0.5));
         return new PortObject[]{out};
@@ -63,9 +65,10 @@ final class LDA2NodeModel extends AbstractLDANodeModel {
         CheckUtils.checkSetting(m_applySettings.getDimModel().getIntValue() <= maxDim,
             "The number of dimensions to project to must be less than or equal %s", maxDim);
 
-        return new PortObjectSpec[]{
-            LDAUtils.createColumnRearranger(inSpec, null, m_applySettings.getDimModel().getIntValue(),
-                m_applySettings.getRemoveUsedColsModel().getBooleanValue(), m_usedColumnNames).createSpec()};
+        return new PortObjectSpec[]{TransformationUtils
+            .createColumnRearranger(inSpec, null, m_applySettings.getDimModel().getIntValue(),
+                m_applySettings.getRemoveUsedColsModel().getBooleanValue(), m_usedColumnNames, TransformationType.LDA)
+            .createSpec()};
     }
 
     @Override

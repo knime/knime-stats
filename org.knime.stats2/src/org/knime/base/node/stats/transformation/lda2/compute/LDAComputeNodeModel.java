@@ -1,15 +1,15 @@
-package org.knime.base.node.stats.lda2.compute;
+package org.knime.base.node.stats.transformation.lda2.compute;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.math3.linear.RealMatrix;
-import org.knime.base.node.mine.pca.EigenValue;
-import org.knime.base.node.mine.pca.PCAModelPortObject;
-import org.knime.base.node.mine.pca.PCAModelPortObjectSpec;
-import org.knime.base.node.stats.lda2.AbstractLDANodeModel;
-import org.knime.base.node.stats.lda2.algorithm.LDA2;
-import org.knime.base.node.stats.lda2.algorithm.LDAUtils;
+import org.knime.base.data.statistics.TransformationMatrix;
+import org.knime.base.node.mine.transformation.port.TransformationPortObject;
+import org.knime.base.node.mine.transformation.port.TransformationPortObjectSpec;
+import org.knime.base.node.mine.transformation.port.TransformationPortObjectSpec.TransformationType;
+import org.knime.base.node.mine.transformation.util.TransformationUtils;
+import org.knime.base.node.stats.transformation.lda2.AbstractLDANodeModel;
+import org.knime.base.node.stats.transformation.lda2.algorithm.LDA2;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -48,16 +48,9 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
      */
     LDAComputeNodeModel() {
         super(new PortType[]{BufferedDataTable.TYPE, BufferedDataTable.TYPE, BufferedDataTable.TYPE,
-            PCAModelPortObject.TYPE});
+            TransformationPortObject.TYPE});
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws InvalidSettingsException
-     * @throws IllegalArgumentException
-     * @throws CanceledExecutionException
-     */
     @Override
     protected PortObject[] doExecute(final BufferedDataTable inTable, final ExecutionContext exec)
         throws IllegalArgumentException, InvalidSettingsException, CanceledExecutionException {
@@ -68,56 +61,9 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
         return new PortObject[]{
             createScatterTable(exec, INTRA_CLASS_SCATTER_MATRIX, m_usedColumnNames, lda.getIntraScatterMatrix()),
             createScatterTable(exec, INTER_CLASS_SCATTER_MATRIX, m_usedColumnNames, lda.getInterScatterMatrix()),
-            createDecompositionTable(exec.createSubExecutionContext(0.1), lda), createModelPortObject(lda)};
-    }
-
-    /**
-     * Create table spec for output of the LDA spectral decomposition.
-     *
-     * @param columnNames names of the input columns
-     * @return table spec (first col for eigenvalues, others for components of eigenvectors)
-     */
-    private static DataTableSpec createDecompositionTableSpec(final String[] columnNames) {
-        final DataColumnSpecCreator eigenvalueCol = new DataColumnSpecCreator("eigenvalue", DoubleCell.TYPE);
-
-        final DataColumnSpec[] colsSpecs = new DataColumnSpec[columnNames.length + 1];
-        colsSpecs[0] = eigenvalueCol.createSpec();
-
-        for (int i = 1; i < colsSpecs.length; i++) {
-            colsSpecs[i] = new DataColumnSpecCreator(columnNames[i - 1], DoubleCell.TYPE).createSpec();
-        }
-        return new DataTableSpec("spectral decomposition", colsSpecs);
-    }
-
-    /**
-     * Returns the transformation matrix as a DataTable.
-     *
-     * @param exec Execution context
-     * @return The transformation matrix as a DataTable.
-     * @throws CanceledExecutionException if the execution was user canceled.
-     */
-    private BufferedDataTable createDecompositionTable(final ExecutionContext exec, final LDA2 lda)
-        throws CanceledExecutionException {
-        final List<EigenValue> sortedEV = lda.getEigenvalues();
-
-        final DataTableSpec outSpec = createDecompositionTableSpec(m_usedColumnNames);
-        final BufferedDataContainer result = exec.createDataContainer(outSpec);
-        final int k = lda.getMaxDim();
-        for (int i = 0; i < k; i++) {
-            exec.checkCanceled();
-            exec.setProgress((double)i / k, "Adding Eigenvalue-Eigenvector pair " + i + "/" + k + ".");
-
-            final EigenValue ev = sortedEV.get(i);
-            final DataCell[] values = new DataCell[sortedEV.size() + 1];
-            values[0] = new DoubleCell(ev.getValue());
-            final double[] vector = ev.getEigenVector();
-            for (int j = 0; j < vector.length; j++) {
-                values[j + 1] = new DoubleCell(vector[j]);
-            }
-            result.addRowToTable(new DefaultRow(new RowKey(i + ". eigenvector"), values));
-        }
-        result.close();
-        return result.getTable();
+            TransformationUtils.createEigenDecompositionTable(exec.createSubExecutionContext(0.1),
+                lda.getTransformationMatrix(), m_usedColumnNames),
+            createModelPortObject(lda.getTransformationMatrix())};
     }
 
     private static DataTableSpec createScatterTableSpec(final String tableName, final String[] columnNames) {
@@ -142,53 +88,33 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
         return scatterTable.getTable();
     }
 
-    /**
-     * Create the PortObject for this projection.
-     *
-     * @return the PortObject which can be applied via the ProjectionApply Node
-     */
-    PCAModelPortObject createModelPortObject(final LDA2 lda) {
-        RealMatrix w = lda.getTransformationMatrix();
-        if (w == null) {
+    TransformationPortObject createModelPortObject(final TransformationMatrix transMtx) {
+        if (transMtx == null) {
             throw new IllegalStateException(
                 "Can't create port object: The transformation matrix has not been calculated");
         }
-        return new PCAModelPortObject(w.getData(),
-            lda.getEigenvalues().stream().limit(w.getColumnDimension()).mapToDouble(e -> e.getValue()).toArray(),
-            m_usedColumnNames, new double[w.getRowDimension()], LDAUtils.LDA_COL_PREFIX);
+        return new TransformationPortObject(TransformationType.LDA, transMtx, m_usedColumnNames);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected PortObjectSpec[] doConfigure(final DataTableSpec inSpec) throws InvalidSettingsException {
         return new PortObjectSpec[]{createScatterTableSpec(INTRA_CLASS_SCATTER_MATRIX, m_usedColumnNames),
             createScatterTableSpec(INTER_CLASS_SCATTER_MATRIX, m_usedColumnNames),
-            createDecompositionTableSpec(m_usedColumnNames),
-            new PCAModelPortObjectSpec(m_usedColumnNames, LDAUtils.LDA_COL_PREFIX)};
+            TransformationUtils.createDecompositionTableSpec(m_usedColumnNames),
+            new TransformationPortObjectSpec(TransformationType.LDA, m_usedColumnNames, m_usedColumnNames.length)};
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void saveAdditionalSettingsTo(final NodeSettingsWO settings) {
         // nothing to do
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void loadAdditionalValidatedSettingsFrom(final NodeSettingsRO settings) {
         // nothing to do
 
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void validateAdditionalSettings(final NodeSettingsRO settings) {
         // nothing to do
