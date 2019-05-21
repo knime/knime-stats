@@ -72,7 +72,7 @@ final class LDA2NodeDialog extends NodeDialogPane {
 
     private DataTableSpec[] m_lastSpecs;
 
-    protected final JPanel m_panel;
+    private final JPanel m_panel;
 
     /**
      * New pane for configuring the node with given settings models.

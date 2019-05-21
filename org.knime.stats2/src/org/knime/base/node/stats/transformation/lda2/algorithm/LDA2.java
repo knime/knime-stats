@@ -85,6 +85,7 @@ public final class LDA2 {
     private static final String MISSING_VALUE_EXCEPTION =
         "Missing values are not supported. Please de-select <Fail if missing values are encountered>.";
 
+    /** The column indices of the predictor variables. */
     private final int[] m_predVarIndices;
 
     /** The intra-scatter matrix. */
@@ -102,15 +103,15 @@ public final class LDA2 {
     /**
      * The constructor for an LDA analysis, used to calculate the transformation matrix prior to prediction.
      *
-     * @param usedColIndices the class column's index, used to calculate the transformation and the prediction.
+     * @param predColIndices the column indices of the predictor variables.
      * @param failOnMissings if {@code true} rows containing missing cells cause an exception
      * @throws InvalidSettingsException when the table has no data
      */
-    public LDA2(final int[] usedColIndices, final boolean failOnMissings) throws InvalidSettingsException {
-        if (usedColIndices == null || usedColIndices.length == 0) {
+    public LDA2(final int[] predColIndices, final boolean failOnMissings) throws InvalidSettingsException {
+        if (predColIndices == null || predColIndices.length == 0) {
             throw new InvalidSettingsException("No column is given to calculate the transformation matrix.");
         }
-        m_predVarIndices = usedColIndices;
+        m_predVarIndices = predColIndices;
         m_failOnMissings = failOnMissings;
     }
 

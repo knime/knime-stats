@@ -228,46 +228,22 @@ public abstract class AbstractLDANodeModel extends NodeModel {
     protected abstract PortObjectSpec[] doConfigure(final DataTableSpec inSpec) throws InvalidSettingsException;
 
     @Override
-    protected final void saveSettingsTo(final NodeSettingsWO settings) {
+    protected void saveSettingsTo(final NodeSettingsWO settings) {
         m_computeSettings.saveSettingsTo(settings);
-        saveAdditionalSettingsTo(settings);
     }
 
-    /**
-     * Save additional settings, called after {@link #saveSettingsTo(NodeSettingsWO)}.
-     *
-     * @param settings
-     */
-    protected abstract void saveAdditionalSettingsTo(final NodeSettingsWO settings);
 
     @Override
-    protected final void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_computeSettings.loadValidatedSettingsFrom(settings);
-        loadAdditionalValidatedSettingsFrom(settings);
     }
 
-    /**
-     * Load additional settings, called after {@link #loadValidatedSettingsFrom(NodeSettingsRO)}.
-     *
-     * @param settings
-     * @throws InvalidSettingsException
-     */
-    protected abstract void loadAdditionalValidatedSettingsFrom(final NodeSettingsRO settings)
-        throws InvalidSettingsException;
 
     @Override
-    protected final void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
         m_computeSettings.validateSettings(settings);
-        validateAdditionalSettings(settings);
     }
 
-    /**
-     * Validate additional settings, called after {@link #validateSettings(NodeSettingsRO)}.
-     *
-     * @param settings
-     * @throws InvalidSettingsException
-     */
-    protected abstract void validateAdditionalSettings(final NodeSettingsRO settings) throws InvalidSettingsException;
 
     @Override
     protected void loadInternals(final File internDir, final ExecutionMonitor exec)

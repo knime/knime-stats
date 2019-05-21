@@ -43,14 +43,14 @@ final class LDA2NodeModel extends AbstractLDANodeModel {
         final DataTableSpec inSpec = inTable.getDataTableSpec();
 
         final LDA2 lda = new LDA2(m_indices, m_computeSettings.getFailOnMissingsModel().getBooleanValue());
-        lda.calculateTransformationMatrix(exec.createSubExecutionContext(0.5), inTable,
+        lda.calculateTransformationMatrix(exec.createSubExecutionContext(0.7), inTable,
             m_applySettings.getDimModel().getIntValue(), m_classColIdx);
 
         final ColumnRearranger cr = TransformationUtils.createColumnRearranger(inSpec, lda.getTransformationMatrix(),
             m_applySettings.getDimModel().getIntValue(), m_applySettings.getRemoveUsedColsModel().getBooleanValue(),
             m_usedColumnNames, TransformationType.LDA);
 
-        final BufferedDataTable out = exec.createColumnRearrangeTable(inTable, cr, exec.createSubProgress(0.5));
+        final BufferedDataTable out = exec.createColumnRearrangeTable(inTable, cr, exec.createSubProgress(0.3));
         return new PortObject[]{out};
     }
 
@@ -72,18 +72,21 @@ final class LDA2NodeModel extends AbstractLDANodeModel {
     }
 
     @Override
-    protected void saveAdditionalSettingsTo(final NodeSettingsWO settings) {
+    protected void saveSettingsTo(final NodeSettingsWO settings) {
+        super.saveSettingsTo(settings);
         m_applySettings.saveSettingsTo(settings);
     }
 
     @Override
-    protected void loadAdditionalValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+        super.loadValidatedSettingsFrom(settings);
         m_applySettings.loadValidatedSettingsFrom(settings);
 
     }
 
     @Override
-    protected void validateAdditionalSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        super.validateSettings(settings);
         m_applySettings.validateSettings(settings);
     }
 

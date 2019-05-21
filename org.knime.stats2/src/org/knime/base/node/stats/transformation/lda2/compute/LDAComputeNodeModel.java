@@ -22,8 +22,6 @@ import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.node.port.PortObject;
 import org.knime.core.node.port.PortObjectSpec;
 import org.knime.core.node.port.PortType;
@@ -104,19 +102,4 @@ final class LDAComputeNodeModel extends AbstractLDANodeModel {
             new TransformationPortObjectSpec(TransformationType.LDA, m_usedColumnNames, m_usedColumnNames.length)};
     }
 
-    @Override
-    protected void saveAdditionalSettingsTo(final NodeSettingsWO settings) {
-        // nothing to do
-    }
-
-    @Override
-    protected void loadAdditionalValidatedSettingsFrom(final NodeSettingsRO settings) {
-        // nothing to do
-
-    }
-
-    @Override
-    protected void validateAdditionalSettings(final NodeSettingsRO settings) {
-        // nothing to do
-    }
 }
