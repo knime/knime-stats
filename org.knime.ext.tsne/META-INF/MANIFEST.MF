@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: KNIME t-SNE node based on TSNE-Java
 Bundle-SymbolicName: org.knime.ext.tsne;singleton:=true
 Bundle-Version: 4.0.0.qualifier
-Bundle-ClassPath: org-knime-ext-smile.jar,
+Bundle-ClassPath: org-knime-ext-tsne.jar,
  lib/tsne-2.5.0.jar
 Bundle-Vendor: KNIME AG, Zurich, Switzerland
 Require-Bundle: org.knime.core;bundle-version="[4.0.0,5.0.0)",

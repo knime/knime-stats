@@ -46,10 +46,28 @@
  */
 package org.knime.ext.tsne.node;
 
+import java.awt.Color;
+
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JSpinner;
+import javax.swing.JSpinner.DefaultEditor;
+
+import org.knime.core.data.DataTableSpec;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeSettingsRO;
+import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
 import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnFilter2;
+import org.knime.core.node.defaultnodesettings.DialogComponentLabel;
 import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
+import org.knime.core.node.defaultnodesettings.DialogComponentSeed;
+import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
+import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
+import org.knime.core.node.util.CheckUtils;
+import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
 
 /**
  *
@@ -57,11 +75,21 @@ import org.knime.core.node.defaultnodesettings.DialogComponentNumber;
  */
 final class TsneNodeDialog extends DefaultNodeSettingsPane {
 
+    private static final String DIM_ERROR_TEMPLATE =
+        "The current number of output dimensions (%s) is higher than the number of input dimensions (%s).";
+
+    private DataTableSpec m_tableSpec;
+
+    private final SettingsModelColumnFilter2 m_featuresModel = TsneNodeModel.createFeaturesModel();
+
+    private final SettingsModelIntegerBounded m_outputDimensionModel = TsneNodeModel.createOutputDimensionsModel();
+
+    private final DialogComponentNumber m_outputDimensionComponent =
+        new DialogComponentNumber(m_outputDimensionModel, "Dimension(s) to reduce to", 1);
+
+    private final DialogComponentLabel m_errorLbl = new DialogComponentLabel("");
+
     TsneNodeDialog() {
-        final DialogComponentColumnFilter2 featureComp =
-            new DialogComponentColumnFilter2(TsneNodeModel.createFeaturesModel(), 0);
-        final DialogComponentNumber outputDimComp =
-            new DialogComponentNumber(TsneNodeModel.createOutputDimensionsModel(), "Dimension(s) to reduce to", 1);
         final DialogComponentNumber iterationsComp =
             new DialogComponentNumber(TsneNodeModel.createIterationsModel(), "Iterations", 10);
         final DialogComponentNumber learningRate =
@@ -73,15 +101,77 @@ final class TsneNodeDialog extends DefaultNodeSettingsPane {
         final DialogComponentBoolean failOnMissingValues = new DialogComponentBoolean(
             TsneNodeModel.createFailOnMissingValuesModel(), "Fail if missing values are encountered");
         final DialogComponentSeed seed = new DialogComponentSeed(TsneNodeModel.createSeedModel(), "Seed");
-        addDialogComponent(featureComp);
-        addDialogComponent(outputDimComp);
+        final DialogComponentColumnFilter2 featuresComponent = new DialogComponentColumnFilter2(m_featuresModel, 0);
+        addDialogComponent(featuresComponent);
+        addDialogComponent(m_outputDimensionComponent);
         addDialogComponent(iterationsComp);
         addDialogComponent(learningRate);
         addDialogComponent(perplexity);
+        addDialogComponent(
+            new DialogComponentNumber(TsneNodeModel.createNumberOfThreadsModel(), "Number of threads", 1));
         addDialogComponent(removeOriginalColumns);
         addDialogComponent(failOnMissingValues);
         addDialogComponent(seed);
+        addDialogComponent(m_errorLbl);
         setDefaultTabTitle("Settings");
+        ((JLabel)m_errorLbl.getComponentPanel().getComponent(0)).setForeground(Color.RED);
+        featuresComponent.getModel().addChangeListener(e -> updateOutputDimensionComponent());
+        m_outputDimensionComponent.getModel().addChangeListener(e -> updateOutputDimensionComponent());
+    }
+
+    private void updateOutputDimensionComponent() {
+        if (m_tableSpec != null) {
+            final int inputDimensionality = getInputDimensionality();
+            final int outputDimensionality = getOutputDimensionality();
+            if (inputDimensionality < outputDimensionality) {
+                setDimensionSpinnerBackground(Color.RED);
+                m_errorLbl.setText(String.format(DIM_ERROR_TEMPLATE, outputDimensionality, inputDimensionality));
+            } else {
+                setDimensionSpinnerBackground(Color.WHITE);
+                m_errorLbl.setText("");
+            }
+        }
+    }
+
+    private void setDimensionSpinnerBackground(final Color color) {
+        final JSpinner spinner = m_outputDimensionComponent.getSpinner();
+        final JFormattedTextField spinnerTextField = ((DefaultEditor)spinner.getEditor()).getTextField();
+        spinnerTextField.setBackground(color);
+    }
+
+    @Override
+    public void loadAdditionalSettingsFrom(NodeSettingsRO settings, DataTableSpec[] specs)
+        throws NotConfigurableException {
+        super.loadAdditionalSettingsFrom(settings, specs);
+        m_tableSpec = specs[0];
+        updateOutputDimensionComponent();
+    }
+
+    @Override
+    public void saveAdditionalSettingsTo(NodeSettingsWO settings) throws InvalidSettingsException {
+        if (m_tableSpec != null) {
+            final int inputDimensionality = getInputDimensionality();
+            final int outputDimensionality = getOutputDimensionality();
+            CheckUtils.checkSetting(inputDimensionality >= outputDimensionality, DIM_ERROR_TEMPLATE,
+                outputDimensionality, inputDimensionality);
+        }
+        super.saveAdditionalSettingsTo(settings);
+    }
+
+    /**
+     * @return
+     */
+    private int getOutputDimensionality() {
+        return m_outputDimensionModel.getIntValue();
+    }
+
+    /**
+     * @return
+     */
+    private int getInputDimensionality() {
+        assert m_tableSpec != null : "Calling methods have to ensure that m_tableSpec != null";
+        final FilterResult fr = m_featuresModel.applyTo(m_tableSpec);
+        return fr.getIncludes().length;
     }
 
 }

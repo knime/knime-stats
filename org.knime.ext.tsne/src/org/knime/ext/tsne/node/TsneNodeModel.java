@@ -77,13 +77,17 @@ import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
 import org.knime.core.node.defaultnodesettings.SettingsModelDoubleBounded;
 import org.knime.core.node.defaultnodesettings.SettingsModelIntegerBounded;
+import org.knime.core.node.defaultnodesettings.SettingsModelSeed;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.util.UniqueNameGenerator;
 
 import com.jujutsu.tsne.FastTSne;
 import com.jujutsu.tsne.Progress;
 import com.jujutsu.tsne.TSne;
 import com.jujutsu.tsne.TSneConfiguration;
+import com.jujutsu.tsne.barneshut.BHTSne;
 import com.jujutsu.tsne.barneshut.ParallelBHTsne;
+import com.jujutsu.tsne.barneshut.ParallelBHTsne.ThreadingExceptionHandler;
 import com.jujutsu.utils.TSneUtils;
 
 /**
@@ -92,299 +96,357 @@ import com.jujutsu.utils.TSneUtils;
  */
 final class TsneNodeModel extends NodeModel {
 
-	private static final String OUTPUT_PREFIX = "t-SNE dimension ";
+    private static final String OUTPUT_PREFIX = "t-SNE dimension ";
 
-	private static final int DATA_IN_PORT = 0;
-	
-	static SettingsModelDoubleBounded createThetaModel() {
-		return new SettingsModelDoubleBounded("theta", 0.5, 0, 1);
-	}
+    private static final int DATA_IN_PORT = 0;
 
-	static SettingsModelIntegerBounded createOutputDimensionsModel() {
-		return new SettingsModelIntegerBounded("outputDimensions", 2, 1, Integer.MAX_VALUE);
-	}
+    static SettingsModelDoubleBounded createThetaModel() {
+        return new SettingsModelDoubleBounded("theta", 0.5, 0, 1);
+    }
 
-	static SettingsModelDoubleBounded createPerplexityModel() {
-		return new SettingsModelDoubleBounded("perplexity", 30, 1e-5, Double.MAX_VALUE);
-	}
+    static SettingsModelIntegerBounded createOutputDimensionsModel() {
+        return new SettingsModelIntegerBounded("outputDimensions", 2, 1, Integer.MAX_VALUE);
+    }
 
-	static SettingsModelIntegerBounded createIterationsModel() {
-		return new SettingsModelIntegerBounded("iterations", 1000, 1, Integer.MAX_VALUE);
-	}
+    static SettingsModelDoubleBounded createPerplexityModel() {
+        return new SettingsModelDoubleBounded("perplexity", 30, 1e-5, Double.MAX_VALUE);
+    }
 
-	static SettingsModelSeed createSeedModel() {
-		return new SettingsModelSeed("seed", System.currentTimeMillis(), false);
-	}
+    static SettingsModelIntegerBounded createIterationsModel() {
+        return new SettingsModelIntegerBounded("iterations", 1000, 1, Integer.MAX_VALUE);
+    }
 
-	@SuppressWarnings("unchecked")
-	static SettingsModelColumnFilter2 createFeaturesModel() {
-		// TODO support more data types
-		return new SettingsModelColumnFilter2("features", DoubleValue.class);
-	}
+    static SettingsModelSeed createSeedModel() {
+        return new SettingsModelSeed("seed", System.currentTimeMillis(), false);
+    }
 
-	static SettingsModelBoolean createRemoveOriginalColumnsModel() {
-		return new SettingsModelBoolean("removeOriginalColumns", false);
-	}
+    static SettingsModelIntegerBounded createNumberOfThreadsModel() {
+        return new SettingsModelIntegerBounded("numberOfThreads", Runtime.getRuntime().availableProcessors(), 1,
+            Integer.MAX_VALUE);
+    }
 
-	static SettingsModelBoolean createFailOnMissingValuesModel() {
-		return new SettingsModelBoolean("failOnMissingValues", false);
-	}
+    @SuppressWarnings("unchecked")
+    static SettingsModelColumnFilter2 createFeaturesModel() {
+        // TODO support more data types
+        return new SettingsModelColumnFilter2("features", DoubleValue.class);
+    }
 
+    static SettingsModelBoolean createRemoveOriginalColumnsModel() {
+        return new SettingsModelBoolean("removeOriginalColumns", false);
+    }
 
-	private final SettingsModelDoubleBounded m_theta = createThetaModel();
+    static SettingsModelBoolean createFailOnMissingValuesModel() {
+        return new SettingsModelBoolean("failOnMissingValues", false);
+    }
 
-	private final SettingsModelIntegerBounded m_outputDimensions = createOutputDimensionsModel();
+    private final SettingsModelDoubleBounded m_theta = createThetaModel();
 
-	private final SettingsModelDoubleBounded m_perplexity = createPerplexityModel();
+    private final SettingsModelIntegerBounded m_outputDimensions = createOutputDimensionsModel();
 
-	private final SettingsModelIntegerBounded m_iterations = createIterationsModel();
+    private final SettingsModelDoubleBounded m_perplexity = createPerplexityModel();
 
-	private final SettingsModelColumnFilter2 m_features = createFeaturesModel();
+    private final SettingsModelIntegerBounded m_iterations = createIterationsModel();
 
-	private final SettingsModelBoolean m_removeOriginalColumns = createRemoveOriginalColumnsModel();
+    private final SettingsModelColumnFilter2 m_features = createFeaturesModel();
 
-	private final SettingsModelBoolean m_failOnMissingValues = createFailOnMissingValuesModel();
+    private final SettingsModelBoolean m_removeOriginalColumns = createRemoveOriginalColumnsModel();
 
-	private final SettingsModelSeed m_seed = createSeedModel();
+    private final SettingsModelBoolean m_failOnMissingValues = createFailOnMissingValuesModel();
 
-	TsneNodeModel() {
-		super(1, 1);
-	}
+    private final SettingsModelSeed m_seed = createSeedModel();
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
-		// TODO support distance matrices
-		return new DataTableSpec[] {
-				createColumnRearranger(inSpecs[DATA_IN_PORT], Collections.emptyList(), null).createSpec() };
-	}
+    private final SettingsModelIntegerBounded m_numThreads = createNumberOfThreadsModel();
 
-	private ColumnRearranger createColumnRearranger(final DataTableSpec inputSpec, final List<Integer> missingIndices,
-			final double[][] embedding) {
-		final ColumnRearranger cr = new ColumnRearranger(inputSpec);
-		if (m_removeOriginalColumns.getBooleanValue()) {
-			cr.remove(m_features.applyTo(inputSpec).getIncludes());
-		}
-		final UniqueNameGenerator nameGen = new UniqueNameGenerator(cr.createSpec());
-		cr.append(new EmbeddingCellFactory(embedding, createSpecs(nameGen), missingIndices));
-		return cr;
-	}
+    TsneNodeModel() {
+        super(1, 1);
+    }
 
-	private DataColumnSpec[] createSpecs(final UniqueNameGenerator nameGen) {
-		final int outDims = m_outputDimensions.getIntValue();
-		final DataColumnSpec[] specs = new DataColumnSpec[outDims];
-		for (int i = 0; i < outDims; i++) {
-			specs[i] = nameGen.newColumn(OUTPUT_PREFIX + i, DoubleCell.TYPE);
-		}
-		return specs;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected DataTableSpec[] configure(final DataTableSpec[] inSpecs) throws InvalidSettingsException {
+        final int inputDims = m_features.applyTo(inSpecs[0]).getIncludes().length;
+        final int outputDims = m_outputDimensions.getIntValue();
+        CheckUtils.checkSetting(inputDims >= outputDims,
+            "The number of output dimensions (%s) must not exceed the number of input dimensions (%s).", outputDims,
+            inputDims);
+        // TODO support distance matrices
+        return new DataTableSpec[]{
+            createColumnRearranger(inSpecs[DATA_IN_PORT], Collections.emptyList(), null).createSpec()};
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
-			throws Exception {
-		final BufferedDataTable table = inData[DATA_IN_PORT];
-		if (table.size() == 0) {
-			setWarningMessage("The input table was empty.");
-			return new BufferedDataTable[] { exec.createColumnRearrangeTable(table,
-					createColumnRearranger(table.getDataTableSpec(), Collections.emptyList(), null), exec) };
-		}
-		final DataTableSpec tableSpec = table.getDataTableSpec();
-		final BufferedDataTable filtered = filterTable(table, exec.createSilentSubExecutionContext(0));
-		try {
-			final TsneData data = new TsneData(filtered, m_failOnMissingValues.getBooleanValue());
-			final List<Integer> missingIndices = data.getMissingIndices();
-			if (!missingIndices.isEmpty()) {
-				setWarningMessage(missingIndices.size() + " rows were ignored because they contained missing values.");
-			}
-			final double[][] embedding = learnEmbedding(data.getData(), exec);
-			final ColumnRearranger cr = createColumnRearranger(tableSpec, missingIndices, embedding);
-			return new BufferedDataTable[] {
-					exec.createColumnRearrangeTable(table, cr, exec.createSilentSubProgress(0.0)) };
-		} catch (OutOfMemoryError oome) {
-			throw new OutOfMemoryError("Couldn't calculate t-SNE because not enough memory is available.");
-		}
-	}
+    private ColumnRearranger createColumnRearranger(final DataTableSpec inputSpec, final List<Integer> missingIndices,
+        final double[][] embedding) {
+        final ColumnRearranger cr = new ColumnRearranger(inputSpec);
+        if (m_removeOriginalColumns.getBooleanValue()) {
+            cr.remove(m_features.applyTo(inputSpec).getIncludes());
+        }
+        final UniqueNameGenerator nameGen = new UniqueNameGenerator(cr.createSpec());
+        cr.append(new EmbeddingCellFactory(embedding, createSpecs(nameGen), missingIndices));
+        return cr;
+    }
 
-	private BufferedDataTable filterTable(final BufferedDataTable table, final ExecutionContext exec)
-			throws CanceledExecutionException {
-		final DataTableSpec tableSpec = table.getDataTableSpec();
-		final ColumnRearranger cr = new ColumnRearranger(tableSpec);
-		cr.keepOnly(m_features.applyTo(tableSpec).getIncludes());
-		return exec.createColumnRearrangeTable(table, cr, exec);
-	}
+    private DataColumnSpec[] createSpecs(final UniqueNameGenerator nameGen) {
+        final int outDims = m_outputDimensions.getIntValue();
+        final DataColumnSpec[] specs = new DataColumnSpec[outDims];
+        for (int i = 0; i < outDims; i++) {
+            specs[i] = nameGen.newColumn(OUTPUT_PREFIX + i, DoubleCell.TYPE);
+        }
+        return specs;
+    }
 
-	private double[][] learnEmbedding(final double[][] data, final ExecutionMonitor monitor)
-			throws CanceledExecutionException, InterruptedException, ExecutionException {
-		final int iterations = m_iterations.getIntValue();
-		monitor.checkCanceled();
-		monitor.setMessage("Start learning");
-		// TSNE will reuse this matrix internally (or create it if we don't provide it)
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected BufferedDataTable[] execute(final BufferedDataTable[] inData, final ExecutionContext exec)
+        throws Exception {
+        final BufferedDataTable table = inData[DATA_IN_PORT];
+        CheckUtils.checkSetting(table.size() > 2,
+            "The table must have at least 2 rows in order to calculate an embedding.");
+        final DataTableSpec tableSpec = table.getDataTableSpec();
+        final BufferedDataTable filtered = filterTable(table, exec.createSilentSubExecutionContext(0));
+        try {
+            final TsneData data = new TsneData(filtered, m_failOnMissingValues.getBooleanValue());
+            final List<Integer> missingIndices = data.getMissingIndices();
+            if (!missingIndices.isEmpty()) {
+                setMissingValuesWarning(missingIndices.size());
+            }
+            final double[][] embedding = learnEmbedding(data.getData(), exec);
+            final ColumnRearranger cr = createColumnRearranger(tableSpec, missingIndices, embedding);
+            return new BufferedDataTable[]{
+                exec.createColumnRearrangeTable(table, cr, exec.createSilentSubProgress(0.0))};
+        } catch (OutOfMemoryError oome) {
+            throw new OutOfMemoryError("Couldn't calculate t-SNE because not enough memory is available.");
+        }
+    }
 
-		final double theta = m_theta.getDoubleValue();
-		TSneConfiguration config = TSneUtils.buildConfig(data, m_outputDimensions.getIntValue(), data[0].length,
-				m_perplexity.getDoubleValue(), iterations, false, theta, false);
-		final KnimeProgress progress = new KnimeProgress(monitor);
-		config.setRdg(new Random(m_seed.getIsActive() ? m_seed.getLongValue() : System.currentTimeMillis()));
-		final TSne tsne = theta == 0 ? new FastTSne(progress) : new ParallelBHTsne(progress);
-		Future<double[][]> tsneFuture = KNIMEConstants.GLOBAL_THREAD_POOL.enqueue(() -> tsne.tsne(config));
+    private void setMissingValuesWarning(final int numMissingValues) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(numMissingValues).append(" row");
+        if (numMissingValues > 1) {
+            sb.append("s were ");
+        } else {
+            sb.append(" was ");
+        }
+        boolean isSingular = numMissingValues == 1;
+        final String rowSuffix = isSingular ? "" : "s";
+        final String verb = isSingular ? "was" : "were";
+        final String personalPronoun = isSingular ? "it" : "they";
+        setWarningMessage(String.format("%s row%s %s ignored because %s contained missing values.", numMissingValues,
+            rowSuffix, verb, personalPronoun));
+    }
 
-		try {
-			return tsneFuture.get();
-		} catch (InterruptedException e) {
-			tsne.abort();
-			throw new CanceledExecutionException();
-		}
-	}
+    private BufferedDataTable filterTable(final BufferedDataTable table, final ExecutionContext exec)
+        throws CanceledExecutionException {
+        final DataTableSpec tableSpec = table.getDataTableSpec();
+        final ColumnRearranger cr = new ColumnRearranger(tableSpec);
+        cr.keepOnly(m_features.applyTo(tableSpec).getIncludes());
+        return exec.createColumnRearrangeTable(table, cr, exec);
+    }
 
-	private static class KnimeProgress implements Progress {
+    private double[][] learnEmbedding(final double[][] data, final ExecutionMonitor monitor) throws Exception {
+        final int iterations = m_iterations.getIntValue();
+        monitor.checkCanceled();
+        monitor.setMessage("Start learning");
+        // TSNE will reuse this matrix internally (or create it if we don't provide it)
 
-		private final ExecutionMonitor m_monitor;
+        final double theta = m_theta.getDoubleValue();
+        final double perplexity = m_perplexity.getDoubleValue();
+        final double maxPerplexity = (data.length - 1) / 3.0;
+        CheckUtils.checkSetting(perplexity <= maxPerplexity, "For your data the perplexity must be at most %s.",
+            maxPerplexity);
+        TSneConfiguration config = TSneUtils.buildConfig(data, m_outputDimensions.getIntValue(), data[0].length,
+            perplexity, iterations, false, theta, false);
+        final KnimeProgress progress = new KnimeProgress(monitor);
+        config.setRandom(new Random(m_seed.getIsActive() ? m_seed.getLongValue() : System.currentTimeMillis()));
+        final TSne tsne;
 
-		KnimeProgress(final ExecutionMonitor monitor) {
-			m_monitor = monitor;
-		}
+        if (theta == 0) {
+            tsne = new FastTSne(progress);
+        } else {
+            final int numThreads = m_numThreads.getIntValue();
+            tsne = numThreads == 1 ? new BHTSne(progress)
+                : new ParallelBHTsne(progress, numThreads, KnimeThreadingExceptionHandler.INSTANCE);
+        }
+        Future<double[][]> tsneFuture = KNIMEConstants.GLOBAL_THREAD_POOL.enqueue(() -> tsne.tsne(config));
 
+        try {
+            return tsneFuture.get();
+        } catch (InterruptedException e) {
+            tsne.abort();
+            throw new CanceledExecutionException();
+        }
+    }
 
-		@Override
-		public void setProgress(double arg0) {
-			m_monitor.setProgress(arg0);
-		}
+    private enum KnimeThreadingExceptionHandler implements ThreadingExceptionHandler {
+            INSTANCE;
+        @Override
+        public void handleInterruptedException(final InterruptedException exception, List<Future<Double>> futures) {
+            if (futures != null) {
+                futures.stream().filter(f -> !f.isDone()).forEach(f -> f.cancel(true));
+            }
+        }
 
+        @Override
+        public void handleExecutionException(final ExecutionException exception, List<Future<Double>> futures) {
+            handleAnyException(exception, futures);
+        }
 
-		@Override
-		public void log(String arg0, Object... arg1) {
-			m_monitor.setMessage(String.format(arg0.replaceAll("\n", " "), arg1));
-		}
+        private static void handleAnyException(final Exception exception, List<Future<Double>> futures) {
+            if (futures != null) {
+                futures.stream().filter(f -> !f.isDone()).forEach(f -> f.cancel(true));
+            }
+            throw new IllegalStateException("Calculation could not be completed", exception);
+        }
+    }
 
-	}
+    private static class KnimeProgress implements Progress {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
-			throws IOException, CanceledExecutionException {
-		// nothing to load
+        private final ExecutionMonitor m_monitor;
 
-	}
+        KnimeProgress(final ExecutionMonitor monitor) {
+            m_monitor = monitor;
+        }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
-			throws IOException, CanceledExecutionException {
-		// nothing to load
-	}
+        @Override
+        public void setProgress(double arg0) {
+            m_monitor.setProgress(arg0);
+        }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void saveSettingsTo(final NodeSettingsWO settings) {
-		m_iterations.saveSettingsTo(settings);
-		m_perplexity.saveSettingsTo(settings);
-		m_theta.saveSettingsTo(settings);
-		m_outputDimensions.saveSettingsTo(settings);
-		m_features.saveSettingsTo(settings);
-		m_removeOriginalColumns.saveSettingsTo(settings);
-		m_failOnMissingValues.saveSettingsTo(settings);
-		m_seed.saveSettingsTo(settings);
-	}
+        @Override
+        public void log(String arg0, Object... arg1) {
+            m_monitor.setMessage(String.format(arg0.replaceAll("\n", " "), arg1));
+        }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-		m_iterations.validateSettings(settings);
-		m_perplexity.validateSettings(settings);
-		m_theta.validateSettings(settings);
-		m_outputDimensions.validateSettings(settings);
-		m_features.validateSettings(settings);
-		m_removeOriginalColumns.validateSettings(settings);
-		m_failOnMissingValues.validateSettings(settings);
-		m_seed.validateSettings(settings);
-	}
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-		m_iterations.loadSettingsFrom(settings);
-		m_perplexity.loadSettingsFrom(settings);
-		m_theta.loadSettingsFrom(settings);
-		m_outputDimensions.loadSettingsFrom(settings);
-		m_features.loadSettingsFrom(settings);
-		m_removeOriginalColumns.loadSettingsFrom(settings);
-		m_failOnMissingValues.loadSettingsFrom(settings);
-		m_seed.loadSettingsFrom(settings);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
+        // nothing to load
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void reset() {
-		// nothing to reset
-	}
+    }
 
-	private static class EmbeddingCellFactory extends AbstractCellFactory {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
+        throws IOException, CanceledExecutionException {
+        // nothing to load
+    }
 
-		private final double[][] m_embedding;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void saveSettingsTo(final NodeSettingsWO settings) {
+        m_iterations.saveSettingsTo(settings);
+        m_perplexity.saveSettingsTo(settings);
+        m_theta.saveSettingsTo(settings);
+        m_outputDimensions.saveSettingsTo(settings);
+        m_features.saveSettingsTo(settings);
+        m_removeOriginalColumns.saveSettingsTo(settings);
+        m_failOnMissingValues.saveSettingsTo(settings);
+        m_seed.saveSettingsTo(settings);
+        m_numThreads.saveSettingsTo(settings);
+    }
 
-		private final int m_nCols;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_iterations.validateSettings(settings);
+        m_perplexity.validateSettings(settings);
+        m_theta.validateSettings(settings);
+        m_outputDimensions.validateSettings(settings);
+        m_features.validateSettings(settings);
+        m_removeOriginalColumns.validateSettings(settings);
+        m_failOnMissingValues.validateSettings(settings);
+        m_seed.validateSettings(settings);
+        m_numThreads.validateSettings(settings);
+    }
 
-		private final DataCell[] m_missingCells;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+        m_iterations.loadSettingsFrom(settings);
+        m_perplexity.loadSettingsFrom(settings);
+        m_theta.loadSettingsFrom(settings);
+        m_outputDimensions.loadSettingsFrom(settings);
+        m_features.loadSettingsFrom(settings);
+        m_removeOriginalColumns.loadSettingsFrom(settings);
+        m_failOnMissingValues.loadSettingsFrom(settings);
+        m_seed.loadSettingsFrom(settings);
+        m_numThreads.loadSettingsFrom(settings);
+    }
 
-		private final Iterator<Integer> m_missingIterator;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void reset() {
+        // nothing to reset
+    }
 
-		private int m_nextMissingIdx;
+    private static class EmbeddingCellFactory extends AbstractCellFactory {
 
-		private int m_embeddingIdx = 0;
+        private final double[][] m_embedding;
 
-		private int m_rowIdx = -1;
+        private final int m_nCols;
 
-		EmbeddingCellFactory(final double[][] embedding, final DataColumnSpec[] specs,
-				final Iterable<Integer> missings) {
-			super(false, specs);
-			m_embedding = embedding;
-			m_nCols = specs.length;
-			final MissingCell missingCell = new MissingCell("Missing value in the input of t-SNE.");
-			m_missingCells = new DataCell[m_nCols];
-			Arrays.fill(m_missingCells, missingCell);
-			m_missingIterator = missings.iterator();
-			advanceMissingPointer();
-		}
+        private final DataCell[] m_missingCells;
 
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public DataCell[] getCells(final DataRow row) {
-			m_rowIdx++;
-			if (m_rowIdx == m_nextMissingIdx) {
-				advanceMissingPointer();
-				return m_missingCells;
-			}
-			final DataCell[] cells = new DataCell[m_nCols];
-			for (int i = 0; i < m_nCols; i++) {
-				cells[i] = new DoubleCell(m_embedding[m_embeddingIdx][i]);
-			}
-			m_embeddingIdx++;
-			return cells;
-		}
+        private final Iterator<Integer> m_missingIterator;
 
-		private void advanceMissingPointer() {
-			m_nextMissingIdx = m_missingIterator.hasNext() ? m_missingIterator.next() : -1;
-		}
+        private int m_nextMissingIdx;
 
-	}
+        private int m_embeddingIdx = 0;
+
+        private int m_rowIdx = -1;
+
+        EmbeddingCellFactory(final double[][] embedding, final DataColumnSpec[] specs,
+            final Iterable<Integer> missings) {
+            super(false, specs);
+            m_embedding = embedding;
+            m_nCols = specs.length;
+            final MissingCell missingCell = new MissingCell("Missing value in the input of t-SNE.");
+            m_missingCells = new DataCell[m_nCols];
+            Arrays.fill(m_missingCells, missingCell);
+            m_missingIterator = missings.iterator();
+            advanceMissingPointer();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public DataCell[] getCells(final DataRow row) {
+            m_rowIdx++;
+            if (m_rowIdx == m_nextMissingIdx) {
+                advanceMissingPointer();
+                return m_missingCells;
+            }
+            final DataCell[] cells = new DataCell[m_nCols];
+            for (int i = 0; i < m_nCols; i++) {
+                cells[i] = new DoubleCell(m_embedding[m_embeddingIdx][i]);
+            }
+            m_embeddingIdx++;
+            return cells;
+        }
+
+        private void advanceMissingPointer() {
+            m_nextMissingIdx = m_missingIterator.hasNext() ? m_missingIterator.next() : -1;
+        }
+
+    }
 
 }
