@@ -26,7 +26,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="239.75876"
+     inkscape:cx="132.97305"
      inkscape:cy="207.85354"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -45,7 +45,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -55,136 +55,40 @@
      id="layer1"
      transform="translate(0,-212.33332)">
     <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713"
-       cx="7.7485113"
-       cy="238.60266"
-       r="3.2127976" />
-    <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-2"
-       cx="23.62351"
-       cy="225.75148"
-       r="3.2127976" />
-    <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-8"
-       cx="30.805061"
-       cy="233.12202"
-       r="3.2127976" />
-    <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-7"
-       cx="21.166666"
-       cy="244.83928"
-       r="3.2127976" />
-    <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-82"
-       cx="14.174108"
-       cy="224.42856"
-       r="3.2127976" />
-    <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-0"
-       cx="19.843752"
-       cy="235.57886"
-       r="3.2127976" />
-    <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-73"
-       cx="14.174109"
-       cy="250.13095"
-       r="3.2127976" />
-    <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
+       style="fill:#ff6600;stroke-width:0.71593136"
        id="path3713-9"
-       cx="37.041668"
-       cy="226.12944"
-       r="3.2127976" />
+       cx="17.197916"
+       cy="224.80652"
+       r="8.6934528" />
     <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-3"
-       cx="35.529762"
-       cy="243.89435"
-       r="3.2127976" />
+       style="fill:#ff6600;stroke-width:0.71593136"
+       id="path3713-9-1"
+       cx="42.333328"
+       cy="223.29463"
+       r="8.6934528" />
     <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-05"
-       cx="44.601192"
-       cy="235.76784"
-       r="3.2127976" />
-    <circle
-       style="fill:#ff6600;stroke-width:0.26458332"
-       id="path3713-33"
-       cx="27.214287"
-       cy="252.96576"
-       r="3.2127976" />
-    <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-76"
-       cx="43.845234"
-       cy="275.07739"
-       r="3.2127976" />
-    <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-2-6"
-       cx="60.287197"
-       cy="259.58035"
-       r="3.2127976" />
-    <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-8-5"
-       cx="62.744045"
-       cy="272.9985"
-       r="3.2127976" />
-    <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-7-2"
-       cx="54.239578"
-       cy="279.4241"
-       r="3.2127976" />
-    <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-82-1"
-       cx="43.845234"
-       cy="265.439"
-       r="3.2127976" />
-    <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-0-8"
-       cx="56.696426"
-       cy="268.84079"
-       r="3.2127976" />
-    <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-73-1"
-       cx="46.680058"
-       cy="286.79465"
-       r="3.2127976" />
-    <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
+       style="fill:#ff6600;stroke-width:0.71593136"
        id="path3713-9-4"
-       cx="68.791664"
-       cy="258.44644"
-       r="3.2127976" />
+       cx="19.276785"
+       cy="250.31992"
+       r="8.6934528" />
     <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-3-8"
-       cx="68.224701"
-       cy="279.99109"
-       r="3.2127976" />
+       style="fill:#00aad4;stroke-width:0.71593136"
+       id="path3713-9-1-5"
+       cx="67.657745"
+       cy="253.91069"
+       r="8.6934528" />
     <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-05-4"
-       cx="70.870544"
-       cy="268.84079"
-       r="3.2127976" />
+       style="fill:#00aad4;stroke-width:0.71593136"
+       id="path3713-9-1-5-0"
+       cx="45.924107"
+       cy="279.99103"
+       r="8.6934528" />
     <circle
-       style="fill:#00aad4;stroke-width:0.26458332"
-       id="path3713-33-3"
-       cx="59.720238"
-       cy="286.41666"
-       r="3.2127976" />
+       style="fill:#00aad4;stroke-width:0.71593136"
+       id="path3713-9-1-5-6"
+       cx="68.035713"
+       cy="278.47916"
+       r="8.6934528" />
   </g>
 </svg>
