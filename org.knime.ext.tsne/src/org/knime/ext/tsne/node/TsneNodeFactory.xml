@@ -3,20 +3,20 @@
 <knimeNode icon="./icon.png" type="Manipulator">
 	<name>t-SNE (L. Jonsson)</name>
 	<shortDescription>
-		t-SNE is a manifold learning technique that learns a
-		low-dimensional
-		embedding of high-dimensional data.
+		t-SNE is a manifold learning technique, which learns
+		low dimensional
+		embeddings for high dimensional data.
 	</shortDescription>
 
 	<fullDescription>
 		<intro>
-			t-SNE is a manifold learning technique that learns low-dimensional
-			embeddings for high-dimensional data.
+			t-SNE is a manifold learning technique, which learns low dimensional
+			embeddings for high dimensional data.
 			It is most often used for
 			visualization purposes because it exploits
 			the local relationships
-			between data points and can
-			hence capture non-linear structures in the
+			between datapoints and can
+			subsequently capture nonlinear structures in the
 			data.
 			Unlike other dimension reduction techniques like PCA, a learned
 			t-SNE model
@@ -25,10 +25,10 @@
 			roughly summarized as two steps:
 			<ol>
 				<li>Create a probability distribution capturing the relationships
-					between points in the high-dimensional space
+					between points in the high dimensional space
 				</li>
-				<li>Find a low-dimensional space that resembles the probability
-					dimension as good as possible
+				<li>Find a low dimensional space that resembles the probability
+					dimension as well as possible
 				</li>
 			</ol>
 			For further details
@@ -61,9 +61,9 @@
 			(for visualization typically 2 or 3).
 		</option>
 		<option name="Iterations">
-			The number of learning iterations to perform. Too
+			The number of learning iterations to be performed. Too
 			few iterations might
-			result in a bad embedding while too many
+			result in a bad embedding, while too many
 			iterations take a long time
 			to train.
 		</option>
@@ -74,7 +74,7 @@
 		</option>
 		<option name="Perplexity">
 			Informally, the perplexity is the number of
-			neighbors for each data point.
+			neighbors for each datapoint.
 			Small perplexities focus more on local
 			structure while larger perplexities take more global relationships
 			into account.
@@ -93,16 +93,16 @@
 			consists of missing values.
 		</option>
 		<option name="Seed">
-			Allows specifying a static seed to enable
+			Allows you to specify a static seed to enable
 			reproducible results.
 		</option>
 	</fullDescription>
 
 	<ports>
 		<inPort index="0" name="Data">Input port for the data for which a
-			low-dimensional embedding should be learned
+			low dimensional embedding should be learned
 		</inPort>
-		<outPort index="0" name="Embedded Data">The low-dimensional embedding
+		<outPort index="0" name="Embedded Data">The low dimensional embedding
 		</outPort>
 	</ports>
 </knimeNode>
