@@ -251,12 +251,13 @@ final class TsneNodeModel extends NodeModel {
     private void checkPerplexity(final long tableSize) throws InvalidSettingsException {
         final double perplexity = m_perplexity.getDoubleValue();
         final double maxPerplexity = (tableSize - 1) / 3.0;
-        CheckUtils.checkSetting(perplexity <= maxPerplexity, "For your data the perplexity must be at most %s.",
+        CheckUtils.checkSetting(perplexity <= maxPerplexity, "For your data the perplexity can be at most %s.",
             maxPerplexity);
     }
 
     private double[][] learnEmbedding(final double[][] data, final ExecutionMonitor monitor) throws Exception {
         final int iterations = m_iterations.getIntValue();
+        // we need to check the perplexity again because some rows might have been ignored due to missing values
         checkPerplexity(data.length);
         monitor.checkCanceled();
         monitor.setMessage("Start learning");
