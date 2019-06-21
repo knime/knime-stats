@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
@@ -205,6 +206,7 @@ final class TsneNodeModel extends NodeModel {
         final BufferedDataTable table = inData[DATA_IN_PORT];
         CheckUtils.checkSetting(table.size() > 2,
             "The table must have at least 2 rows in order to calculate an embedding.");
+        checkPerplexity(table.size());
         final DataTableSpec tableSpec = table.getDataTableSpec();
         final BufferedDataTable filtered = filterTable(table, exec.createSilentSubExecutionContext(0));
         try {
@@ -246,19 +248,23 @@ final class TsneNodeModel extends NodeModel {
         return exec.createColumnRearrangeTable(table, cr, exec);
     }
 
+    private void checkPerplexity(final long tableSize) throws InvalidSettingsException {
+        final double perplexity = m_perplexity.getDoubleValue();
+        final double maxPerplexity = (tableSize - 1) / 3.0;
+        CheckUtils.checkSetting(perplexity <= maxPerplexity, "For your data the perplexity must be at most %s.",
+            maxPerplexity);
+    }
+
     private double[][] learnEmbedding(final double[][] data, final ExecutionMonitor monitor) throws Exception {
         final int iterations = m_iterations.getIntValue();
+        checkPerplexity(data.length);
         monitor.checkCanceled();
         monitor.setMessage("Start learning");
         // TSNE will reuse this matrix internally (or create it if we don't provide it)
 
         final double theta = m_theta.getDoubleValue();
-        final double perplexity = m_perplexity.getDoubleValue();
-        final double maxPerplexity = (data.length - 1) / 3.0;
-        CheckUtils.checkSetting(perplexity <= maxPerplexity, "For your data the perplexity must be at most %s.",
-            maxPerplexity);
         TSneConfiguration config = TSneUtils.buildConfig(data, m_outputDimensions.getIntValue(), data[0].length,
-            perplexity, iterations, false, theta, false);
+            m_perplexity.getDoubleValue(), iterations, false, theta, false);
         final KnimeProgress progress = new KnimeProgress(monitor);
         config.setRandom(new Random(m_seed.getIsActive() ? m_seed.getLongValue() : System.currentTimeMillis()));
         final TSne tsne;
@@ -283,18 +289,18 @@ final class TsneNodeModel extends NodeModel {
     private enum KnimeThreadingExceptionHandler implements ThreadingExceptionHandler {
             INSTANCE;
         @Override
-        public void handleInterruptedException(final InterruptedException exception, List<Future<Double>> futures) {
+        public void handleInterruptedException(final InterruptedException exception, final List<Future<Double>> futures) {
             if (futures != null) {
                 futures.stream().filter(f -> !f.isDone()).forEach(f -> f.cancel(true));
             }
         }
 
         @Override
-        public void handleExecutionException(final ExecutionException exception, List<Future<Double>> futures) {
+        public void handleExecutionException(final ExecutionException exception, final List<Future<Double>> futures) {
             handleAnyException(exception, futures);
         }
 
-        private static void handleAnyException(final Exception exception, List<Future<Double>> futures) {
+        private static void handleAnyException(final Exception exception, final List<Future<Double>> futures) {
             if (futures != null) {
                 futures.stream().filter(f -> !f.isDone()).forEach(f -> f.cancel(true));
             }
@@ -311,12 +317,12 @@ final class TsneNodeModel extends NodeModel {
         }
 
         @Override
-        public void setProgress(double arg0) {
+        public void setProgress(final double arg0) {
             m_monitor.setProgress(arg0);
         }
 
         @Override
-        public void log(String arg0, Object... arg1) {
+        public void log(final String arg0, final Object... arg1) {
             m_monitor.setMessage(String.format(arg0.replaceAll("\n", " "), arg1));
         }
 

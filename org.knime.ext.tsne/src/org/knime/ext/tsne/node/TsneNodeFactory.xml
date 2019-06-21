@@ -69,7 +69,8 @@
 		</option>
 		<option name="Theta">
 			Controls the tradeoff between runtime and accuracy of the Barnes-Hut approximation algorithm for t-SNE.
-			Lower values result in a more accurate approximation at the cost of larger runtimes and a theta of zero results in the original t-SNE algorithm.
+			Lower values result in a more accurate approximation at the cost of higher runtimes and memory demands.
+			A theta of zero results in the originally proposed <a href="http://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf">t-SNE algorithm</a>.
 			However, for most datasets a theta of 0.5 doesn't result in a perceivable loss of quality.
 		</option>
 		<option name="Perplexity">
@@ -78,8 +79,8 @@
 			Small perplexities focus more on local
 			structure while larger perplexities take more global relationships
 			into account.
-			Typical values for the perplexity lay between 5 and 50.
-			Note that the perplexity may at most be <i>(Number of rows - 1) / 3</i>.
+			I most cases values in range [5,50] are sufficient.<br/>
+			<i>Note:</i> The perplexity must be less than or equal to <i>(Number of rows - 1) / 3</i>.
 		</option>
 		<option name="Remove original data columns">
 			Check this box if you want to remove the columns
