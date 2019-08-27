@@ -76,7 +76,9 @@ import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
 /**
  *
  * @author wiswedel, University of Konstanz
+ * @deprecated
  */
+@Deprecated
 final class RankCorrelationComputeNodeModel extends NodeModel implements BufferedDataTableHolder {
 
 //    private static final NodeLogger LOGGER = NodeLogger.getLogger(CorrelationComputeNodeModel.class);

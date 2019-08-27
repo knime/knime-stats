@@ -50,6 +50,7 @@
         <node
               after="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
               category-path="/analytics/statistics"
+              deprecated="true"
               factory-class="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory">
         </node>
         <node

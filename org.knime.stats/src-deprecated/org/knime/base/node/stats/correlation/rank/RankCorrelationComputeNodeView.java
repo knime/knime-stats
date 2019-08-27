@@ -99,7 +99,9 @@ import org.knime.core.node.tableview.TableView;
 /**
  *
  * @author Bernd Wiswedel, University of Konstanz
+ * @deprecated
  */
+@Deprecated
 final class RankCorrelationComputeNodeView extends NodeView<RankCorrelationComputeNodeModel> {
 
     private final TableView m_tableView;

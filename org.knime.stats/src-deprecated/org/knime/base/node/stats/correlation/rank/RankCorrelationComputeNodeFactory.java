@@ -51,7 +51,9 @@ import org.knime.core.node.NodeView;
 /**
  *
  * @author Bernd Wiswedel, University of Konstanz
+ * @deprecated
  */
+@Deprecated
 public final class RankCorrelationComputeNodeFactory extends NodeFactory<RankCorrelationComputeNodeModel> {
 
     /**
