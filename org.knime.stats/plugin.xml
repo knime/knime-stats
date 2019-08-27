@@ -35,7 +35,7 @@
               >
         </node>
         <node
-              after="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory"
+              after="org.knime.base.node.stats.correlation.rank2.RankCorrelationCompute2NodeFactory"
               category-path="/analytics/statistics"
               factory-class="org.knime.base.node.stats.viz.extended.ExtendedStatisticsNodeFactory"/>
         <node
@@ -49,6 +49,10 @@
         </node>
         <node
               after="org.knime.base.node.stats.correlation.standcronbach.StandCronbachNodeFactory"
+              category-path="/analytics/statistics"
+              factory-class="org.knime.base.node.stats.correlation.rank2.RankCorrelationCompute2NodeFactory">
+        </node>
+        <node
               category-path="/analytics/statistics"
               deprecated="true"
               factory-class="org.knime.base.node.stats.correlation.rank.RankCorrelationComputeNodeFactory">
