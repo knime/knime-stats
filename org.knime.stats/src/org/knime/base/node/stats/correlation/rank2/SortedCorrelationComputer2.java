@@ -45,13 +45,16 @@
 package org.knime.base.node.stats.correlation.rank2;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.apache.commons.math3.distribution.TDistribution;
+import org.knime.base.node.preproc.correlation.CorrelationUtils.CorrelationResult;
 import org.knime.base.node.preproc.correlation.compute2.CorrelationComputer2;
+import org.knime.base.node.preproc.correlation.compute2.PValueAlternative;
 import org.knime.base.util.HalfDoubleMatrix;
+import org.knime.base.util.HalfIntMatrix;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataColumnSpecCreator;
@@ -80,7 +83,7 @@ final class SortedCorrelationComputer2 {
      *
      * @author Iris Adae, University of Konstanz
      */
-    private class SortablePair {
+    private static class SortablePair {
 
         // the data cell
         private DataCell m_dc;
@@ -126,13 +129,13 @@ final class SortedCorrelationComputer2 {
      * @return a Buffered Data Table where column colIndex is replaced with a numerical column containing its rank
      * @throws CanceledExecutionException
      */
-    private BufferedDataTable getRanks(final BufferedDataTable bdt, final int colIndex, final ExecutionContext exec)
-        throws CanceledExecutionException {
+    private static BufferedDataTable getRanks(final BufferedDataTable bdt, final int colIndex,
+        final ExecutionContext exec) throws CanceledExecutionException {
 
         final DataValueComparator colComparators =
             bdt.getDataTableSpec().getColumnSpec(colIndex).getType().getComparator();
 
-        LinkedList<SortablePair> myList = new LinkedList<SortablePair>();
+        LinkedList<SortablePair> myList = new LinkedList<>();
         // read the data
         int counter = 0;
         for (DataRow row : bdt) {
@@ -143,21 +146,18 @@ final class SortedCorrelationComputer2 {
         exec.setProgress(0.2);
 
         // sort the data by value
-        Collections.sort(myList, new Comparator<SortablePair>() {
-            @Override
-            public int compare(final SortablePair dr1, final SortablePair dr2) {
+        Collections.sort(myList, (dr1, dr2) -> {
 
-                if (dr1 == dr2) {
-                    return 0;
-                }
-                if (dr1 == null) {
-                    return 1;
-                }
-                if (dr2 == null) {
-                    return -1;
-                }
-                return colComparators.compare(dr1.getDataCell(), dr2.getDataCell());
+            if (dr1 == dr2) {
+                return 0;
             }
+            if (dr1 == null) {
+                return 1;
+            }
+            if (dr2 == null) {
+                return -1;
+            }
+            return colComparators.compare(dr1.getDataCell(), dr2.getDataCell());
         });
         exec.setProgress(0.4);
 
@@ -205,20 +205,17 @@ final class SortedCorrelationComputer2 {
         exec.setProgress(0.8);
 
         // sort the data by counter backwards
-        Collections.sort(myList, new Comparator<SortablePair>() {
-            @Override
-            public int compare(final SortablePair dr1, final SortablePair dr2) {
-                if (dr1 == dr2) {
-                    return 0;
-                }
-                if (dr1 == null) {
-                    return 1;
-                }
-                if (dr2 == null) {
-                    return -1;
-                }
-                return dr1.getOrignalOrder() - dr2.getOrignalOrder();
+        Collections.sort(myList, (dr1, dr2) -> {
+            if (dr1 == dr2) {
+                return 0;
             }
+            if (dr1 == null) {
+                return 1;
+            }
+            if (dr2 == null) {
+                return -1;
+            }
+            return dr1.getOrignalOrder() - dr2.getOrignalOrder();
         });
 
         return replace(bdt, colIndex, myList, exec.createSubExecutionContext(0.2));
@@ -233,7 +230,7 @@ final class SortedCorrelationComputer2 {
      * @return the original data table where the defined column is replaced by the values from mylist
      * @throws CanceledExecutionException if canceled by user.
      */
-    private BufferedDataTable replace(final BufferedDataTable bdt, final int colIndex,
+    private static BufferedDataTable replace(final BufferedDataTable bdt, final int colIndex,
         final LinkedList<SortablePair> myList, final ExecutionContext exec) throws CanceledExecutionException {
         // Create ColumnRearranger
         ColumnRearranger c = new ColumnRearranger(bdt.getDataTableSpec());
@@ -264,19 +261,17 @@ final class SortedCorrelationComputer2 {
 
     private BufferedDataTable m_rank;
 
-    /** Inits fields. */
     SortedCorrelationComputer2() {
     }
 
     /**
-     * this methods calculate the ranks of all column in the data table.
+     * This methods calculate the ranks of all column in the data table.
      *
      * @param table the original data table
      * @param exec execution context for progress reprot
      * @throws CanceledExecutionException if canceled by user.
      */
-    protected void generateRank(final BufferedDataTable table, final ExecutionContext exec)
-        throws CanceledExecutionException {
+    void calculateRank(final BufferedDataTable table, final ExecutionContext exec) throws CanceledExecutionException {
         m_rank = table;
         int nrofColumns = table.getDataTableSpec().getNumColumns();
 
@@ -291,21 +286,68 @@ final class SortedCorrelationComputer2 {
      * Calculates the Spearmans rank for all pairs of Data table columns based on previously calculated ranks.
      *
      * @param exec the Execution context.
+     * @param pValueAlternative
      * @return the output matrix to be turned into the output model
      * @throws CanceledExecutionException if canceled by users
      */
-    protected HalfDoubleMatrix calculateSpearman(final ExecutionContext exec) throws CanceledExecutionException {
+    CorrelationResult calculateSpearman(final ExecutionMonitor exec, final PValueAlternative pValueAlternative)
+        throws CanceledExecutionException {
         // the ranking must have been calculated before
         assert (m_rank != null);
-        double progStep = 0.5;
-        CorrelationComputer2 calculator = new CorrelationComputer2(m_rank.getDataTableSpec(), 0);
+        final CorrelationComputer2 calculator = new CorrelationComputer2(m_rank.getDataTableSpec(), 0);
+
+        // Calculate statistics on the table
         exec.setMessage("Calculating table statistics");
-        ExecutionContext execStep1 = exec.createSubExecutionContext(progStep);
+        final ExecutionMonitor execStep1 = exec.createSubProgress(0.5);
         calculator.calculateStatistics(m_rank, execStep1);
         execStep1.setProgress(1.0);
+
+        // Calculate the correlation
         exec.setMessage("Calculating correlation values");
-        ExecutionMonitor execStep2 = exec.createSubExecutionContext(progStep);
-        return calculator.calculateOutput(m_rank, execStep2).getCorrelationMatrix();
+        final ExecutionMonitor execStep2 = exec.createSubProgress(0.5);
+        final CorrelationResult calculateOutput =
+            calculator.calculateOutput(m_rank, execStep2, PValueAlternative.TWO_SIDED);
+        final HalfDoubleMatrix corrMatrix = calculateOutput.getCorrelationMatrix();
+        final HalfIntMatrix dofMatrix = calculateOutput.getDegreesOfFreedomMatrix();
+        final HalfDoubleMatrix pValMatrix = new HalfDoubleMatrix(corrMatrix.getRowCount(), false);
+
+        for (int i = 0; i < corrMatrix.getRowCount(); i++) {
+            for (int j = i + 1; j < corrMatrix.getRowCount(); j++) {
+                final double corr = corrMatrix.get(i, j);
+                final int dof = dofMatrix.get(i, j);
+                double pVal = Double.NaN;
+                if (dof > 0) {
+                    if (!Double.isNaN(corr)) {
+                        // See https://github.com/scipy/scipy/blob/v1.3.1/scipy/stats/stats.py#L3613-L3764
+                        final TDistribution tDistr = new TDistribution(null, dof);
+                        final double t = corr * Math.sqrt((dof / ((corr + 1.0) * (1.0 - corr))));
+                        if (Double.isNaN(t)) {
+                            // We divided by 0 -> correlation is about 1
+                            pVal = 0;
+                        } else {
+                            switch (pValueAlternative) {
+                                case TWO_SIDED:
+                                    pVal = 2 * (1 - tDistr.cumulativeProbability(Math.abs(t)));
+                                    break;
+
+                                case LESS:
+                                    pVal = tDistr.cumulativeProbability(t);
+                                    break;
+
+                                case GREATER:
+                                    pVal = 1 - tDistr.cumulativeProbability(t);
+                                    break;
+                            }
+                        }
+                    }
+                } else {
+                    pVal = Double.NaN;
+                }
+                pValMatrix.set(i, j, pVal);
+            }
+        }
+
+        return new CorrelationResult(corrMatrix, pValMatrix, dofMatrix);
     }
 
     /**
@@ -333,7 +375,8 @@ final class SortedCorrelationComputer2 {
             c++;
         }
 
-        HalfDoubleMatrix nominatorMatrix = new HalfDoubleMatrix(coCount, /*includeDiagonal=*/false);
+        final HalfDoubleMatrix nominatorMatrix = new HalfDoubleMatrix(coCount, /*includeDiagonal=*/false);
+
         double[][] cMatrix = new double[coCount][coCount];
         double[][] dMatrix = new double[coCount][coCount];
         double[][] txMatrix = new double[coCount][coCount];
@@ -357,7 +400,7 @@ final class SortedCorrelationComputer2 {
                         } else if (x1 == x2 && y1 != y2) { // values are bounded in x
                             txMatrix[i][j]++;
                         } else if (x1 == x2 && y1 == y2) { // values are bounded in x and y
-                            //                            txyMatrix[i][j]++; // no measure need this count
+                            // txyMatrix[i][j]++; // no measure need this count
                         }
                     }
                 }
@@ -387,11 +430,18 @@ final class SortedCorrelationComputer2 {
             // kendalls Tau b
             for (int i = 0; i < coCount; i++) {
                 for (int j = i + 1; j < coCount; j++) {
-                    //                  // we divide tx and ty by 2, as each of the pairs was counted twice
-                    double n1 = txMatrix[i][j] * 0.5;
-                    double n2 = tyMatrix[i][j] * 0.5;
+                    // we divide tx and ty by 2, as each of the pairs was counted twice
+                    double tiesX = txMatrix[i][j];
+                    double tiesY = tyMatrix[i][j];
+                    double n1 = tiesX * 0.5;
+                    double n2 = tiesY * 0.5;
                     double div = Math.sqrt((n0 - n1) * (n0 - n2));
                     nominatorMatrix.set(i, j, (cMatrix[i][j] - dMatrix[i][j]) / div);
+
+                    // P-Values:
+                    // See https://github.com/scipy/scipy/blob/v1.3.1/scipy/stats/stats.py#L3861-L4052
+                    // https://www.rdocumentation.org/packages/stats/versions/3.6.1/source
+
                 }
                 exec.setProgress(0.05 * i / coCount, "Calculating correlations");
             }
@@ -400,114 +450,15 @@ final class SortedCorrelationComputer2 {
             // Kruskals Gamma
             for (int i = 0; i < coCount; i++) {
                 for (int j = i + 1; j < coCount; j++) {
-                    nominatorMatrix.set(i, j, (cMatrix[i][j] - dMatrix[i][j]) / (cMatrix[i][j] + dMatrix[i][j]));
+                    final double concordances = cMatrix[i][j];
+                    final double discordances = dMatrix[i][j];
+                    nominatorMatrix.set(i, j, (concordances - discordances) / (concordances + discordances));
+
+                    // P-Values:
+                    // See https://es.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/42645/versions/2/previews/gkgammatst.m/index.html
                 }
                 exec.setProgress(0.05 * i / coCount, "Calculating correlations");
-            }
 
-        }
-
-        return nominatorMatrix;
-    }
-
-    /**
-     * Calculates the kendall rank for all pairs of Data table columns based on previously calculated ranks.
-     *
-     * @param exec the Execution context.
-     * @param corrType the type of correlation used, as defined in CorrelationComputeNodeModel
-     * @return the output matrix to be turned into the output model
-     * @throws CanceledExecutionException if canceled by users
-     */
-    HalfDoubleMatrix calculateKendall(final String corrType, final ExecutionMonitor exec)
-        throws CanceledExecutionException {
-
-        // the ranking must have been calculated before
-        assert (m_rank != null);
-
-        final int coCount = m_rank.getDataTableSpec().getNumColumns();
-        HalfDoubleMatrix nominatorMatrix = new HalfDoubleMatrix(coCount, /*includeDiagonal=*/false);
-        double[][] cMatrix = new double[coCount][coCount];
-        double[][] dMatrix = new double[coCount][coCount];
-        double[][] txMatrix = new double[coCount][coCount];
-        double[][] tyMatrix = new double[coCount][coCount];
-        //        double[][] txyMatrix = new double[coCount][coCount];
-        final DataCell[] cells = new DataCell[m_rank.getDataTableSpec().getNumColumns()];
-        final DataCell[] cells2 = new DataCell[m_rank.getDataTableSpec().getNumColumns()];
-        int rowIndex = 0;
-        final int rowCount = m_rank.getRowCount();
-        for (DataRow r : m_rank) {
-            // getCell may be an expensive operation and we may access a cell
-            // multiple times, so we buffer it
-            for (int i = 0; i < cells.length; i++) {
-                cells[i] = r.getCell(i);
-            }
-            for (DataRow r2 : m_rank) {
-                exec.checkCanceled();
-                // getCell may be an expensive operation and we may access a cell
-                // multiple times, so we buffer it
-                for (int i = 0; i < cells2.length; i++) {
-                    cells2[i] = r2.getCell(i);
-                }
-                for (int i = 0; i < coCount; i++) {
-                    final double x1 = ((DoubleValue)cells[i]).getDoubleValue();
-                    final double x2 = ((DoubleValue)cells2[i]).getDoubleValue();
-                    for (int j = 0; j < coCount; j++) {
-                        final double y1 = ((DoubleValue)cells[j]).getDoubleValue();
-                        final double y2 = ((DoubleValue)cells2[j]).getDoubleValue();
-                        if (x1 < x2 && y1 < y2) { // values are concordant
-                            cMatrix[i][j]++;
-                        } else if (x1 < x2 && y1 > y2) { // values are discordant
-                            dMatrix[i][j]++;
-                        } else if (x1 != x2 && y1 == y2) { // values are bounded in y
-                            tyMatrix[i][j]++;
-                        } else if (x1 == x2 && y1 != y2) { // values are bounded in x
-                            txMatrix[i][j]++;
-                        } else { // (x1 == x2 && y1 == y2) { values are bounded in x and y
-                            //                                        txyMatrix[i][j]++; // no measure need this count
-                        }
-                    }
-                }
-            }
-
-            exec.checkCanceled();
-            exec.setProgress(0.95 * rowIndex / rowCount,
-                String.format("Calculating - %d/%d (\"%s\")", rowIndex, rowCount, r.getKey()));
-            rowIndex++;
-        }
-
-        // the calculation of the matrix will be much more time intensive, so we only assign 5%
-        // of the execution time to the final calculation of
-
-        if (corrType.equals(RankCorrelationCompute2NodeModel.CFG_KENDALLA)) {
-            double nrOfRows = m_rank.getRowCount();
-            // kendalls Tau a
-            double divisor = (nrOfRows * (nrOfRows - 1.0)) * 0.5;
-            for (int i = 0; i < coCount; i++) {
-                for (int j = i + 1; j < coCount; j++) {
-                    nominatorMatrix.set(i, j, (cMatrix[i][j] - dMatrix[i][j]) / divisor);
-                }
-                exec.setProgress(0.05 * i / coCount, "Calculating correlations");
-            }
-
-        } else if (corrType.equals(RankCorrelationCompute2NodeModel.CFG_KENDALLB)) {
-
-            // kendalls Tau b
-            for (int i = 0; i < coCount; i++) {
-                for (int j = i + 1; j < coCount; j++) {
-                    double div = Math.sqrt(cMatrix[i][j] + dMatrix[i][j] + txMatrix[i][j])
-                        * Math.sqrt(cMatrix[i][j] + dMatrix[i][j] + tyMatrix[i][j]);
-                    nominatorMatrix.set(i, j, (cMatrix[i][j] - dMatrix[i][j]) / div);
-                }
-                exec.setProgress(0.05 * i / coCount, "Calculating correlations");
-            }
-
-        } else if (corrType.equals(RankCorrelationCompute2NodeModel.CFG_KRUSKALAL)) {
-            // Kruskals Gamma
-            for (int i = 0; i < coCount; i++) {
-                for (int j = i + 1; j < coCount; j++) {
-                    nominatorMatrix.set(i, j, (cMatrix[i][j] - dMatrix[i][j]) / (cMatrix[i][j] + dMatrix[i][j]));
-                }
-                exec.setProgress(0.05 * i / coCount, "Calculating correlations");
             }
 
         }
@@ -518,9 +469,8 @@ final class SortedCorrelationComputer2 {
     /**
      * @return the previously generated ranking table.
      */
-    public BufferedDataTable getRankTable() {
+    BufferedDataTable getRankTable() {
         assert (m_rank != null);
         return m_rank;
     }
-
 }

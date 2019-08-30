@@ -46,16 +46,27 @@ package org.knime.base.node.stats.correlation.rank2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.knime.base.node.preproc.correlation.CorrelationUtils;
+import org.knime.base.node.preproc.correlation.CorrelationUtils.CorrelationResult;
+import org.knime.base.node.preproc.correlation.compute2.PValueAlternative;
 import org.knime.base.node.preproc.correlation.pmcc.PMCCPortObjectAndSpec;
 import org.knime.base.util.HalfDoubleMatrix;
 import org.knime.core.data.DataCell;
+import org.knime.core.data.DataColumnProperties;
+import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.RowKey;
 import org.knime.core.data.container.ColumnRearranger;
+import org.knime.core.data.def.DefaultRow;
+import org.knime.core.data.def.DoubleCell;
+import org.knime.core.data.renderer.DataValueRenderer;
+import org.knime.core.data.renderer.DoubleValueRenderer.FullPrecisionRendererFactory;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.BufferedDataTableHolder;
@@ -79,7 +90,17 @@ import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
  */
 final class RankCorrelationCompute2NodeModel extends NodeModel implements BufferedDataTableHolder {
 
-    //    private static final NodeLogger LOGGER = NodeLogger.getLogger(CorrelationComputeNodeModel.class);
+    /** Full precision renderer for double values */
+    private static final String FULL_PRECISION_RENDERER = new FullPrecisionRendererFactory().getDescription();
+
+    /** Progress of the first step */
+    private static final double PROG_STEP1 = 0.48;
+
+    /** Progress of the second step */
+    private static final double PROG_STEP2 = 0.48;
+
+    /** Progress of the last step */
+    private static final double PROG_FINISH = 1 - PROG_STEP1 - PROG_STEP2;
 
     /** the configuration key for using spearmans Rhu. */
     static final String CFG_SPEARMAN = "Spearmans Rho";
@@ -93,9 +114,46 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
     /** the configuration key for using Goodman and Kruskals Gamma. */
     static final String CFG_KRUSKALAL = "Goodman and Kruskal's Gamma";
 
+    /**
+     * @return the list of all correlation types
+     */
+    static List<String> getCorrelationTypes() {
+        LinkedList<String> ret = new LinkedList<>();
+        ret.add(CFG_SPEARMAN);
+        ret.add(CFG_KENDALLA);
+        ret.add(CFG_KENDALLB);
+        ret.add(CFG_KRUSKALAL);
+        return ret;
+    }
+
+    /**
+     * @return A new settings object for filtering columns.
+     */
+    static SettingsModelColumnFilter2 createColumnFilterModel() {
+        return new SettingsModelColumnFilter2("include-list");
+    }
+
+    /**
+     * @return a new model
+     */
+    static SettingsModelString createTypeModel() {
+        return new SettingsModelString("corr-measure", CFG_SPEARMAN);
+    }
+
+    /**
+     * Factory method to create the string model for the p-value alternative.
+     *
+     * @return A new model.
+     */
+    static SettingsModelString createPValAlternativeModel() {
+        return new SettingsModelString("pvalAlternative", PValueAlternative.TWO_SIDED.name());
+    }
+
     private SettingsModelColumnFilter2 m_columnFilterModel;
 
     private SettingsModelString m_corrType = createTypeModel();
+
+    private final SettingsModelString m_pValAlternativeModel = createPValAlternativeModel();
 
     private BufferedDataTable m_correlationTable;
 
@@ -108,48 +166,137 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
     }
 
     @Override
+    protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
+        DataTableSpec in = (DataTableSpec)inSpecs[0];
+        final String[] includes;
+        if (m_columnFilterModel == null) {
+            m_columnFilterModel = createColumnFilterModel();
+            // auto-configure, no previous configuration
+            m_columnFilterModel.loadDefaults(in);
+            includes = m_columnFilterModel.applyTo(in).getIncludes();
+            setWarningMessage("Auto configuration: Using all suitable columns (in total " + includes.length + ")");
+        } else {
+            FilterResult applyTo = m_columnFilterModel.applyTo(in);
+            includes = applyTo.getIncludes();
+        }
+        if (includes.length == 0) {
+            throw new InvalidSettingsException("No columns selected");
+        }
+        final DataTableSpec tableSpecs;
+        if (CFG_SPEARMAN.equals(m_corrType.getStringValue())) {
+            tableSpecs = CorrelationUtils.createCorrelationOutputTableSpec();
+        } else {
+            tableSpecs = createCorrelationOutputTableSpec();
+        }
+        return new PortObjectSpec[]{tableSpecs, new PMCCPortObjectAndSpec(includes), null};
+    }
+
+    @Override
     protected PortObject[] execute(final PortObject[] inData, final ExecutionContext exec) throws Exception {
         final BufferedDataTable in = (BufferedDataTable)inData[0];
         final DataTableSpec inSpec = in.getDataTableSpec();
-        ColumnRearranger filteredTableRearranger = new ColumnRearranger(inSpec);
-        String[] includeNames = m_columnFilterModel.applyTo(inSpec).getIncludes();
+
+        // Filter included columns
+        final ColumnRearranger filteredTableRearranger = new ColumnRearranger(inSpec);
+        final String[] includeNames = m_columnFilterModel.applyTo(inSpec).getIncludes();
         filteredTableRearranger.keepOnly(includeNames);
         final BufferedDataTable filteredTable =
             exec.createColumnRearrangeTable(in, filteredTableRearranger, exec.createSilentSubExecutionContext(0.0));
 
+        // Filter missing values
         final BufferedDataTable noMissTable = filterMissings(filteredTable, exec);
-        if (noMissTable.getRowCount() < filteredTable.getRowCount()) {
+        if (noMissTable.size() < filteredTable.size()) {
             setWarningMessage(
                 "Rows containing missing values are filtered. Please resolve them" + " with the Missing Value node.");
         }
-        double progStep1 = 0.48;
-        double progStep2 = 0.48;
-        double progFinish = 1.0 - progStep1 - progStep2;
-        SortedCorrelationComputer2 calculator = new SortedCorrelationComputer2();
-        exec.setMessage("Generate ranking");
-        ExecutionContext execStep1 = exec.createSubExecutionContext(progStep1);
-        calculator.generateRank(noMissTable, execStep1);
-        execStep1.setProgress(1.0);
-        exec.setMessage("Calculating correlation values");
 
-        ExecutionContext execStep2 = exec.createSubExecutionContext(progStep2);
-        HalfDoubleMatrix correlationMatrix;
+        // Calculate ranking
+        final SortedCorrelationComputer2 calculator = new SortedCorrelationComputer2();
+        exec.setMessage("Generate ranking");
+        ExecutionContext execStep1 = exec.createSubExecutionContext(PROG_STEP1);
+        calculator.calculateRank(noMissTable, execStep1);
+        execStep1.setProgress(1.0);
+
+        // Calculate correlation
+        exec.setMessage("Calculating correlation values");
+        final ExecutionContext execStep2 = exec.createSubExecutionContext(PROG_STEP2);
+        final BufferedDataTable out;
+        final HalfDoubleMatrix correlationMatrix;
         if (m_corrType.getStringValue().equals(CFG_SPEARMAN)) {
-            correlationMatrix = calculator.calculateSpearman(execStep2);
+            final CorrelationResult correlationResult =
+                calculator.calculateSpearman(execStep2, selectedPValAlternative());
+            correlationMatrix = correlationResult.getCorrelationMatrix();
+
+            // Assemble output
+            exec.setMessage("Assembling output");
+            final ExecutionContext execFinish1 = exec.createSubExecutionContext(PROG_FINISH / 2);
+            out = CorrelationUtils.createCorrelationOutputTable(correlationResult, includeNames, execFinish1);
         } else {
             correlationMatrix = calculator.calculateKendallInMemory(m_corrType.getStringValue(), execStep2);
+
+            // Assemble output
+            exec.setMessage("Assembling output");
+            final ExecutionContext execFinish1 = exec.createSubExecutionContext(PROG_FINISH / 2);
+            out = createCorrelationOutputTable(correlationMatrix, includeNames, execFinish1);
         }
+        // Correlation matrix
+        final ExecutionContext execFinish2 = exec.createSubExecutionContext(PROG_FINISH / 2);
+        final PMCCPortObjectAndSpec pmccModel = new PMCCPortObjectAndSpec(includeNames, correlationMatrix);
+        m_correlationTable = pmccModel.createCorrelationMatrix(execFinish2);
         execStep2.setProgress(1.0);
-        exec.setMessage("Assembling output");
-        ExecutionContext execFinish = exec.createSubExecutionContext(progFinish);
-        PMCCPortObjectAndSpec pmccModel = new PMCCPortObjectAndSpec(includeNames, correlationMatrix);
-        BufferedDataTable out = pmccModel.createCorrelationMatrix(execFinish);
-        m_correlationTable = out;
-        if (in.getRowCount() == 0) {
+
+        // Empty table handling
+        if (in.size() == 0) {
+            // TODO check if the warning is correct
             setWarningMessage("Empty input table! Generating missing values as correlation values.");
         }
         return new PortObject[]{out, pmccModel, calculator.getRankTable()};
+    }
 
+    /** Correlation table without p-values and degrees of freedom */
+    private static BufferedDataTable createCorrelationOutputTable(final HalfDoubleMatrix corrMatrix,
+        final String[] includeNames, final ExecutionContext exec) throws CanceledExecutionException {
+        final DataTableSpec outSpec = createCorrelationOutputTableSpec();
+        final BufferedDataContainer dataContainer = exec.createDataContainer(outSpec);
+
+        // Fill the table
+        int numInc = includeNames.length;
+        int rowIndex = 0;
+        final double rowCount = numInc * (numInc - 1) / 2;
+        for (int i = 0; i < numInc; i++) {
+            for (int j = i + 1; j < numInc; j++) {
+                final DoubleCell corr = new DoubleCell(corrMatrix.get(i, j));
+                final RowKey rowKey = new RowKey(getRowKey(includeNames[i], includeNames[j]));
+                final DefaultRow row = new DefaultRow(rowKey, corr);
+                exec.checkCanceled();
+                dataContainer.addRowToTable(row);
+                exec.setProgress(++rowIndex / rowCount);
+            }
+        }
+        dataContainer.close();
+        return dataContainer.getTable();
+    }
+
+    /** Correlation table specs without p-values and degrees of freedom */
+    private static DataTableSpec createCorrelationOutputTableSpec() {
+        // Column spec creators
+        final DataColumnSpecCreator corrColSpecCreator =
+            new DataColumnSpecCreator(CorrelationUtils.CORRELATION_VALUE_COL_NAME, DoubleCell.TYPE);
+
+        // Set the full precision renderer for the p value column
+        final DataColumnProperties fullPrecRendererProps = new DataColumnProperties(
+            Collections.singletonMap(DataValueRenderer.PROPERTY_PREFERRED_RENDERER, FULL_PRECISION_RENDERER));
+        corrColSpecCreator.setProperties(fullPrecRendererProps);
+
+        return new DataTableSpec(corrColSpecCreator.createSpec());
+    }
+
+    private static String getRowKey(final String columnNameA, final String columnNameB) {
+        return columnNameA + "_" + columnNameB;
+    }
+
+    private PValueAlternative selectedPValAlternative() {
+        return PValueAlternative.valueOf(m_pValAlternativeModel.getStringValue());
     }
 
     /**
@@ -157,7 +304,8 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
      * @param exec The execution context
      * @return the table without any rows containing missing values.
      */
-    private BufferedDataTable filterMissings(final BufferedDataTable filteredTable, final ExecutionContext exec) {
+    private static BufferedDataTable filterMissings(final BufferedDataTable filteredTable,
+        final ExecutionContext exec) {
         BufferedDataContainer tab = exec.createDataContainer(filteredTable.getDataTableSpec());
         for (DataRow row : filteredTable) {
             boolean includeRow = true;
@@ -177,69 +325,6 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void reset() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected PortObjectSpec[] configure(final PortObjectSpec[] inSpecs) throws InvalidSettingsException {
-        DataTableSpec in = (DataTableSpec)inSpecs[0];
-        final String[] includes;
-        if (m_columnFilterModel == null) {
-            m_columnFilterModel = createColumnFilterModel();
-            // auto-configure, no previous configuration
-            m_columnFilterModel.loadDefaults(in);
-            includes = m_columnFilterModel.applyTo(in).getIncludes();
-            setWarningMessage("Auto configuration: Using all suitable columns (in total " + includes.length + ")");
-        } else {
-            FilterResult applyTo = m_columnFilterModel.applyTo(in);
-            includes = applyTo.getIncludes();
-        }
-        if (includes.length == 0) {
-            throw new InvalidSettingsException("No columns selected");
-        }
-        return new PortObjectSpec[]{PMCCPortObjectAndSpec.createOutSpec(includes), new PMCCPortObjectAndSpec(includes),
-            null};
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void saveSettingsTo(final NodeSettingsWO settings) {
-        if (m_columnFilterModel != null) {
-            m_columnFilterModel.saveSettingsTo(settings);
-        }
-        m_corrType.saveSettingsTo(settings);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        createColumnFilterModel().validateSettings(settings);
-        m_corrType.validateSettings(settings);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        if (m_columnFilterModel == null) {
-            m_columnFilterModel = createColumnFilterModel();
-        }
-        m_columnFilterModel.loadSettingsFrom(settings);
-        m_corrType.loadSettingsFrom(settings);
-    }
-
-    /**
      * Getter for correlation table to display. <code>null</code> if not executed.
      *
      * @return the correlationTable
@@ -248,58 +333,57 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         return m_correlationTable;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
+    protected void reset() {
+        // nothing to do
+    }
+
+    @Override
+    protected void saveSettingsTo(final NodeSettingsWO settings) {
+        if (m_columnFilterModel != null) {
+            m_columnFilterModel.saveSettingsTo(settings);
+        }
+        m_corrType.saveSettingsTo(settings);
+        m_pValAlternativeModel.saveSettingsTo(settings);
+    }
+
+    @Override
+    protected void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
+        createColumnFilterModel().validateSettings(settings);
+        m_corrType.validateSettings(settings);
+        m_pValAlternativeModel.validateSettings(settings);
+    }
+
+    @Override
+    protected void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
+        if (m_columnFilterModel == null) {
+            m_columnFilterModel = createColumnFilterModel();
+        }
+        m_columnFilterModel.loadSettingsFrom(settings);
+        m_corrType.loadSettingsFrom(settings);
+        m_pValAlternativeModel.loadSettingsFrom(settings);
+    }
+
     @Override
     protected void loadInternals(final File nodeInternDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
+        // nothing to do
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void saveInternals(final File nodeInternDir, final ExecutionMonitor exec)
         throws IOException, CanceledExecutionException {
+        // nothing to do
     }
 
-    /**
-     * @return A new settings object for filtering columns.
-     */
-    static SettingsModelColumnFilter2 createColumnFilterModel() {
-        return new SettingsModelColumnFilter2("include-list");
-    }
-
-    /**
-     * @return a new model
-     */
-    static SettingsModelString createTypeModel() {
-        return new SettingsModelString("corr-measure", CFG_SPEARMAN);
-    }
-
-    /** {@inheritDoc} */
     @Override
     public BufferedDataTable[] getInternalTables() {
         return new BufferedDataTable[]{m_correlationTable};
     }
 
-    /** {@inheritDoc} */
     @Override
     public void setInternalTables(final BufferedDataTable[] tables) {
         m_correlationTable = tables[0];
-    }
-
-    /**
-     * @return the list of all correlation types
-     */
-    static List<String> getCorrelationTypes() {
-        LinkedList<String> ret = new LinkedList<>();
-        ret.add(CFG_SPEARMAN);
-        ret.add(CFG_KENDALLA);
-        ret.add(CFG_KENDALLB);
-        ret.add(CFG_KRUSKALAL);
-        return ret;
     }
 
 }

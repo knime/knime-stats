@@ -44,24 +44,43 @@
  */
 package org.knime.base.node.stats.correlation.rank2;
 
+import org.knime.base.node.preproc.correlation.compute2.PValueAlternative;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
+import org.knime.core.node.defaultnodesettings.DialogComponentButtonGroup;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnFilter2;
 import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
+import org.knime.core.node.defaultnodesettings.SettingsModelString;
 
 /**
  * Dialog for correlation node. Shows only a column filter.
  *
  * @author Bernd Wiswedel, University of Konstanz
  * @author Iris Adae, University of Konstanz
+ * @author Benjamin Wilhelm, KNIME GmbH, Konstanz, Germany
  */
 final class RankCorrelationCompute2NodeDialogPane extends DefaultNodeSettingsPane {
 
+    private final SettingsModelString m_typeModel;
+
+    private final SettingsModelString m_pValAlternativeModel;
+
     /** Inits dialog, adds only a column filter. */
     public RankCorrelationCompute2NodeDialogPane() {
-        addDialogComponent(new DialogComponentStringSelection(RankCorrelationCompute2NodeModel.createTypeModel(),
-            "Correlation Type:", RankCorrelationCompute2NodeModel.getCorrelationTypes()));
+        m_typeModel = RankCorrelationCompute2NodeModel.createTypeModel();
+        addDialogComponent(new DialogComponentStringSelection(m_typeModel, "Correlation Type:",
+            RankCorrelationCompute2NodeModel.getCorrelationTypes()));
+        m_typeModel.addChangeListener(a -> typeSelectionChanged());
 
         addDialogComponent(
             new DialogComponentColumnFilter2(RankCorrelationCompute2NodeModel.createColumnFilterModel(), 0));
+
+        m_pValAlternativeModel = RankCorrelationCompute2NodeModel.createPValAlternativeModel();
+        addDialogComponent(new DialogComponentButtonGroup(m_pValAlternativeModel, "p-value", true,
+            PValueAlternative.descriptions(), PValueAlternative.names()));
+    }
+
+    private void typeSelectionChanged() {
+        final boolean enabled = RankCorrelationCompute2NodeModel.CFG_SPEARMAN.equals(m_typeModel.getStringValue());
+        m_pValAlternativeModel.setEnabled(enabled);
     }
 }
