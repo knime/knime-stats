@@ -23,6 +23,7 @@
 				please note that we use the default ordering of the values. If there
 				is no ordering defined in the column, a string representation will
 				be used.
+				The node uses fractional ranks for equal values.
 				<a
 					href="http://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient"> Spearman's rank correlation coefficient </a>
 				is a statistical measure of the strength of a monotonic relationship
@@ -149,7 +150,7 @@
 			Correlation Filter node.
 		</outPort>
 		<outPort name="Rank table" index="2">
-			A table containing the ranks
+			A table containing the fractional ranks
 			of the columns. Where the rank
 			corresponds to the values position in a
 			sorted table.
