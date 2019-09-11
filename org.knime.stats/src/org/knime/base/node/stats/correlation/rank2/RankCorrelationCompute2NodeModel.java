@@ -52,8 +52,8 @@ import java.util.List;
 
 import org.knime.base.node.preproc.correlation.CorrelationUtils;
 import org.knime.base.node.preproc.correlation.CorrelationUtils.CorrelationResult;
-import org.knime.base.node.preproc.correlation.compute2.PValueAlternative;
 import org.knime.base.node.preproc.correlation.pmcc.PMCCPortObjectAndSpec;
+import org.knime.base.node.preproc.correlation.pmcc.PValueAlternative;
 import org.knime.base.util.HalfDoubleMatrix;
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnProperties;
@@ -221,6 +221,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         final ExecutionContext execStep2 = exec.createSubExecutionContext(PROG_STEP2);
         final BufferedDataTable out;
         final HalfDoubleMatrix correlationMatrix;
+        final PMCCPortObjectAndSpec pmccModel;
         if (m_corrType.getStringValue().equals(CFG_SPEARMAN)) {
             final CorrelationResult correlationResult =
                 SortedCorrelationComputer2.calculateSpearman(rankTable, execStep2, selectedPValAlternative());
@@ -230,6 +231,8 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             exec.setMessage("Assembling output");
             final ExecutionContext execFinish1 = exec.createSubExecutionContext(PROG_FINISH / 2);
             out = CorrelationUtils.createCorrelationOutputTable(correlationResult, includeNames, execFinish1);
+            pmccModel = new PMCCPortObjectAndSpec(includeNames, correlationMatrix, correlationResult.getpValMatrix(),
+                correlationResult.getDegreesOfFreedomMatrix(), selectedPValAlternative());
         } else {
             correlationMatrix =
                 SortedCorrelationComputer2.calculateKendallInMemory(rankTable, m_corrType.getStringValue(), execStep2);
@@ -238,10 +241,10 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             exec.setMessage("Assembling output");
             final ExecutionContext execFinish1 = exec.createSubExecutionContext(PROG_FINISH / 2);
             out = createCorrelationOutputTable(correlationMatrix, includeNames, execFinish1);
+            pmccModel = new PMCCPortObjectAndSpec(includeNames, correlationMatrix);
         }
         // Correlation matrix
         final ExecutionContext execFinish2 = exec.createSubExecutionContext(PROG_FINISH / 2);
-        final PMCCPortObjectAndSpec pmccModel = new PMCCPortObjectAndSpec(includeNames, correlationMatrix);
         m_correlationTable = pmccModel.createCorrelationMatrix(execFinish2);
         execStep2.setProgress(1.0);
 

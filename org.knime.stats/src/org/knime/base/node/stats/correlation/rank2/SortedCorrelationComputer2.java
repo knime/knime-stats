@@ -52,7 +52,7 @@ import java.util.LinkedList;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.knime.base.node.preproc.correlation.CorrelationUtils.CorrelationResult;
 import org.knime.base.node.preproc.correlation.compute2.CorrelationComputer2;
-import org.knime.base.node.preproc.correlation.compute2.PValueAlternative;
+import org.knime.base.node.preproc.correlation.pmcc.PValueAlternative;
 import org.knime.base.util.HalfDoubleMatrix;
 import org.knime.base.util.HalfIntMatrix;
 import org.knime.core.data.DataCell;
