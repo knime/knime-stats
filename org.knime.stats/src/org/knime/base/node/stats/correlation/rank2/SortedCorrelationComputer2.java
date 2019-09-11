@@ -75,8 +75,14 @@ import org.knime.core.node.ExecutionMonitor;
  * Calculates pairwise correlation values for a table.
  *
  * @author Iris Adae, University of Konstanz
+ * @author Benjamin Wilhelm, KNIME GmbH, Konstanz, Germany
  */
 final class SortedCorrelationComputer2 {
+
+
+    private SortedCorrelationComputer2() {
+        // Utility class
+    }
 
     /**
      * This class is used to generate the ranks.
@@ -259,11 +265,6 @@ final class SortedCorrelationComputer2 {
         return exec.createColumnRearrangeTable(bdt, c, exec);
     }
 
-    private BufferedDataTable m_rank;
-
-    SortedCorrelationComputer2() {
-    }
-
     /**
      * This methods calculate the ranks of all column in the data table.
      *
@@ -271,15 +272,16 @@ final class SortedCorrelationComputer2 {
      * @param exec execution context for progress reprot
      * @throws CanceledExecutionException if canceled by user.
      */
-    void calculateRank(final BufferedDataTable table, final ExecutionContext exec) throws CanceledExecutionException {
-        m_rank = table;
+    static BufferedDataTable calculateRank(final BufferedDataTable table, final ExecutionContext exec) throws CanceledExecutionException {
+        BufferedDataTable rank = table;
         int nrofColumns = table.getDataTableSpec().getNumColumns();
 
         for (int i = 0; i < table.getDataTableSpec().getNumColumns(); i++) {
             exec.setMessage("Ranking column " + table.getDataTableSpec().getColumnNames()[i]);
             exec.checkCanceled();
-            m_rank = getRanks(m_rank, i, exec.createSubExecutionContext(1.0 / nrofColumns));
+            rank = getRanks(rank, i, exec.createSubExecutionContext(1.0 / nrofColumns));
         }
+        return rank;
     }
 
     /**
@@ -290,23 +292,23 @@ final class SortedCorrelationComputer2 {
      * @return the output matrix to be turned into the output model
      * @throws CanceledExecutionException if canceled by users
      */
-    CorrelationResult calculateSpearman(final ExecutionMonitor exec, final PValueAlternative pValueAlternative)
+    static CorrelationResult calculateSpearman(final BufferedDataTable rank, final ExecutionMonitor exec, final PValueAlternative pValueAlternative)
         throws CanceledExecutionException {
         // the ranking must have been calculated before
-        assert (m_rank != null);
-        final CorrelationComputer2 calculator = new CorrelationComputer2(m_rank.getDataTableSpec(), 0);
+        assert (rank != null);
+        final CorrelationComputer2 calculator = new CorrelationComputer2(rank.getDataTableSpec(), 0);
 
         // Calculate statistics on the table
         exec.setMessage("Calculating table statistics");
         final ExecutionMonitor execStep1 = exec.createSubProgress(0.5);
-        calculator.calculateStatistics(m_rank, execStep1);
+        calculator.calculateStatistics(rank, execStep1);
         execStep1.setProgress(1.0);
 
         // Calculate the correlation
         exec.setMessage("Calculating correlation values");
         final ExecutionMonitor execStep2 = exec.createSubProgress(0.5);
         final CorrelationResult calculateOutput =
-            calculator.calculateOutput(m_rank, execStep2, PValueAlternative.TWO_SIDED);
+            calculator.calculateOutput(rank, execStep2, PValueAlternative.TWO_SIDED);
         final HalfDoubleMatrix corrMatrix = calculateOutput.getCorrelationMatrix();
         final HalfIntMatrix dofMatrix = calculateOutput.getDegreesOfFreedomMatrix();
         final HalfDoubleMatrix pValMatrix = new HalfDoubleMatrix(corrMatrix.getRowCount(), false);
@@ -358,17 +360,17 @@ final class SortedCorrelationComputer2 {
      * @return the output matrix to be turned into the output model
      * @throws CanceledExecutionException if canceled by users
      */
-    HalfDoubleMatrix calculateKendallInMemory(final String corrType, final ExecutionMonitor exec)
+    static HalfDoubleMatrix calculateKendallInMemory(final BufferedDataTable rankTable, final String corrType, final ExecutionMonitor exec)
         throws CanceledExecutionException {
 
         // the ranking must have been calculated before
-        assert (m_rank != null);
-        final int coCount = m_rank.getDataTableSpec().getNumColumns();
-        final int rowCount = m_rank.getRowCount();
+        assert (rankTable != null);
+        final int coCount = rankTable.getDataTableSpec().getNumColumns();
+        final int rowCount = rankTable.getRowCount();
 
         double[][] rank = new double[rowCount][coCount];
         int c = 0;
-        for (DataRow row : m_rank) {
+        for (DataRow row : rankTable) {
             for (int k = 0; k < coCount; k++) {
                 rank[c][k] = ((DoubleValue)row.getCell(k)).getDoubleValue();
             }
@@ -414,7 +416,7 @@ final class SortedCorrelationComputer2 {
         // of the execution time to the final calculation of
 
         if (corrType.equals(RankCorrelationCompute2NodeModel.CFG_KENDALLA)) {
-            double nrOfRows = m_rank.getRowCount();
+            double nrOfRows = rankTable.size();
             // kendalls Tau a
             double divisor = (nrOfRows * (nrOfRows - 1.0)) * 0.5;
             for (int i = 0; i < coCount; i++) {
@@ -464,13 +466,5 @@ final class SortedCorrelationComputer2 {
         }
 
         return nominatorMatrix;
-    }
-
-    /**
-     * @return the previously generated ranking table.
-     */
-    BufferedDataTable getRankTable() {
-        assert (m_rank != null);
-        return m_rank;
     }
 }

@@ -211,10 +211,9 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         }
 
         // Calculate ranking
-        final SortedCorrelationComputer2 calculator = new SortedCorrelationComputer2();
         exec.setMessage("Generate ranking");
         ExecutionContext execStep1 = exec.createSubExecutionContext(PROG_STEP1);
-        calculator.calculateRank(noMissTable, execStep1);
+        final BufferedDataTable rankTable = SortedCorrelationComputer2.calculateRank(noMissTable, execStep1);
         execStep1.setProgress(1.0);
 
         // Calculate correlation
@@ -224,7 +223,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         final HalfDoubleMatrix correlationMatrix;
         if (m_corrType.getStringValue().equals(CFG_SPEARMAN)) {
             final CorrelationResult correlationResult =
-                calculator.calculateSpearman(execStep2, selectedPValAlternative());
+                SortedCorrelationComputer2.calculateSpearman(rankTable, execStep2, selectedPValAlternative());
             correlationMatrix = correlationResult.getCorrelationMatrix();
 
             // Assemble output
@@ -232,7 +231,8 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             final ExecutionContext execFinish1 = exec.createSubExecutionContext(PROG_FINISH / 2);
             out = CorrelationUtils.createCorrelationOutputTable(correlationResult, includeNames, execFinish1);
         } else {
-            correlationMatrix = calculator.calculateKendallInMemory(m_corrType.getStringValue(), execStep2);
+            correlationMatrix =
+                SortedCorrelationComputer2.calculateKendallInMemory(rankTable, m_corrType.getStringValue(), execStep2);
 
             // Assemble output
             exec.setMessage("Assembling output");
@@ -250,7 +250,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             // TODO check if the warning is correct
             setWarningMessage("Empty input table! Generating missing values as correlation values.");
         }
-        return new PortObject[]{out, pmccModel, calculator.getRankTable()};
+        return new PortObject[]{out, pmccModel, rankTable};
     }
 
     /** Correlation table without p-values and degrees of freedom */
