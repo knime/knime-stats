@@ -79,7 +79,6 @@ import org.knime.core.node.ExecutionMonitor;
  */
 final class SortedCorrelationComputer2 {
 
-
     private SortedCorrelationComputer2() {
         // Utility class
     }
@@ -272,7 +271,8 @@ final class SortedCorrelationComputer2 {
      * @param exec execution context for progress reprot
      * @throws CanceledExecutionException if canceled by user.
      */
-    static BufferedDataTable calculateRank(final BufferedDataTable table, final ExecutionContext exec) throws CanceledExecutionException {
+    static BufferedDataTable calculateRank(final BufferedDataTable table, final ExecutionContext exec)
+        throws CanceledExecutionException {
         BufferedDataTable rank = table;
         int nrofColumns = table.getDataTableSpec().getNumColumns();
 
@@ -292,8 +292,8 @@ final class SortedCorrelationComputer2 {
      * @return the output matrix to be turned into the output model
      * @throws CanceledExecutionException if canceled by users
      */
-    static CorrelationResult calculateSpearman(final BufferedDataTable rank, final ExecutionMonitor exec, final PValueAlternative pValueAlternative)
-        throws CanceledExecutionException {
+    static CorrelationResult calculateSpearman(final BufferedDataTable rank, final ExecutionMonitor exec,
+        final PValueAlternative pValueAlternative) throws CanceledExecutionException {
         // the ranking must have been calculated before
         assert (rank != null);
         final CorrelationComputer2 calculator = new CorrelationComputer2(rank.getDataTableSpec(), 0);
@@ -311,45 +311,56 @@ final class SortedCorrelationComputer2 {
             calculator.calculateOutput(rank, execStep2, PValueAlternative.TWO_SIDED);
         final HalfDoubleMatrix corrMatrix = calculateOutput.getCorrelationMatrix();
         final HalfIntMatrix dofMatrix = calculateOutput.getDegreesOfFreedomMatrix();
-        final HalfDoubleMatrix pValMatrix = new HalfDoubleMatrix(corrMatrix.getRowCount(), false);
+        final HalfDoubleMatrix pValMatrix =
+            calculateSpearmanCorrelationPValue(pValueAlternative, corrMatrix, dofMatrix);
 
+        return new CorrelationResult(corrMatrix, pValMatrix, dofMatrix);
+    }
+
+    /** Calculates the p-values for a matrix of correlation results */
+    private static HalfDoubleMatrix calculateSpearmanCorrelationPValue(final PValueAlternative pValueAlternative,
+        final HalfDoubleMatrix corrMatrix, final HalfIntMatrix dofMatrix) {
+        final HalfDoubleMatrix pValMatrix = new HalfDoubleMatrix(corrMatrix.getRowCount(), false);
         for (int i = 0; i < corrMatrix.getRowCount(); i++) {
             for (int j = i + 1; j < corrMatrix.getRowCount(); j++) {
                 final double corr = corrMatrix.get(i, j);
                 final int dof = dofMatrix.get(i, j);
-                double pVal = Double.NaN;
-                if (dof > 0) {
-                    if (!Double.isNaN(corr)) {
-                        // See https://github.com/scipy/scipy/blob/v1.3.1/scipy/stats/stats.py#L3613-L3764
-                        final TDistribution tDistr = new TDistribution(null, dof);
-                        final double t = corr * Math.sqrt((dof / ((corr + 1.0) * (1.0 - corr))));
-                        if (Double.isNaN(t)) {
-                            // We divided by 0 -> correlation is about 1
-                            pVal = 0;
-                        } else {
-                            switch (pValueAlternative) {
-                                case TWO_SIDED:
-                                    pVal = 2 * (1 - tDistr.cumulativeProbability(Math.abs(t)));
-                                    break;
-
-                                case LESS:
-                                    pVal = tDistr.cumulativeProbability(t);
-                                    break;
-
-                                case GREATER:
-                                    pVal = 1 - tDistr.cumulativeProbability(t);
-                                    break;
-                            }
-                        }
-                    }
-                } else {
-                    pVal = Double.NaN;
-                }
+                final double pVal = calculateSpearmanCorrelationPValue(pValueAlternative, corr, dof);
                 pValMatrix.set(i, j, pVal);
             }
         }
+        return pValMatrix;
+    }
 
-        return new CorrelationResult(corrMatrix, pValMatrix, dofMatrix);
+    /** Calculates the p-value for one correlation result */
+    private static double calculateSpearmanCorrelationPValue(final PValueAlternative pValueAlternative,
+        final double corr, final int dof) {
+        if (dof > 0 && !Double.isNaN(corr)) {
+            // See https://github.com/scipy/scipy/blob/v1.3.1/scipy/stats/stats.py#L3613-L3764
+            final TDistribution tDistr = new TDistribution(null, dof);
+            final double t = corr * Math.sqrt((dof / ((corr + 1.0) * (1.0 - corr))));
+            if (Double.isNaN(t)) {
+                // We divided by 0 -> correlation is about 1
+                return 0;
+            } else {
+                switch (pValueAlternative) {
+                    case TWO_SIDED:
+                        return 2 * (1 - tDistr.cumulativeProbability(Math.abs(t)));
+
+                    case LESS:
+                        return tDistr.cumulativeProbability(t);
+
+                    case GREATER:
+                        return 1 - tDistr.cumulativeProbability(t);
+
+                    default:
+                        // Cannot happen
+                        return Double.NaN;
+                }
+            }
+        } else {
+            return Double.NaN;
+        }
     }
 
     /**
@@ -360,8 +371,8 @@ final class SortedCorrelationComputer2 {
      * @return the output matrix to be turned into the output model
      * @throws CanceledExecutionException if canceled by users
      */
-    static HalfDoubleMatrix calculateKendallInMemory(final BufferedDataTable rankTable, final String corrType, final ExecutionMonitor exec)
-        throws CanceledExecutionException {
+    static HalfDoubleMatrix calculateKendallInMemory(final BufferedDataTable rankTable, final String corrType,
+        final ExecutionMonitor exec) throws CanceledExecutionException {
 
         // the ranking must have been calculated before
         assert (rankTable != null);
