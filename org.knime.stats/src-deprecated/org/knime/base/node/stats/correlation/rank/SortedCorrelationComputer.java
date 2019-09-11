@@ -71,7 +71,7 @@ import org.knime.core.node.ExecutionMonitor;
 /** Calculates pairwise correlation values for a table.
  *
  * @author Iris Adae, University of Konstanz
- * @deprecated
+ * @deprecated because the output format of the node changed. Replaced by SortedCorrelationComputer2.
  */
 @Deprecated
 final class SortedCorrelationComputer {

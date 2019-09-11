@@ -99,7 +99,7 @@ import org.knime.core.node.tableview.TableView;
 /**
  *
  * @author Bernd Wiswedel, University of Konstanz
- * @deprecated
+ * @deprecated because the output format of the node changed. Replaced by RankCorrelationCompute2NodeView.
  */
 @Deprecated
 final class RankCorrelationComputeNodeView extends NodeView<RankCorrelationComputeNodeModel> {

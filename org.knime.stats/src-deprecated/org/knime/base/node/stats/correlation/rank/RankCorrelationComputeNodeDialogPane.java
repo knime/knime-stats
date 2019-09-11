@@ -52,7 +52,7 @@ import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
  * Dialog for correlation node. Shows only a column filter.
  * @author Bernd Wiswedel, University of Konstanz
  * @author Iris Adae, University of Konstanz
- * @deprecated
+ * @deprecated because the output format of the node changed. Replaced by RankCorrelationCompute2NodeDialogPane.
  */
 @Deprecated
 final class RankCorrelationComputeNodeDialogPane extends DefaultNodeSettingsPane {

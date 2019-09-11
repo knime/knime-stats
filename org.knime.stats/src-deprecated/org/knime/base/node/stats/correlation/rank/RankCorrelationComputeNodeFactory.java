@@ -44,6 +44,7 @@
  */
 package org.knime.base.node.stats.correlation.rank;
 
+import org.knime.base.node.stats.correlation.rank2.RankCorrelationCompute2NodeFactory;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
@@ -51,7 +52,7 @@ import org.knime.core.node.NodeView;
 /**
  *
  * @author Bernd Wiswedel, University of Konstanz
- * @deprecated
+ * @deprecated because the output format of the node changed. Replaced by {@link RankCorrelationCompute2NodeFactory}.
  */
 @Deprecated
 public final class RankCorrelationComputeNodeFactory extends NodeFactory<RankCorrelationComputeNodeModel> {

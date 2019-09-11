@@ -76,7 +76,7 @@ import org.knime.core.node.util.filter.NameFilterConfiguration.FilterResult;
 /**
  *
  * @author wiswedel, University of Konstanz
- * @deprecated
+ * @deprecated because the output format of the node changed. Replaced by RankCorrelationCompute2NodeModel.
  */
 @Deprecated
 final class RankCorrelationComputeNodeModel extends NodeModel implements BufferedDataTableHolder {
