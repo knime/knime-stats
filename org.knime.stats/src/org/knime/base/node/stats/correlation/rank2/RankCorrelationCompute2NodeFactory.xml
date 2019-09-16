@@ -35,9 +35,12 @@
 				from -1 (strong negative correlation) to 1 (strong positive
 				correlation). A perfect Spearman correlation of +1 or −1 occurs when
 				each of the variables is a perfect monotone function of the other.
+				For Spearman's rank correlation coefficient the p-value and degrees
+				of freedom are computed. The p-value indicates the probability of an
+				uncorrelated system producing a correlation at least
+				as extreme, if the mean of the correlation is zero and it
+				follows a t-distribution with <i>df</i> degrees of freedom.
 				<br />
-				For Spearman's rank correlation coefficient the p-values and degrees
-				of freedom are computed.
 				<a
 					href="http://en.wikipedia.org/wiki/Goodman_and_Kruskal%27s_gamma"> Goodman and Kruskal's gamma</a>
 				as well as
@@ -128,9 +131,23 @@
 				Column types that are currently not present are depicted in italic.
 			</option>
 			<option name="p-value">
-				Select which p-value should be computed for
-				Spearman's rank correlation coefficient. "greater" corresponds to a
-				positive association, "less" to a negative association.
+				Select which p-value should be computed for Spearman's rank
+				correlation coefficient.
+				<ul>
+					<li>
+						"two-sided" corresponds to the probability of obtaining a
+						correlation value that is at least as extreme as the observed
+						correlation.
+					</li>
+					<li>
+						"one-sided (right)" corresponds to the probability of obtaining a
+						correlation value that shows even greater <b>positive</b> association.
+					</li>
+					<li>
+						"one-sided (left)" corresponds to the probability of obtaining a
+						correlation value that shows even greater <b>negative</b> association.
+					</li>
+				</ul>
 			</option>
 		</tab>
 	</fullDescription>
