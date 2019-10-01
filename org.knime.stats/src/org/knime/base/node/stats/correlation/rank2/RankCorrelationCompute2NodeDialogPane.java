@@ -46,6 +46,7 @@ package org.knime.base.node.stats.correlation.rank2;
 
 import org.knime.base.node.preproc.correlation.pmcc.PValueAlternative;
 import org.knime.core.node.defaultnodesettings.DefaultNodeSettingsPane;
+import org.knime.core.node.defaultnodesettings.DialogComponentBoolean;
 import org.knime.core.node.defaultnodesettings.DialogComponentButtonGroup;
 import org.knime.core.node.defaultnodesettings.DialogComponentColumnFilter2;
 import org.knime.core.node.defaultnodesettings.DialogComponentStringSelection;
@@ -73,6 +74,9 @@ final class RankCorrelationCompute2NodeDialogPane extends DefaultNodeSettingsPan
 
         addDialogComponent(
             new DialogComponentColumnFilter2(RankCorrelationCompute2NodeModel.createColumnFilterModel(), 0));
+
+        addDialogComponent(new DialogComponentBoolean(RankCorrelationCompute2NodeModel.createExcludeColumnPairFilterModel(),
+            "Exclude columns with an invalid correlation"));
 
         m_pValAlternativeModel = RankCorrelationCompute2NodeModel.createPValAlternativeModel();
         addDialogComponent(new DialogComponentButtonGroup(m_pValAlternativeModel, "p-value", true,

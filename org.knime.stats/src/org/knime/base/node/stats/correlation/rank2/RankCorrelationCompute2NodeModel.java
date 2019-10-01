@@ -51,6 +51,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.knime.base.node.preproc.correlation.CorrelationUtils;
+import org.knime.base.node.preproc.correlation.CorrelationUtils.ColumnPairFilter;
 import org.knime.base.node.preproc.correlation.CorrelationUtils.CorrelationResult;
 import org.knime.base.node.preproc.correlation.pmcc.PMCCPortObjectAndSpec;
 import org.knime.base.node.preproc.correlation.pmcc.PValueAlternative;
@@ -79,6 +80,7 @@ import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
+import org.knime.core.node.defaultnodesettings.SettingsModelBoolean;
 import org.knime.core.node.defaultnodesettings.SettingsModelColumnFilter2;
 import org.knime.core.node.defaultnodesettings.SettingsModelString;
 import org.knime.core.node.port.PortObject;
@@ -151,11 +153,22 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         return new SettingsModelString("pvalAlternative", PValueAlternative.TWO_SIDED.name());
     }
 
+    /**
+     * Factory method to create the boolean model if invalid column pairs should be removed.
+     *
+     * @return A new model.
+     */
+    static SettingsModelBoolean createExcludeColumnPairFilterModel() {
+        return new SettingsModelBoolean("excludeInvalidColumnPairs", false);
+    }
+
     private SettingsModelColumnFilter2 m_columnFilterModel;
 
     private SettingsModelString m_corrType = createTypeModel();
 
     private final SettingsModelString m_pValAlternativeModel = createPValAlternativeModel();
+
+    private final SettingsModelBoolean m_excludeInvalidColumnPairs = createExcludeColumnPairFilterModel();
 
     private BufferedDataTable m_correlationTable;
 
@@ -232,7 +245,8 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             // Assemble output
             exec.setMessage("Assembling output");
             final ExecutionContext execFinish1 = exec.createSubExecutionContext(PROG_FINISH / 2);
-            out = CorrelationUtils.createCorrelationOutputTable(correlationResult, includeNames, execFinish1);
+            out = CorrelationUtils.createCorrelationOutputTable(correlationResult, includeNames, null,
+                selecteOutputPairFilter(), execFinish1);
             pmccModel = new PMCCPortObjectAndSpec(includeNames, correlationMatrix, correlationResult.getpValMatrix(),
                 correlationResult.getDegreesOfFreedomMatrix(), selectedPValAlternative());
         } else {
@@ -242,7 +256,8 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             // Assemble output
             exec.setMessage("Assembling output");
             final ExecutionContext execFinish1 = exec.createSubExecutionContext(PROG_FINISH / 2);
-            out = createCorrelationOutputTable(correlationMatrix, includeNames, execFinish1);
+            out = createCorrelationOutputTable(correlationMatrix, includeNames,
+                m_excludeInvalidColumnPairs.getBooleanValue(), execFinish1);
             pmccModel = new PMCCPortObjectAndSpec(includeNames, correlationMatrix);
         }
         // Correlation matrix
@@ -260,7 +275,8 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
 
     /** Correlation table without p-values and degrees of freedom */
     private static BufferedDataTable createCorrelationOutputTable(final HalfDoubleMatrix corrMatrix,
-        final String[] includeNames, final ExecutionContext exec) throws CanceledExecutionException {
+        final String[] includeNames, final boolean excludeInvalidColumnPairs, final ExecutionContext exec)
+        throws CanceledExecutionException {
         final DataTableSpec outSpec = createCorrelationOutputTableSpec();
         final BufferedDataContainer dataContainer = exec.createDataContainer(outSpec);
 
@@ -270,12 +286,17 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         final double rowCount = numInc * (numInc - 1) / 2.;
         for (int i = 0; i < numInc; i++) {
             for (int j = i + 1; j < numInc; j++) {
+                // Skip column pair if they are invalid
+                final double corr = corrMatrix.get(i, j);
+                if (excludeInvalidColumnPairs && Double.isNaN(corr)) {
+                    continue;
+                }
+
                 // Column names
                 final StringCell firstColCell = new StringCell(includeNames[i]);
                 final StringCell secondColCell = new StringCell(includeNames[j]);
 
                 // Correlation cell
-                final double corr = corrMatrix.get(i, j);
                 final DataCell corrCell =
                     Double.isNaN(corr) ? new MissingCell("Correlation could not be computed.") : new DoubleCell(corr);
 
@@ -314,6 +335,11 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
 
     private PValueAlternative selectedPValAlternative() {
         return PValueAlternative.valueOf(m_pValAlternativeModel.getStringValue());
+    }
+
+    private ColumnPairFilter selecteOutputPairFilter() {
+        return m_excludeInvalidColumnPairs.getBooleanValue() ? ColumnPairFilter.VALID_CORRELATION
+            : ColumnPairFilter.ALL;
     }
 
     /**
@@ -362,6 +388,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         }
         m_corrType.saveSettingsTo(settings);
         m_pValAlternativeModel.saveSettingsTo(settings);
+        m_excludeInvalidColumnPairs.saveSettingsTo(settings);
     }
 
     @Override
@@ -369,6 +396,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         createColumnFilterModel().validateSettings(settings);
         m_corrType.validateSettings(settings);
         m_pValAlternativeModel.validateSettings(settings);
+        m_excludeInvalidColumnPairs.validateSettings(settings);
     }
 
     @Override
@@ -379,6 +407,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         m_columnFilterModel.loadSettingsFrom(settings);
         m_corrType.loadSettingsFrom(settings);
         m_pValAlternativeModel.loadSettingsFrom(settings);
+        m_excludeInvalidColumnPairs.loadSettingsFrom(settings);
     }
 
     @Override
