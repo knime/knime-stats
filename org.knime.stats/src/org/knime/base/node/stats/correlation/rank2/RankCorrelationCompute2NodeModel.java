@@ -65,6 +65,7 @@ import org.knime.core.data.RowKey;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.data.def.DoubleCell;
+import org.knime.core.data.def.StringCell;
 import org.knime.core.data.renderer.DataValueRenderer;
 import org.knime.core.data.renderer.DoubleValueRenderer.FullPrecisionRendererFactory;
 import org.knime.core.node.BufferedDataContainer;
@@ -265,12 +266,21 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         // Fill the table
         int numInc = includeNames.length;
         int rowIndex = 0;
-        final double rowCount = numInc * (numInc - 1) / 2;
+        final double rowCount = numInc * (numInc - 1) / 2.;
         for (int i = 0; i < numInc; i++) {
             for (int j = i + 1; j < numInc; j++) {
-                final DoubleCell corr = new DoubleCell(corrMatrix.get(i, j));
-                final RowKey rowKey = new RowKey(getRowKey(includeNames[i], includeNames[j]));
-                final DefaultRow row = new DefaultRow(rowKey, corr);
+                // Column names
+                final StringCell firstColCell = new StringCell(includeNames[i]);
+                final StringCell secondColCell = new StringCell(includeNames[j]);
+
+                // Correlation cell
+                final DoubleCell corrCell = new DoubleCell(corrMatrix.get(i, j));
+
+                // Assemble row
+                final RowKey rowKey = new RowKey("Row" + rowIndex);
+                final DefaultRow row = new DefaultRow(rowKey, firstColCell, secondColCell, corrCell);
+
+                // Add row and update progress
                 exec.checkCanceled();
                 dataContainer.addRowToTable(row);
                 exec.setProgress(++rowIndex / rowCount);
@@ -283,6 +293,10 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
     /** Correlation table specs without p-values and degrees of freedom */
     private static DataTableSpec createCorrelationOutputTableSpec() {
         // Column spec creators
+        final DataColumnSpecCreator firstColSpecCreator =
+            new DataColumnSpecCreator(CorrelationUtils.FIRST_COL_NAME_COL_NAME, StringCell.TYPE);
+        final DataColumnSpecCreator secondColSpecCreator =
+            new DataColumnSpecCreator(CorrelationUtils.SECOND_COL_NAME_COL_NAME, StringCell.TYPE);
         final DataColumnSpecCreator corrColSpecCreator =
             new DataColumnSpecCreator(CorrelationUtils.CORRELATION_VALUE_COL_NAME, DoubleCell.TYPE);
 
@@ -291,11 +305,8 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             Collections.singletonMap(DataValueRenderer.PROPERTY_PREFERRED_RENDERER, FULL_PRECISION_RENDERER));
         corrColSpecCreator.setProperties(fullPrecRendererProps);
 
-        return new DataTableSpec(corrColSpecCreator.createSpec());
-    }
-
-    private static String getRowKey(final String columnNameA, final String columnNameB) {
-        return columnNameA + "_" + columnNameB;
+        return new DataTableSpec(firstColSpecCreator.createSpec(), secondColSpecCreator.createSpec(),
+            corrColSpecCreator.createSpec());
     }
 
     private PValueAlternative selectedPValAlternative() {
