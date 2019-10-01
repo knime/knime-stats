@@ -61,6 +61,7 @@ import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTable;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.def.DefaultRow;
@@ -274,7 +275,9 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
                 final StringCell secondColCell = new StringCell(includeNames[j]);
 
                 // Correlation cell
-                final DoubleCell corrCell = new DoubleCell(corrMatrix.get(i, j));
+                final double corr = corrMatrix.get(i, j);
+                final DataCell corrCell =
+                    Double.isNaN(corr) ? new MissingCell("Correlation could not be computed.") : new DoubleCell(corr);
 
                 // Assemble row
                 final RowKey rowKey = new RowKey("Row" + rowIndex);
