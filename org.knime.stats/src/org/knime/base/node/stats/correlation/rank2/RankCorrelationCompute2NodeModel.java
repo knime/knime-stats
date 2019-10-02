@@ -310,6 +310,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
                 exec.setProgress(++rowIndex / rowCount);
             }
         }
+        exec.setProgress(1);
         dataContainer.close();
         return dataContainer.getTable();
     }
