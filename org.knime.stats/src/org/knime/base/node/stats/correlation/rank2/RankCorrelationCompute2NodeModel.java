@@ -158,8 +158,8 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
      *
      * @return A new model.
      */
-    static SettingsModelBoolean createExcludeColumnPairFilterModel() {
-        return new SettingsModelBoolean("excludeInvalidColumnPairs", false);
+    static SettingsModelBoolean createIncludeColumnPairFilterModel() {
+        return new SettingsModelBoolean("includeValidColumnPairs", false);
     }
 
     private SettingsModelColumnFilter2 m_columnFilterModel;
@@ -168,7 +168,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
 
     private final SettingsModelString m_pValAlternativeModel = createPValAlternativeModel();
 
-    private final SettingsModelBoolean m_excludeInvalidColumnPairs = createExcludeColumnPairFilterModel();
+    private final SettingsModelBoolean m_includeValidColumnPairs = createIncludeColumnPairFilterModel();
 
     private BufferedDataTable m_correlationTable;
 
@@ -257,7 +257,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             exec.setMessage("Assembling output");
             final ExecutionContext execFinish1 = exec.createSubExecutionContext(PROG_FINISH / 2);
             out = createCorrelationOutputTable(correlationMatrix, includeNames,
-                m_excludeInvalidColumnPairs.getBooleanValue(), execFinish1);
+                m_includeValidColumnPairs.getBooleanValue(), execFinish1);
             pmccModel = new PMCCPortObjectAndSpec(includeNames, correlationMatrix);
         }
         // Correlation matrix
@@ -339,7 +339,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
     }
 
     private ColumnPairFilter selecteOutputPairFilter() {
-        return m_excludeInvalidColumnPairs.getBooleanValue() ? ColumnPairFilter.VALID_CORRELATION
+        return m_includeValidColumnPairs.getBooleanValue() ? ColumnPairFilter.VALID_CORRELATION
             : ColumnPairFilter.ALL;
     }
 
@@ -389,7 +389,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         }
         m_corrType.saveSettingsTo(settings);
         m_pValAlternativeModel.saveSettingsTo(settings);
-        m_excludeInvalidColumnPairs.saveSettingsTo(settings);
+        m_includeValidColumnPairs.saveSettingsTo(settings);
     }
 
     @Override
@@ -397,7 +397,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         createColumnFilterModel().validateSettings(settings);
         m_corrType.validateSettings(settings);
         m_pValAlternativeModel.validateSettings(settings);
-        m_excludeInvalidColumnPairs.validateSettings(settings);
+        m_includeValidColumnPairs.validateSettings(settings);
     }
 
     @Override
@@ -408,7 +408,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         m_columnFilterModel.loadSettingsFrom(settings);
         m_corrType.loadSettingsFrom(settings);
         m_pValAlternativeModel.loadSettingsFrom(settings);
-        m_excludeInvalidColumnPairs.loadSettingsFrom(settings);
+        m_includeValidColumnPairs.loadSettingsFrom(settings);
     }
 
     @Override

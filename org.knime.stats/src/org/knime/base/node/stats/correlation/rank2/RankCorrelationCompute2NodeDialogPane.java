@@ -75,8 +75,8 @@ final class RankCorrelationCompute2NodeDialogPane extends DefaultNodeSettingsPan
         addDialogComponent(
             new DialogComponentColumnFilter2(RankCorrelationCompute2NodeModel.createColumnFilterModel(), 0));
 
-        addDialogComponent(new DialogComponentBoolean(RankCorrelationCompute2NodeModel.createExcludeColumnPairFilterModel(),
-            "Exclude columns with an invalid correlation"));
+        addDialogComponent(new DialogComponentBoolean(RankCorrelationCompute2NodeModel.createIncludeColumnPairFilterModel(),
+            "Include only column pairs with a valid correlation"));
 
         m_pValAlternativeModel = RankCorrelationCompute2NodeModel.createPValAlternativeModel();
         addDialogComponent(new DialogComponentButtonGroup(m_pValAlternativeModel, "p-value", true,
