@@ -125,10 +125,19 @@
 			</option>
 		</tab>
 
-		<tab name="Options">
-			<option name="Type Selection">
+		<tab name="Type Selection">
+			<option name="">
 				Select the column types that you want to include.
 				Column types that are currently not present are depicted in italic.
+			</option>
+		</tab>
+
+		<tab name="Options">
+			<option name="Include only column pairs with a valid correlation">
+				Check this option if only the column pairs where the correlation could
+				be computed should be included in the output table. Column pairs where
+				the correlation could not be computed are then omitted from the output
+				table.
 			</option>
 			<option name="p-value">
 				Select which p-value should be computed for Spearman's rank
