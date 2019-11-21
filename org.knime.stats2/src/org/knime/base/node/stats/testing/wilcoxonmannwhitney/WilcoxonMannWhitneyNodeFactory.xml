@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE knimeNode PUBLIC "-//UNIKN//DTD KNIME Node 2.0//EN" "http://www.knime.org/Node.dtd">
 <knimeNode icon="./independent_test.png" type="Manipulator">
-	<name>Wilcoxon Mann Whitney Test</name>
+	<name>Wilcoxon-Mann-Whitney Test</name>
 
 	<shortDescription>
 		Performs the Wilcoxon-Mann-Whitney independent group
@@ -10,26 +10,29 @@
 
 	<fullDescription>
 		<intro>
-			The non-parametric Wilcoxon-Mann-Whitney tests tests for two
-			samples
-			with ordinal attributes if they are different from each
-			other. For
-			details see:
-			<a href="https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test">Wilcoxon-Mann-Whitney Test on Wikipedia</a>
-			.
+		<p>
+			The non-parametric Wilcoxon-Mann-Whitney test (a.k.a. Mann–Whitney U test, Wilcoxon rank-sum test) tests if two independent
+			samples, with ordinal attributes, originate from populations with the same distribution.</p>
+			<p>More information can be found at
+			<a href="https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test">Wilcoxon-Mann-Whitney test</a> on Wikipedia.</p>
+			<p>
+			<b>Hypotheses:</b><br/>
+			H<sub>0</sub>: the distributions of the populations are the same.<br/>
+			H<sub>A</sub>: the distributions of the populations are different.
+			</p>
 		</intro>
 		<tab name="Options">
-			<option name="Test Column">Column containing the test-data.</option>
-			<option name="Group Column">Column containing group information.</option>
-			<option name="Group One">Name of first group.</option>
-			<option name="Group Two">Name of second group.</option>
+			<option name="Test Column">Column containing independent, ordinal samples.</option>
+			<option name="Group Column">Column containing group labels.</option>
+			<option name="Group One">Label of first group.</option>
+			<option name="Group Two">Label of second group.</option>
 			<option name="Missing Value Strategy">
-				Determine a strategy how missing values and
-				Double.NaN values are
+				Strategy on how missing and
+				<tt>Double.NaN</tt> values are
 				treated.
 				<ul>
-					<li>Fixed: Missing values will be replaced with Double.NaN.</li>
-					<li>Failed: Exception is thrown and node will not finish execution.
+					<li>Fixed: Missing values will be replaced with <tt>Double.NaN</tt>.</li>
+					<li>Failed: An exception is thrown and the node fails to execute.
 					</li>
 					<li>Maximal: Missing values are considered to be maximal in the
 						ranking.
@@ -43,10 +46,7 @@
 	</fullDescription>
 
 	<ports>
-		<inPort index="0" name="Data Table">The Input</inPort>
-		<outPort index="0" name="Wilcoxon Mean Whitney U Test">
-			Statistics for the Wilcoxon-Mann-
-			Whitney U Test.
-		</outPort>
+		<inPort index="0" name="Samples">Input table with at least one ordinal column and one nominal column (groups).</inPort>
+		<outPort index="0" name="Results">Output table with Wilcoxon-Mann-Whitney test statistics, p-Value, and descriptive statistics of group ranks.</outPort>
 	</ports>
 </knimeNode>

@@ -3,11 +3,11 @@
 <knimeNode icon="./lda_inverse.png" type="Manipulator">
 	<name>Linear Discriminant Analysis Inversion</name>
 	<shortDescription>
-		Reverses the Linear Discriminant Analysis transformation
+		This node inverts a linear discriminant analysis transformation.
 	</shortDescription>
 	<fullDescription>
 		<intro>
-	        This node inverts the transformation applied by the Linear Discriminant Analysis Apply node.
+	        This node inverts the transformation applied by the <i>Linear Discriminant Analysis Apply</i> node.
 	        Data in the space resulting from the <a href="http://en.wikipedia.org/wiki/Linear_discriminant_analysis">Linear Discriminant Analysis (LDA)</a>
 	        are transformed back to the original space. Information that was lost by the LDA transformation cannot be recovered.
 		</intro>
@@ -18,19 +18,19 @@
 	        If checked, the selected columns are removed in the output table.
         </option>
 		<option name="Fail if missing values are encountered">
-			If checked, execution fails, when the selected columns contain missing values. 
-			By default, rows containing missing values are ignored and not considered during the computation.
+			If checked, execution fails when the selected columns contain missing values. 
+			Otherwise, rows containing missing values are ignored during computation.
 		</option>
 		</fullDescription>
 		<ports>
-			<inPort index="0" name="Transfromation model">
-				The Model used to reverse the LDA.
+			<inPort index="0" name="Transformation model">
+				The original model that was used to transform the data.
 			</inPort>
 			<inPort index="1" name="Table to transform">
-				Input data containing LDA transformed data.
+				Input table containing transformed data.
 			</inPort>
 			<outPort index="0" name="Data in original space">
-				The original data (without the selected columns) including the reconstructed data from reverting the LDA transformation.
+				The reconstructed data from inverting the LDA transformation, and possibly the input data depending on the configuration.
 			</outPort>
 		</ports>
 		</knimeNode>

@@ -4,37 +4,38 @@
 	<name>Linear Discriminant Analysis Apply</name>
 
 	<shortDescription>
-		This node applies a linear discriminant analysis.
+		This node applies a model resulting from a linear discriminant analysis.
 	</shortDescription>
 
 	<fullDescription>
 		<intro>
 			This node applies a
 			<a href="http://en.wikipedia.org/wiki/Linear_discriminant_analysis">Linear Discriminant Analysis (LDA)</a>
-			on the given input data. The data model of the Linear Discriminant Analysis Compute node
-			can be applied to arbitrary data to reduce it to a given number of
-			dimensions.
-			<p><b>The column names, however, have to correspond to those that have been used 
-			to calculate the model.</b></p>
+			model to the given input data. This model is most likely the output
+			of a <i>Linear Discriminant Analysis Compute</i> node and can be
+			applied to arbitrary data to reduce its dimensionality.
+			<p><b>The column names, however, must correspond to those that have been used 
+			to compute the model.</b></p>
 		</intro>
-		<option name="Target dimensions">The number of dimensions to reduce to. This can either be the number
-		of classes minus one or the number of selected columns depending on which one is
-		smaller.
+		<option name="Target dimensions">Number of dimensions to reduce the input data to.
+		This cannot exceed the number of classes minus one or the number of selected columns,
+		depending on which one is smaller.
 		</option>
-		<option name="Remove original data columns">If checked, the columns containing the input data are removed.
+		<option name="Remove original data columns">If checked, the columns containing the input data
+			are removed.
 		</option>
 		<option name="Fail if missing values are encountered">
-			If checked, execution fails, when the selected columns contain missing values. 
-			By default, rows containing missing values are ignored and not considered during the computation.
+			If checked, execution fails when the selected columns contain missing values. 
+			Otherwise, rows containing missing values are ignored during computation.
 		</option>
 	</fullDescription>
 
 	<ports>
-		<inPort index="0" name="Transformation model">The Model used to reduce the data's dimensionality.
+		<inPort index="0" name="Transformation model">The model used to reduce the data dimensionality.
 		</inPort>
-		<inPort index="1" name="Table to transform">The data whose dimensionality shall be reduced.
+		<inPort index="1" name="Table to transform">Input table containing numeric columns, whose <b>column names match the model</b>.
 		</inPort>
-		<outPort index="0" name="Projected data">The original data (if not excluded)
+		<outPort index="0" name="Transformed data">The original data (if not excluded)
 			plus columns for the projected dimensions.</outPort>
 	</ports>
 </knimeNode>
