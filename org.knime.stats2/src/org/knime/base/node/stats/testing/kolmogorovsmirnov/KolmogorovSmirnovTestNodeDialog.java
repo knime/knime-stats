@@ -38,7 +38,7 @@ final class KolmogorovSmirnovTestNodeDialog extends DefaultNodeSettingsPane {
     protected KolmogorovSmirnovTestNodeDialog() {
         super();
         addDialogComponent(new DialogComponentNumber(KolmogorovSmirnovTestNodeModel.createSettingsModelAlpha(),
-            "Significance level alpha", 0.01, INPUT_WIDTH));
+            "Significance level \u03B1", 0.01, INPUT_WIDTH));
 
         @SuppressWarnings("unchecked")
         final DialogComponentColumnNameSelection testCol1 = new DialogComponentColumnNameSelection(

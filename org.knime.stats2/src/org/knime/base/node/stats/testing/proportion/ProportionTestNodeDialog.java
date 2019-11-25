@@ -158,7 +158,7 @@ final class ProportionTestNodeDialog extends DefaultNodeSettingsPane {
         addDialogComponent(alternativeComponent);
 
         final DialogComponentNumber alphaComponent = new DialogComponentNumber(
-            ProportionTestNodeModel.createSettingsModelAlpha(), "Significance level (alpha)", 0.01, INPUT_WIDTH);
+            ProportionTestNodeModel.createSettingsModelAlpha(), "Significance level \u03B1", 0.01, INPUT_WIDTH);
         addDialogComponent(alphaComponent);
 
         createNewTab("Advanced Settings");

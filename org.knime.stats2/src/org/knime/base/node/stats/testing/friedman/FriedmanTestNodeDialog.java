@@ -88,7 +88,7 @@ public class FriedmanTestNodeDialog extends DefaultNodeSettingsPane {
         super();
 
         addDialogComponent(new DialogComponentNumber(FriedmanTestNodeModel.createSettingsModelAlpha(),
-            "Significance Level alpha", 0.01, INPUT_WIDTH));
+            "Significance level \u03B1", 0.01, INPUT_WIDTH));
 
         m_usedCols = FriedmanTestNodeModel.createSettingsModelCols();
         addDialogComponent(new DialogComponentColumnFilter2(m_usedCols, FriedmanTestNodeModel.PORT_IN_DATA));

@@ -50,7 +50,7 @@ public class ShapiroWilk2NodeDialog extends DefaultNodeSettingsPane {
                 m_invalidAlphaLabel.setText(ex.getMessage());
             }
         });
-        addDialogComponent(new DialogComponentNumber(m_alpha, "Significance level alpha", 0.01, INPUT_WIDTH));
+        addDialogComponent(new DialogComponentNumber(m_alpha, "Significance level \u03B1", 0.01, INPUT_WIDTH));
         addDialogComponent(m_invalidAlphaLabel);
         final DialogComponentBoolean shapFrancia = new DialogComponentBoolean(
             ShapiroWilk2NodeModel.createShapiroFranciaSettingsModel(), "Use Shapiro-Francia for leptokurtic samples");
