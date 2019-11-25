@@ -169,13 +169,16 @@
 			Correlation variables, p-values and
 			degrees of freedom.
 		</outPort>
-		<outPort name="Correlation Model" index="1">
+		<outPort index="1" name="Correlation matrix">
+			Correlation variables in a matrix representation.
+		</outPort>
+		<outPort index="2" name="Correlation model">
 			A model containing the
 			correlation measures. This model is appropriate
 			to be read by the
 			Correlation Filter node.
 		</outPort>
-		<outPort name="Rank table" index="2">
+		<outPort index="3" name="Rank table">
 			A table containing the fractional ranks
 			of the columns. Where the rank
 			corresponds to the values position in a

@@ -176,8 +176,12 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
      * One input, one output.
      */
     RankCorrelationCompute2NodeModel() {
-        super(new PortType[]{BufferedDataTable.TYPE},
-            new PortType[]{BufferedDataTable.TYPE, PMCCPortObjectAndSpec.TYPE, BufferedDataTable.TYPE});
+        super(new PortType[]{BufferedDataTable.TYPE}, new PortType[]{ //
+            BufferedDataTable.TYPE, // Correlation values
+            BufferedDataTable.TYPE, // Correlation matrix
+            PMCCPortObjectAndSpec.TYPE, // Correlation model
+            BufferedDataTable.TYPE // Ranks
+        });
     }
 
     @Override
@@ -203,7 +207,12 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
         } else {
             tableSpecs = createCorrelationOutputTableSpec();
         }
-        return new PortObjectSpec[]{tableSpecs, new PMCCPortObjectAndSpec(includes), null};
+        return new PortObjectSpec[]{ //
+            tableSpecs, // Correlation values
+            PMCCPortObjectAndSpec.createOutSpec(includes), // Correlation matrix
+            new PMCCPortObjectAndSpec(includes), // Correlation model
+            null // Ranks
+        };
     }
 
     @Override
@@ -270,7 +279,12 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
             // TODO check if the warning is correct
             setWarningMessage("Empty input table! Generating missing values as correlation values.");
         }
-        return new PortObject[]{out, pmccModel, rankTable};
+        return new PortObject[]{ //
+            out, // Correlation values
+            m_correlationTable, // Correlation matrix
+            pmccModel, // Correlation model
+            rankTable // Ranks
+        };
     }
 
     /** Correlation table without p-values and degrees of freedom */
@@ -339,8 +353,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
     }
 
     private ColumnPairFilter selecteOutputPairFilter() {
-        return m_includeValidColumnPairs.getBooleanValue() ? ColumnPairFilter.VALID_CORRELATION
-            : ColumnPairFilter.ALL;
+        return m_includeValidColumnPairs.getBooleanValue() ? ColumnPairFilter.VALID_CORRELATION : ColumnPairFilter.ALL;
     }
 
     /**
