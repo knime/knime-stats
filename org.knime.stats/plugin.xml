@@ -10,6 +10,14 @@
             path="/analytics/statistics"/>
    </extension>
    <extension
+         point="org.knime.workbench.repository.categories">
+       <category
+       		icon="icons/missing.gif"
+            level-id="linear-discriminant-analysis"
+            name="Linear Discriminant Analysis"
+            path="analytics/mining"/>
+   </extension>
+   <extension
          point="org.knime.workbench.repository.nodes">
         <node
               category-path="/analytics/statistics/hypothesis-testing"
@@ -65,6 +73,25 @@
               category-path="/analytics/statistics"
               factory-class="org.knime.base.node.stats.outlier.applier.NumericOutliersApplyNodeFactory">
         </node>
+        <node 
+      		category-path="/analytics/mining/linear-discriminant-analysis"
+            factory-class="org.knime.base.node.stats.transformation.lda2.perform.LDA2NodeFactory"
+      />      
+      <node 
+      		after="org.knime.base.node.stats.transformation.lda2.perform.LDA2NodeFactory"
+      		category-path="/analytics/mining/linear-discriminant-analysis"
+            factory-class="org.knime.base.node.stats.transformation.lda2.compute.LDAComputeNodeFactory"
+      />
+      <node 
+      		after="org.knime.base.node.stats.transformation.lda2.compute.LDAComputeNodeFactory"
+      		category-path="/analytics/mining/linear-discriminant-analysis"
+            factory-class="org.knime.base.node.stats.transformation.lda2.apply.LDAApplyNodeFactory"
+      />
+      <node
+            after="org.knime.base.node.stats.transformation.lda2.apply.LDAApplyNodeFactory"
+            category-path="/analytics/mining/linear-discriminant-analysis"
+            factory-class="org.knime.base.node.stats.transformation.lda2.reverse.LDAReverseNodeFactory">
+      </node>
    </extension>
    <extension
          point="org.knime.core.PortType">
