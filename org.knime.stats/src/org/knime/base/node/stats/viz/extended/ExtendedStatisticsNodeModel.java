@@ -78,6 +78,7 @@ import org.knime.core.data.LongValue;
 import org.knime.core.data.NominalValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.StringValue;
+import org.knime.core.data.container.CloseableTable;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.node.BufferedDataTable;
 import org.knime.core.node.CanceledExecutionException;
@@ -331,8 +332,10 @@ class ExtendedStatisticsNodeModel extends NodeModel {
         if (getStatTable().getWarning() != null) {
             setWarningMessage(getStatTable().getWarning());
         }
-        BufferedDataTable outTableOccurrences =
-            exec.createBufferedDataTable(getStatTable().createNominalValueTable(includes), exec.createSubProgress(0.5));
+        final CloseableTable nominalValueTable = getStatTable().createNominalValueTable(includes);
+        final BufferedDataTable outTableOccurrences =
+            exec.createBufferedDataTable(nominalValueTable, exec.createSubProgress(0.5));
+        nominalValueTable.close();
 
         BufferedDataTable[] ret = new BufferedDataTable[3];
         DataTableSpec newSpec = renamedOccurrencesSpec(outTableOccurrences.getSpec());
