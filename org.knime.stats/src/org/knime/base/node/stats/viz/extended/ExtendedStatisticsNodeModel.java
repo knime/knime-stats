@@ -332,14 +332,13 @@ class ExtendedStatisticsNodeModel extends NodeModel {
         if (getStatTable().getWarning() != null) {
             setWarningMessage(getStatTable().getWarning());
         }
-        final CloseableTable nominalValueTable = getStatTable().createNominalValueTable(includes);
-        final BufferedDataTable outTableOccurrences =
-            exec.createBufferedDataTable(nominalValueTable, exec.createSubProgress(0.5));
-        nominalValueTable.close();
-
-        BufferedDataTable[] ret = new BufferedDataTable[3];
-        DataTableSpec newSpec = renamedOccurrencesSpec(outTableOccurrences.getSpec());
-        ret[2] = exec.createSpecReplacerTable(outTableOccurrences, newSpec);
+        final BufferedDataTable[] ret = new BufferedDataTable[3];
+        try (final CloseableTable nominalValueTable = getStatTable().createNominalValueTable(includes)) {
+            final BufferedDataTable outTableOccurrences =
+                    exec.createBufferedDataTable(nominalValueTable, exec.createSubProgress(0.5));
+            final DataTableSpec newSpec = renamedOccurrencesSpec(outTableOccurrences.getSpec());
+            ret[2] = exec.createSpecReplacerTable(outTableOccurrences, newSpec);
+        }
         ExecutionContext table = exec.createSubExecutionContext(initPercent);
         ret[0] = getStatTable().createStatisticsInColumnsTable(table);
         ExecutionContext histogram = exec.createSubExecutionContext(1.0 / 2);
