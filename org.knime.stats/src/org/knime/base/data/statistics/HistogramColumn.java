@@ -103,7 +103,6 @@ import org.knime.core.data.DoubleValue;
 import org.knime.core.data.MissingCell;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.container.ColumnRearranger;
-import org.knime.core.data.container.ContainerTable;
 import org.knime.core.data.container.DataContainer;
 import org.knime.core.data.container.SingleCellFactory;
 import org.knime.core.data.def.DefaultRow;
@@ -113,6 +112,7 @@ import org.knime.core.data.image.png.PNGImageContent;
 import org.knime.core.data.property.ColorAttr;
 import org.knime.core.node.BufferedDataContainer;
 import org.knime.core.node.BufferedDataTable;
+import org.knime.core.node.BufferedDataTable.KnowsRowCountTable;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
@@ -1395,7 +1395,7 @@ public class HistogramColumn implements Cloneable {
         Map<Integer, HistogramNumericModel> histograms =
             loadHistogramsPrivate(histogramsGz, numericKeys, strategy, means);
         Map<Integer, Map<DataValue, Set<RowKey>>> nominalKeys = new HashMap<Integer, Map<DataValue, Set<RowKey>>>();
-        ContainerTable table = DataContainer.readFromZip(dataArrayGz);
+        KnowsRowCountTable table = DataContainer.readFromZip(dataArrayGz);
         Set<Integer> numericColIndices = numericKeys.keySet();
         for (String colName : nominalColumns) {
             int colIndex = table.getDataTableSpec().findColumnIndex(colName);
