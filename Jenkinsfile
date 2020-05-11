@@ -7,11 +7,6 @@ properties([
 	pipelineTriggers([
 		upstream('knime-javasnippet/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
 		upstream('knime-svg/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
-		upstream('knime-expressions/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
-		upstream('knime-base/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
-		upstream('knime-core/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
-		upstream('knime-shared/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
-		upstream('knime-tp/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
 		upstream('knime-js-core/' + env.BRANCH_NAME.replaceAll('/', '%2F'))
 	]),
 	buildDiscarder(logRotator(numToKeepStr: '5')),
@@ -21,21 +16,23 @@ properties([
 try {
 	knimetools.defaultTychoBuild('org.knime.update.stats')
 
-	/* workflowTests.runTests( */
-	/* 	"org.knime.features.stats.feature.group", */
-	/* 	false, */
-    	/* ["knime-core", "knime-shared", "knime-tp", "knime-base"], */
-	/* ) */
+    workflowTests.runTests(
+        dependencies: [ repositories: [
+            'knime-stats', 'knime-python', 'knime-filehandling', 'knime-r', 'knime-js-core',
+            'knime-js-base', 'knime-database', 'knime-kerberos', 'knime-jep', 'knime-xml',
+            'knime-pmml', 'knime-expressions', 'knime-ensembles', 'knime-distance',
+            'knime-datageneration', 'knime-chromium']
+        ]
+    )
 
-	/* stage('Sonarqube analysis') { */
-	/* 	env.lastStage = env.STAGE_NAME */
-	/* 	workflowTests.runSonar() */
-	/* } */
- } catch (ex) {
-	 currentBuild.result = 'FAILED'
-	 throw ex
- } finally {
-	 notifications.notifyBuild(currentBuild.result);
- }
-
-/* vim: set ts=4: */
+    stage('Sonarqube analysis') {
+           env.lastStage = env.STAGE_NAME
+           workflowTests.runSonar()
+    }
+} catch (ex) {
+    currentBuild.result = 'FAILURE'
+    throw ex
+} finally {
+    notifications.notifyBuild(currentBuild.result);
+}
+/* vim: set shiftwidth=4 expandtab smarttab: */
