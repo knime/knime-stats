@@ -15,13 +15,6 @@
 	<artifactId>org.knime.update.stats</artifactId>
 	<packaging>eclipse-repository</packaging>
 
-	<properties>
-		<revision>4.1.0</revision>
-		<changelist>-SNAPSHOT</changelist>
-		<feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
-		<feature-branch-extension.appendArtifactoryProperties>false</feature-branch-extension.appendArtifactoryProperties>
-	</properties> 
-
 	<build>
 		<plugins>
 			<plugin>
