@@ -5,9 +5,9 @@ library "knime-pipeline@$BN"
 
 properties([
 	pipelineTriggers([
-		upstream('knime-javasnippet/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
-		upstream('knime-svg/' + env.BRANCH_NAME.replaceAll('/', '%2F')),
-		upstream('knime-js-core/' + env.BRANCH_NAME.replaceAll('/', '%2F'))
+		upstream("knime-javasnippet/${env.BRANCH_NAME.replaceAll('/', '%2F')}" +
+		    ", knime-svg/${env.BRANCH_NAME.replaceAll('/', '%2F')}" + 
+		    ", knime-js-core/${env.BRANCH_NAME.replaceAll('/', '%2F')}")
 	]),
     parameters(workflowTests.getConfigurationsAsParameters()),
 	buildDiscarder(logRotator(numToKeepStr: '5')),
