@@ -16,5 +16,7 @@ Require-Bundle: org.knime.base;bundle-version="[4.0.0,5.0.0)",
   org.knime.ext.svg;bundle-version="[4.0.0,5.0.0)",
   org.knime.stats;bundle-version="[4.0.0,5.0.0)",
   net.sf.trove4j;bundle-version="[3.0.3,3.0.3]"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: org.knime.stats2
+Import-Package: org.w3c.dom.events;version="3.0.0"
