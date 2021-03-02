@@ -274,7 +274,7 @@ public final class NumericOutliersModel {
      */
     @SuppressWarnings("unchecked")
     private void loadModel(final ModelContentRO model) throws InvalidSettingsException {
-        final Enumeration<ModelContentRO> rowContents = model.children();
+        final Enumeration<ModelContentRO> rowContents = (Enumeration<ModelContentRO>)model.children();
         while (rowContents.hasMoreElements()) {
             // acess the current group
             final ModelContentRO rowContent = rowContents.nextElement();
@@ -284,7 +284,7 @@ public final class NumericOutliersModel {
 
             // load all intervals for the current group key
             ModelContentRO intervalCols = rowContent.getModelContent(CFG_INTERVAL_COLUMNS);
-            final Enumeration<ModelContentRO> intervalContents = intervalCols.children();
+            final Enumeration<ModelContentRO> intervalContents = (Enumeration<ModelContentRO>)intervalCols.children();
             while (intervalContents.hasMoreElements()) {
                 final ModelContentRO intervalContent = intervalContents.nextElement();
                 addEntry(key, intervalContent.getString("outlier"), intervalContent.getDoubleArray(CFG_INTERVAL));

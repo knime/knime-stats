@@ -217,11 +217,11 @@ final class MemberCounter {
         final MemberCounter counter = new MemberCounter();
 
         // load all the data
-        final Enumeration<ModelContentRO> colSettings = model.children();
+        final Enumeration<ModelContentRO> colSettings = (Enumeration<ModelContentRO>)model.children();
         while (colSettings.hasMoreElements()) {
             final ModelContentRO colSetting = colSettings.nextElement();
             final String outlierColName = colSetting.getString(CFG_OUT_COL_NAME);
-            final Enumeration<ModelContentRO> groupCounts = colSetting.getModelContent(CFG_GROUP_COUNTS).children();
+            final Enumeration<ModelContentRO> groupCounts = (Enumeration<ModelContentRO>)colSetting.getModelContent(CFG_GROUP_COUNTS).children();
             while (groupCounts.hasMoreElements()) {
                 final ModelContentRO groupCount = groupCounts.nextElement();
                 final GroupKey key = new GroupKey(groupCount.getDataCellArray(CFG_GROUP_KEY));
