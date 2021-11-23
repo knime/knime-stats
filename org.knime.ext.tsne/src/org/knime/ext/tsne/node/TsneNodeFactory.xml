@@ -32,9 +32,9 @@
 				</li>
 			</ol>
 			For further details
-			check out this great
+			check out this
 			<a
-				href="https://mlexplained.com/2018/09/14/paper-dissected-visualizing-data-using-t-sne-explained/">blog post</a>
+				href="https://erdem.pl/2020/04/t-sne-clearly-explained/">blog post</a>
 			or
 			the original
 			<a
@@ -71,7 +71,7 @@
 			Controls the tradeoff between runtime and accuracy of the Barnes-Hut approximation algorithm for t-SNE.
 			Lower values result in a more accurate approximation at the cost of higher runtimes and memory demands.
 			A theta of zero results in the originally proposed <a href="http://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf">t-SNE algorithm</a>.
-			However, for most datasets a theta of 0.5 doesn't result in a perceivable loss of quality.
+			However, for most datasets a theta of 0.5 does not result in a perceivable loss of quality.
 		</option>
 		<option name="Perplexity">
 			Informally, the perplexity is the number of
