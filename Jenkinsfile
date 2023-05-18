@@ -22,7 +22,7 @@ try {
             'knime-stats', 'knime-python-legacy', 'knime-filehandling', 'knime-r', 'knime-js-core',
             'knime-js-base', 'knime-database', 'knime-kerberos', 'knime-jep', 'knime-xml',
             'knime-pmml', 'knime-expressions', 'knime-ensembles', 'knime-distance',
-            'knime-datageneration', 'knime-chromium', 'knime-conda', 'knime-cef'],
+            'knime-datageneration', 'knime-conda', 'knime-cef'],
             ius: ['org.knime.features.browser.cef.feature.group'] 
         ]
     )
