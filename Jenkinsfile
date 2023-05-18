@@ -18,11 +18,26 @@ try {
 	knimetools.defaultTychoBuild('org.knime.update.stats')
 
     workflowTests.runTests(
-        dependencies: [ repositories: [
-            'knime-stats', 'knime-python-legacy', 'knime-filehandling', 'knime-r', 'knime-js-core',
-            'knime-js-base', 'knime-database', 'knime-kerberos', 'knime-jep', 'knime-xml',
-            'knime-pmml', 'knime-expressions', 'knime-ensembles', 'knime-distance',
-            'knime-datageneration', 'knime-conda', 'knime-cef'],
+        dependencies: [
+            repositories: [
+                'knime-cef',
+                'knime-conda',
+                'knime-database',
+                'knime-datageneration',
+                'knime-distance',
+                'knime-ensembles',
+                'knime-expressions',
+                'knime-filehandling',
+                'knime-jep',
+                'knime-js-base',
+                'knime-js-core',
+                'knime-kerberos',
+                'knime-pmml',
+                'knime-python-legacy',
+                'knime-r',
+                'knime-stats',
+                'knime-xml'
+            ],
             ius: ['org.knime.features.browser.cef.feature.group'] 
         ]
     )
