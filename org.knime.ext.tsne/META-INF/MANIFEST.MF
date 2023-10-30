@@ -8,9 +8,9 @@ Bundle-ClassPath: org-knime-ext-tsne.jar,
  lib/core-0.26.jar,
  lib/equation-0.26.jar
 Bundle-Vendor: KNIME AG, Zurich, Switzerland
-Require-Bundle: org.knime.core;bundle-version="[5.0.0,6.0.0)",
- org.knime.base;bundle-version="[5.0.0,6.0.0)",
- org.knime.workbench.repository;bundle-version="[5.0.0,6.0.0)",
+Require-Bundle: org.knime.core;bundle-version="[5.2.0,6.0.0)",
+ org.knime.base;bundle-version="[5.2.0,6.0.0)",
+ org.knime.workbench.repository;bundle-version="[5.2.0,6.0.0)",
  gov.nist.math.jama;bundle-version="1.0.3"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: org.knime.ext.tsne
