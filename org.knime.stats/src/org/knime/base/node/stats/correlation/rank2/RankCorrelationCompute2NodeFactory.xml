@@ -198,5 +198,8 @@
 	</views>
 	<keywords>
 		<keyword>association analysis</keyword>
+		<keyword>goodmans gamma</keyword>
+		<keyword>kruskals gamma</keyword>
+		<keyword>spearman</keyword>
 	</keywords>
 </knimeNode>
