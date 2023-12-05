@@ -33,12 +33,14 @@ try {
                 'knime-js-core',
                 'knime-kerberos',
                 'knime-pmml',
+                'knime-python',
                 'knime-python-legacy',
                 'knime-r',
                 'knime-stats',
+                'knime-scripting-editor',
                 'knime-xml'
             ],
-            ius: ['org.knime.features.browser.cef.feature.group'] 
+            ius: ['org.knime.features.browser.cef.feature.group']
         ]
     )
 
