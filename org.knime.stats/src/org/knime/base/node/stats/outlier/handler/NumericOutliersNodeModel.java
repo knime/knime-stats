@@ -134,7 +134,7 @@ final class NumericOutliersNodeModel extends NodeModel implements NumericOutlier
     private static final String CFG_HEURISTIC = "use-heuristic";
 
     /** Default estimation type used to calculate the quartiles. */
-    private static final EstimationType DEFAULT_ESTIMATION_TYPE = EstimationType.R_4;
+    private static final EstimationType DEFAULT_ESTIMATION_TYPE = EstimationType.R_6;
 
     /** Default scalar to scale the interquartile range */
     private static final double DEFAULT_SCALAR = 1.5d;
