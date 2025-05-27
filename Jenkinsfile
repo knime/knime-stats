@@ -22,6 +22,7 @@ try {
             repositories: [
                 'knime-cef',
                 'knime-conda',
+                'knime-conda-channels',
                 'knime-database',
                 'knime-datageneration',
                 'knime-distance',
