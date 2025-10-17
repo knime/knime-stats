@@ -44,56 +44,139 @@
  */
 package org.knime.base.node.stats.viz.extended;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
+import org.knime.node.impl.description.ViewDescription;
 
 /**
  * <code>NodeFactory</code> for the "ExtendedStatistics" Node. Calculates statistic moments with their distributions and
  * counts nominal values and their occurrences across all columns.
  *
  * @author Gabor Bakos
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public class ExtendedStatisticsNodeFactory extends NodeFactory<ExtendedStatisticsNodeModel> {
+@SuppressWarnings("restriction")
+public class ExtendedStatisticsNodeFactory extends NodeFactory<ExtendedStatisticsNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public ExtendedStatisticsNodeModel createNodeModel() {
         return new ExtendedStatisticsNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 1;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<ExtendedStatisticsNodeModel> createNodeView(final int viewIndex,
         final ExtendedStatisticsNodeModel nodeModel) {
         return new ExtendedStatisticsHTMLNodeView(nodeModel);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasDialog() {
         return true;
     }
 
+    private static final String NODE_NAME = "Statistics";
+    private static final String NODE_ICON = "./extended_statistics.png";
+    private static final String SHORT_DESCRIPTION = """
+            Calculates statistic moments with their distributions as histograms and counts nominal values and their
+                occurrences across all columns.
+            """;
+    private static final String FULL_DESCRIPTION = """
+            This node calculates statistical moments such as minimum, maximum, mean, standard deviation, variance,
+                median, overall sum, number of missing values and row count across all numeric columns, and counts all
+                nominal values together with their occurrences. The dialog offers two options for choosing the median
+                and/or nominal values calculations:
+            """;
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Table", """
+                Table from which to compute statistics.
+                """)
+    );
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("Statistics Table", """
+                Table with numeric values.
+                """),
+            fixedPort("Nominal Histogram Table", """
+                Table with all nominal value histograms.
+                """),
+            fixedPort("Occurrences Table", """
+                Table with all nominal values and their counts.
+                """)
+    );
+    private static final List<ViewDescription> VIEWS = List.of(
+            new ViewDescription("Statistics View", """
+                Displays all statistic moments (for all numeric columns), nominal values (for all selected categorical
+                columns) and the most frequent/infrequent values from the categorical columns (Top/bottom).
+                """)
+    );
+
+    private static final List<String> KEYWORDS = List.of( //
+            "frequency table", //
+            "field summary" //
+    );
+
     /**
-     * {@inheritDoc}
+     * @since 5.9
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new ExtendedStatisticsNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, ExtendedStatisticsNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            ExtendedStatisticsNodeParameters.class,
+            VIEWS,
+            NodeType.Visualizer,
+            KEYWORDS,
+            null
+        );
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, ExtendedStatisticsNodeParameters.class));
     }
 }

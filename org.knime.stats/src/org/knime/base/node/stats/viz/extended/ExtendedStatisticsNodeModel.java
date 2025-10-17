@@ -106,40 +106,19 @@ import org.knime.core.util.Pair;
  * @author Gabor Bakos
  */
 class ExtendedStatisticsNodeModel extends NodeModel {
-    /**
-     *
-     */
-    private static final int DEFAULT_NUM_NOMINAL_VALUES_OUTPUT = 1000;
+    static final int DEFAULT_NUM_NOMINAL_VALUES_OUTPUT = 1000;
 
-    /**
-     *
-     */
-    private static final String CFGKEY_NUM_NOMINAL_VALUES_OUTPUT = "num_nominal-values_output";
+    static final String CFGKEY_NUM_NOMINAL_VALUES_OUTPUT = "num_nominal-values_output";
 
-    /**
-     *
-     */
-    private static final int DEFAULT_NUM_NOMINAL_VALUES = 20;
+    static final int DEFAULT_NUM_NOMINAL_VALUES = 20;
 
-    /**
-     *
-     */
-    private static final String CFGKEY_NUM_NOMINAL_VALUES = "num_nominal-values";
+    static final String CFGKEY_NUM_NOMINAL_VALUES = "num_nominal-values";
 
-    /**
-     *
-     */
-    private static final boolean DEFAULT_COMPUTE_MEDIAN = false;
+    static final boolean DEFAULT_COMPUTE_MEDIAN = false;
 
-    /**
-     *
-     */
-    private static final String CFGKEY_COMPUTE_MEDIAN = "compute_median";
+    static final String CFGKEY_COMPUTE_MEDIAN = "compute_median";
 
-    /**
-     *
-     */
-    private static final String CFGKEY_FILTER_NOMINAL_COLUMNS = "filter_nominal_columns";
+    static final String CFGKEY_FILTER_NOMINAL_COLUMNS = "filter_nominal_columns";
 
     /** Configuration key for the image format of histogram. */
     protected static final String CFGKEY_IMAGE_FORMAT = "image format";

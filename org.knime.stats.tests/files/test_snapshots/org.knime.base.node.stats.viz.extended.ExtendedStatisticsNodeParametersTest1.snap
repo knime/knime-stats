@@ -1,0 +1,418 @@
+{
+  "data" : {
+    "model" : {
+      "computeMedian" : false,
+      "nominalColumnFilter" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : true,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ "Cluster Membership" ],
+          "manuallyDeselected" : [ "Universe_0_0", "Universe_0_1", "Universe_1_0", "Universe_1_1" ],
+          "includeUnknownColumns" : false
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "nominalValues" : 20,
+      "nominalValuesOutput" : 1000,
+      "enableHiLite" : false,
+      "histogramFormat" : "SVG",
+      "histogramWidth" : 200,
+      "histogramHeight" : 100,
+      "showMinMax" : true
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "computeMedian" : {
+            "type" : "boolean",
+            "title" : "Calculate median values (computationally expensive)",
+            "description" : "Select this option if for all numeric columns the medians are computed. Note, this computation\nmight be expensive, since it requires to sort all column independently to find the values that\ndivides the distribution into two halves of the same number of values.\n",
+            "default" : false
+          },
+          "enableHiLite" : {
+            "type" : "boolean",
+            "title" : "Enable HiLite",
+            "description" : "Enable HiLite functionality for interactive highlighting of data points.\n",
+            "default" : false
+          },
+          "histogramFormat" : {
+            "oneOf" : [ {
+              "const" : "SVG",
+              "title" : "SVG"
+            }, {
+              "const" : "PNG",
+              "title" : "PNG"
+            } ],
+            "title" : "Histogram format",
+            "description" : "The image format of histogram cells.\n\n<ul>\n<li><b>SVG</b>: Histogram in SVG format</li>\n<li><b>PNG</b>: Histogram in PNG format</li>\n</ul>",
+            "default" : "SVG"
+          },
+          "histogramHeight" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Height",
+            "description" : "The height of the histogram.\n",
+            "default" : 100
+          },
+          "histogramWidth" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Width",
+            "description" : "The width of the histogram.\n",
+            "default" : 200
+          },
+          "nominalColumnFilter" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Column filter",
+            "description" : "Filter columns for counting all possible values.\n",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          },
+          "nominalValues" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Max no. of most frequent and infrequent values (in view)",
+            "description" : "Adjusts the number of counts for both, top number of frequent and infrequent occurrences of\ncategorical values per column (displayed in the node view!).\n",
+            "default" : 20
+          },
+          "nominalValuesOutput" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Max no. of possible values per column (in output table)",
+            "description" : "Adjusts the maximum number of possible values per column in the nominal output table.\n",
+            "default" : 1000
+          },
+          "showMinMax" : {
+            "type" : "boolean",
+            "title" : "Show min/max values",
+            "description" : "Show or do not show the numeric min/max values on histograms.\n",
+            "default" : true
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/computeMedian",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "label" : "Nominal Values",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/nominalColumnFilter",
+        "options" : {
+          "format" : "typedStringFilter",
+          "unknownValuesText" : "Any unknown column",
+          "emptyStateLabel" : "No columns in this list."
+        },
+        "providedOptions" : [ "possibleValues" ]
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/nominalValues",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 0.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 0.0
+              }
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/nominalValuesOutput",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 0.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 0.0
+              }
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/enableHiLite",
+        "options" : {
+          "format" : "checkbox"
+        }
+      } ]
+    }, {
+      "label" : "Histogram",
+      "type" : "Section",
+      "description" : "The node outputs a image column showing a histogram in the first and second port.",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/histogramFormat",
+        "options" : {
+          "format" : "valueSwitch"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/histogramWidth",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 1.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 1.0
+              }
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/histogramHeight",
+        "options" : {
+          "validation" : {
+            "max" : {
+              "errorMessage" : "The value must not exceed 2147483647.",
+              "parameters" : {
+                "isExclusive" : false,
+                "max" : 2.147483647E9
+              }
+            },
+            "min" : {
+              "errorMessage" : "The value must be at least 1.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 1.0
+              }
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/showMinMax",
+        "options" : {
+          "format" : "checkbox"
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "computeMedian" : {
+            "configKey" : "compute_median"
+          },
+          "nominalColumnFilter" : {
+            "configPaths" : [ [ "filter_nominal_columns", "filter-type" ], [ "filter_nominal_columns", "included_names" ], [ "filter_nominal_columns", "excluded_names" ], [ "filter_nominal_columns", "enforce_option" ], [ "filter_nominal_columns", "name_pattern", "pattern" ], [ "filter_nominal_columns", "name_pattern", "type" ], [ "filter_nominal_columns", "name_pattern", "caseSensitive" ], [ "filter_nominal_columns", "name_pattern", "excludeMatching" ] ]
+          },
+          "nominalValues" : {
+            "configKey" : "num_nominal-values"
+          },
+          "nominalValuesOutput" : {
+            "configKey" : "num_nominal-values_output"
+          },
+          "enableHiLite" : {
+            "configKey" : "enable HiLite"
+          },
+          "histogramFormat" : {
+            "configKey" : "image format"
+          },
+          "histogramWidth" : {
+            "configKey" : "histogram width"
+          },
+          "histogramHeight" : {
+            "configKey" : "histogram height"
+          },
+          "showMinMax" : {
+            "configKey" : "show min max"
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/nominalColumnFilter",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Cluster Membership",
+        "text" : "Cluster Membership",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      }, {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      } ]
+    } ]
+  } ]
+}
