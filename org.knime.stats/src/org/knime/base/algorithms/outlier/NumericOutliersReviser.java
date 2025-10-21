@@ -75,7 +75,10 @@ import org.knime.core.data.DataColumnSpecCreator;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
+import org.knime.core.data.DataValue;
 import org.knime.core.data.DoubleValue;
+import org.knime.core.data.IntValue;
+import org.knime.core.data.LongValue;
 import org.knime.core.data.container.AbstractCellFactory;
 import org.knime.core.data.container.ColumnRearranger;
 import org.knime.core.data.def.DefaultRow;
@@ -113,8 +116,12 @@ public final class NumericOutliersReviser {
      * The supported data types. The data types are restricted, since we have to create new cells, see
      * {@link #getTreatedCell(DataCell, double)}, of the same type as the input column.
      */
-    private static final Set<DataType> SUPPORTED_DATA_TYPES =
+    static final Set<DataType> SUPPORTED_DATA_TYPES =
         new HashSet<DataType>(Arrays.asList(new DataType[]{LongCell.TYPE, IntCell.TYPE, DoubleCell.TYPE}));
+
+    /** The supported data values. */
+    public static final List<Class<? extends DataValue>> SUPPORTED_DATA_VALUES =
+            List.of(LongValue.class, IntValue.class, DoubleValue.class);
 
     /** The illegal cell type exception. */
     private static final String ILLEGAL_CELL_TYPE_EXCEPTION =

@@ -51,6 +51,7 @@ package org.knime.base.algorithms.outlier.options;
 import java.util.Arrays;
 
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.node.parameters.widget.choices.Label;
 
 /**
  * Enum encoding the replacement strategy.
@@ -59,9 +60,13 @@ import org.knime.core.node.InvalidSettingsException;
  */
 public enum NumericOutliersReplacementStrategy {
         /** Indicates that outliers have to be replaced by missing values */
+        @Label(value = "Missing values", description = "Replaces every outlier by a missing value.")
         MISSING("Missing values"),
 
         /** Indicates that outliers have to be replaced by the closest value in the permitted interval */
+        @Label(value = "Closest permitted value", description = "Replaces the value of each outlier by the closest "
+            + "value within the permitted interval R. If the column type is an integer the replacement value is the "
+            + "closest integer within the permitted interval.")
         INTERVAL_BOUNDARY("Closest permitted value");
 
     /** Missing name exception. */

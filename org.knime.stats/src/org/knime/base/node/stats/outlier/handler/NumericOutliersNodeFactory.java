@@ -48,56 +48,124 @@
  */
 package org.knime.base.node.stats.outlier.handler;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  * Factory class of the outlier detector node.
  *
  * @author Mark Ortmann, KNIME GmbH, Berlin, Germany
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public final class NumericOutliersNodeFactory extends NodeFactory<NumericOutliersNodeModel> {
+@SuppressWarnings("restriction")
+public final class NumericOutliersNodeFactory extends NodeFactory<NumericOutliersNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NumericOutliersNodeModel createNodeModel() {
         return new NumericOutliersNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<NumericOutliersNodeModel> createNodeView(final int viewIndex,
         final NumericOutliersNodeModel nodeModel) {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected boolean hasDialog() {
         return true;
     }
 
+    private static final String NODE_NAME = "Numeric Outliers";
+
+    private static final String NODE_ICON = "../outlier.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            Detects and handles outliers for all numerical columns.
+            """;
+
+    private static final String FULL_DESCRIPTION = """
+            <p> This node detects and treats the outliers for each of the selected columns individually by means of
+                <a href="https://en.wikipedia.org/wiki/Outlier#Tukey's_fences">interquartile range (IQR)</a>. </p> <p>
+                To detect the outliers for a given column, the first and third quartile (Q<sub>1</sub>, Q<sub>3</sub>)
+                is computed. An observation is flagged an outlier if it lies outside the range R = [Q<sub>1</sub> -
+                k(IQR), Q<sub>3</sub> + k(IQR)] with IQR = Q<sub>3</sub> - Q<sub>1</sub> and k &gt;= 0. Setting k = 1.5
+                the smallest value in R corresponds, typically, to the lower end of a boxplot's whisker and largest
+                value to its upper end. <br /> Providing grouping information allows to detect outliers only within
+                their respective groups. </p> <p> If an observation is flagged an outlier, one can either replace it by
+                some other value or remove/retain the corresponding row. </p> <p> Missing values contained in the data
+                will be ignored, i.e., they will neither be used for the outlier computation nor will they be flagged as
+                an outlier. </p>
+            """;
+
+    private static final List<PortDescription> INPUT_PORTS =
+        List.of(fixedPort("Input data", "Numeric input data to evaluate + optional group information."));
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+        fixedPort("Treated table",
+            "Data table where outliers were either replaced or rows containing outliers/non-outliers were removed."),
+        fixedPort("Summary", """
+                Data table holding the number of members, i.e., non-missing values and outliers as well as the lower and
+                upper bound for each outlier groups.
+                """), //
+        fixedPort("Numeric outliers model", """
+                Model holding the permitted interval bounds for each outlier group and the outlier treatment
+                specifications.
+                """));
+
     /**
-     * {@inheritDoc}
+     * @since 5.9
      */
     @Override
-    protected NodeDialogPane createNodeDialogPane() {
-        return new NumericOutliersNodeDialogPane();
+    public NodeDialogPane createNodeDialogPane() {
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, NumericOutliersNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(NODE_NAME, NODE_ICON, INPUT_PORTS, OUTPUT_PORTS,
+            SHORT_DESCRIPTION, FULL_DESCRIPTION, List.of(), NumericOutliersNodeParameters.class, null,
+            NodeType.Manipulator, List.of(), null);
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, NumericOutliersNodeParameters.class));
     }
 
 }

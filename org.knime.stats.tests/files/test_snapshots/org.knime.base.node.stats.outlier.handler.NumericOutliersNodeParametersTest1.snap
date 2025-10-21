@@ -1,0 +1,640 @@
+{
+  "data" : {
+    "model" : {
+      "outlierColumns" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : true,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ "Universe_0_0", "Universe_0_1", "Universe_1_0", "Universe_1_1" ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : true
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "iqrScalar" : 1.5,
+      "quartileCalculation" : "FULL_DATA",
+      "estimationType" : "R_6",
+      "updateDomain" : false,
+      "detectionOption" : "ALL",
+      "treatmentOption" : "REPLACE",
+      "replacementStrategy" : "MISSING",
+      "useGroups" : false,
+      "groupColumns" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : true,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ ],
+          "manuallyDeselected" : [ "Universe_0_0", "Universe_0_1", "Universe_1_0", "Universe_1_1", "Cluster Membership" ],
+          "includeUnknownColumns" : false
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "processInMemory" : false
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "detectionOption" : {
+            "oneOf" : [ {
+              "const" : "ALL",
+              "title" : "All outliers"
+            }, {
+              "const" : "LOWER_BOUND",
+              "title" : "Outliers below lower bound"
+            }, {
+              "const" : "UPPER_BOUND",
+              "title" : "Outliers above upper bound"
+            } ],
+            "title" : "Apply to",
+            "description" : "Allows to apply the selected treatment strategy to\n<ul>\n<li><b>All outliers</b>: Do not restrict outlier detection.</li>\n<li><b>Outliers below lower bound</b>: Restrict outlier detection to values below the lower bound.</li>\n<li><b>Outliers above upper bound</b>: Restrict outlier detection to values above the upper bound.</li>\n</ul>",
+            "default" : "ALL"
+          },
+          "estimationType" : {
+            "oneOf" : [ {
+              "const" : "LEGACY",
+              "title" : "Legacy"
+            }, {
+              "const" : "R_1",
+              "title" : "R 1"
+            }, {
+              "const" : "R_2",
+              "title" : "R 2"
+            }, {
+              "const" : "R_3",
+              "title" : "R 3"
+            }, {
+              "const" : "R_4",
+              "title" : "R 4"
+            }, {
+              "const" : "R_5",
+              "title" : "R 5"
+            }, {
+              "const" : "R_6",
+              "title" : "R 6"
+            }, {
+              "const" : "R_7",
+              "title" : "R 7"
+            }, {
+              "const" : "R_8",
+              "title" : "R 8"
+            }, {
+              "const" : "R_9",
+              "title" : "R 9"
+            } ],
+            "title" : "Estimation type",
+            "description" : "Specifies how the actual quartile value is computed when using full data estimate. A detailed explanation of the different types can be found <a href=\"https://en.wikipedia.org/wiki/Quantile#Estimating_quantiles_from_a_sample\">here</a>.\n",
+            "default" : "R_6"
+          },
+          "groupColumns" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Group columns",
+            "description" : "Move the columns defining the groups into the Include list. The group definition will take\npriority, i.e. if a column is selected for both group definition and outlier handling, it will be\nused to define groups (no outlier handling done for that column).\n",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          },
+          "iqrScalar" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Interquartile range multiplier (k)",
+            "description" : "Allows scaling the interquartile range (IQR). The default is k = 1.5. Larger values will cause\nless values to be considered outliers.\n",
+            "default" : 1.5
+          },
+          "outlierColumns" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Outlier selection",
+            "description" : "Allows the selection of columns for which outliers have to be detected and treated. If \"Compute\noutlier statistics on groups\" is selected, the outliers for each of the columns are computed solely\nwith respect to the different groups.\n",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ "Universe_0_0", "Universe_0_1", "Universe_1_0", "Universe_1_1" ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          },
+          "processInMemory" : {
+            "type" : "boolean",
+            "title" : "Process groups in memory",
+            "description" : "Processes the groups in the memory. This option comes with higher memory requirements, but is\nfaster since the table does not need any additional treatment.\n",
+            "default" : false
+          },
+          "quartileCalculation" : {
+            "oneOf" : [ {
+              "const" : "HEURISTIC",
+              "title" : "Use heuristic (memory friendly)"
+            }, {
+              "const" : "FULL_DATA",
+              "title" : "Full data estimate"
+            } ],
+            "title" : "Quartile calculation",
+            "description" : "Allows to specify how the quartiles are computed.\n<ul>\n<li><b>Use heuristic (memory friendly)</b>: This option ensure that the quartiles are calculated using a heuristical approach. This choice is recommended for large data sets due to its low memory requirements. However, for small data sets the results of this approach can be quite far away from the accurate results.</li>\n<li><b>Full data estimate</b>: This option typically creates more accurate results than its counterpart, but also requires far more\nadditional memory. Therefore, we recommend this option for smaller data sets. <br/>\nSince the value of the quartiles often lies between two observations, this option additionally allows\nto specify how the actual value is computed, which is encoded by the various estimation types\n(LEGACY, R_1, ..., R_9). A detailed explanation of the different types can be found\n<a href=\"https://en.wikipedia.org/wiki/Quantile#Estimating_quantiles_from_a_sample\">here</a>.\n</li>\n</ul>",
+            "default" : "HEURISTIC"
+          },
+          "replacementStrategy" : {
+            "oneOf" : [ {
+              "const" : "MISSING",
+              "title" : "Missing values"
+            }, {
+              "const" : "INTERVAL_BOUNDARY",
+              "title" : "Closest permitted value"
+            } ],
+            "title" : "Replacement strategy",
+            "description" : "Defines two different strategies to replace outliers:\n<ul>\n<li><b>Missing values</b>: Replaces every outlier by a missing value.</li>\n<li><b>Closest permitted value</b>: Replaces the value of each outlier by the closest value within the permitted interval R. If the column type is an integer the replacement value is the closest integer within the permitted interval.</li>\n</ul>",
+            "default" : "MISSING"
+          },
+          "treatmentOption" : {
+            "oneOf" : [ {
+              "const" : "REPLACE",
+              "title" : "Replace outlier values"
+            }, {
+              "const" : "FILTER",
+              "title" : "Remove outlier rows"
+            }, {
+              "const" : "RETAIN",
+              "title" : "Retain non-outlier rows"
+            } ],
+            "title" : "Treatment option",
+            "description" : "Defines three different strategies to treat outliers:\n<ul>\n<li><b>Replace outlier values</b>: Allows to replace outliers based on the selected \"Replacement strategy\".</li>\n<li><b>Remove outlier rows</b>: Removes all rows from the input data that contain in any of the selected columns at least one outlier.</li>\n<li><b>Retain non-outlier rows</b>: Retains only those rows of the input data that contain at least one outlier in any of the selected columns.</li>\n</ul>",
+            "default" : "REPLACE"
+          },
+          "updateDomain" : {
+            "type" : "boolean",
+            "title" : "Update domain",
+            "description" : "If checked the domain of the selected outlier columns is updated.",
+            "default" : false
+          },
+          "useGroups" : {
+            "type" : "boolean",
+            "title" : "Compute outlier statistics on groups",
+            "description" : "If selected, allows the selection of columns to identify groups. A group comprises all rows of\nthe input exhibiting the same values in every single column. The outliers will finally be computed\nwith respect to each of the individual groups.\n",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/outlierColumns",
+      "options" : {
+        "format" : "typedStringFilter",
+        "unknownValuesText" : "Any unknown column",
+        "emptyStateLabel" : "No columns in this list.",
+        "hideTypeFilter" : true
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "label" : "General Settings",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/iqrScalar",
+        "options" : {
+          "validation" : {
+            "min" : {
+              "errorMessage" : "The value must be at least 0.",
+              "parameters" : {
+                "isExclusive" : false,
+                "min" : 0.0
+              }
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/quartileCalculation",
+        "options" : {
+          "format" : "radio",
+          "radioLayout" : "vertical"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/estimationType",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/quartileCalculation",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "FULL_DATA"
+              } ]
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/updateDomain",
+        "options" : {
+          "format" : "checkbox"
+        }
+      } ]
+    }, {
+      "label" : "Outlier Treatment",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/detectionOption"
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/treatmentOption"
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/replacementStrategy",
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/treatmentOption",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "REPLACE"
+              } ]
+            }
+          }
+        }
+      } ]
+    }, {
+      "label" : "Group Settings",
+      "type" : "Section",
+      "elements" : [ {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/useGroups",
+        "options" : {
+          "format" : "checkbox"
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/groupColumns",
+        "options" : {
+          "format" : "typedStringFilter",
+          "unknownValuesText" : "Any unknown column",
+          "emptyStateLabel" : "No columns in this list."
+        },
+        "providedOptions" : [ "possibleValues" ],
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/useGroups",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      }, {
+        "type" : "Control",
+        "scope" : "#/properties/model/properties/processInMemory",
+        "options" : {
+          "format" : "checkbox"
+        },
+        "rule" : {
+          "effect" : "SHOW",
+          "condition" : {
+            "scope" : "#/properties/model/properties/useGroups",
+            "schema" : {
+              "const" : true
+            }
+          }
+        }
+      } ]
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "outlierColumns" : {
+            "configPaths" : [ [ "outlier-list", "filter-type" ], [ "outlier-list", "included_names" ], [ "outlier-list", "excluded_names" ], [ "outlier-list", "enforce_option" ], [ "outlier-list", "name_pattern", "pattern" ], [ "outlier-list", "name_pattern", "type" ], [ "outlier-list", "name_pattern", "caseSensitive" ], [ "outlier-list", "name_pattern", "excludeMatching" ] ]
+          },
+          "iqrScalar" : {
+            "configKey" : "iqr-scalar"
+          },
+          "quartileCalculation" : {
+            "configPaths" : [ [ "use-heuristic" ] ]
+          },
+          "estimationType" : {
+            "configPaths" : [ [ "estimation-type" ] ]
+          },
+          "updateDomain" : {
+            "configKey" : "update-domain"
+          },
+          "detectionOption" : {
+            "configPaths" : [ [ "detection-option" ] ]
+          },
+          "treatmentOption" : {
+            "configPaths" : [ [ "outlier-treatment" ] ]
+          },
+          "replacementStrategy" : {
+            "configPaths" : [ [ "replacement-strategy" ] ]
+          },
+          "useGroups" : {
+            "configKey" : "use-groups"
+          },
+          "groupColumns" : {
+            "configPaths" : [ [ "groups-list", "filter-type" ], [ "groups-list", "included_names" ], [ "groups-list", "excluded_names" ], [ "groups-list", "enforce_option" ], [ "groups-list", "name_pattern", "pattern" ], [ "groups-list", "name_pattern", "type" ], [ "groups-list", "name_pattern", "caseSensitive" ], [ "groups-list", "name_pattern", "excludeMatching" ] ]
+          },
+          "processInMemory" : {
+            "configKey" : "memory-policy"
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/groupColumns",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Cluster Membership",
+        "text" : "Cluster Membership",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/outlierColumns",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      } ]
+    } ]
+  } ]
+}

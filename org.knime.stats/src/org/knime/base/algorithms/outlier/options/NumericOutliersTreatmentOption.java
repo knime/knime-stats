@@ -51,6 +51,7 @@ package org.knime.base.algorithms.outlier.options;
 import java.util.Arrays;
 
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.node.parameters.widget.choices.Label;
 
 /**
  * Enum encoding the outlier treatment.
@@ -60,12 +61,18 @@ import org.knime.core.node.InvalidSettingsException;
 public enum NumericOutliersTreatmentOption {
 
         /** Indicates that the outliers have to be replaced. */
+        @Label(value = "Replace outlier values",
+                description = "Allows to replace outliers based on the selected \"Replacement strategy\".")
         REPLACE("Replace outlier values"),
 
         /** Indicates that rows containing outliers have to be removed. */
+        @Label(value = "Remove outlier rows", description = "Removes all rows from the input data that contain in any "
+            + "of the selected columns at least one outlier.")
         FILTER("Remove outlier rows"),
 
         /** Indicates that only rows containing outliers have to be retained. */
+        @Label(value = "Retain non-outlier rows", description = "Retains only those rows of the input data that "
+            + "contain at least one outlier in any of the selected columns.")
         RETAIN("Remove non-outlier rows");
 
     /** Missing name exception. */

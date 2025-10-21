@@ -51,6 +51,7 @@ package org.knime.base.algorithms.outlier.options;
 import java.util.Arrays;
 
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.node.parameters.widget.choices.Label;
 
 /**
  * Enum allowing to restrict the outlier detection.
@@ -60,12 +61,17 @@ import org.knime.core.node.InvalidSettingsException;
 public enum NumericOutliersDetectionOption {
 
         /** Indicates that there is no restriction. */
+        @Label(value = "All outliers", description = "Do not restrict outlier detection.")
         ALL("All outliers"),
 
         /** Indicates that the outlier detection is restricted to values below the lower bound. */
+        @Label(value = "Outliers below lower bound",
+            description = "Restrict outlier detection to values below the lower bound.")
         LOWER_BOUND("Outliers below lower bound"),
 
         /** Indicates that the outlier detection is restricted to values above the upper bound. */
+        @Label(value = "Outliers above upper bound",
+            description = "Restrict outlier detection to values above the upper bound.")
         UPPER_BOUND("Outliers above upper bound");
 
     /** Missing name exception. */

@@ -107,46 +107,46 @@ final class NumericOutliersNodeModel extends NodeModel implements NumericOutlier
     static final String CFG_OUTLIER_COLS = "outlier-list";
 
     /** Config key for the apply to groups setting. */
-    private static final String CFG_USE_GROUPS = "use-groups";
+    static final String CFG_USE_GROUPS = "use-groups";
 
     /** Config key of the iqr scalar. */
-    private static final String CFG_SCALAR_PAR = "iqr-scalar";
+    static final String CFG_SCALAR_PAR = "iqr-scalar";
 
     /** Config key of the memory policy. */
-    private static final String CFG_MEM_POLICY = "memory-policy";
+    static final String CFG_MEM_POLICY = "memory-policy";
 
     /** Config key of the estimation type used for in-memory computation. */
-    private static final String CFG_ESTIMATION_TYPE = "estimation-type";
+    static final String CFG_ESTIMATION_TYPE = "estimation-type";
 
     /** Config key of the outlier treatment. */
-    private static final String CFG_OUTLIER_TREATMENT = "outlier-treatment";
+    static final String CFG_OUTLIER_TREATMENT = "outlier-treatment";
 
     /** Config key of the outlier replacement strategy. */
-    private static final String CFG_OUTLIER_REPLACEMENT = "replacement-strategy";
+    static final String CFG_OUTLIER_REPLACEMENT = "replacement-strategy";
 
     /** Config key of the outlier detection option. */
-    private static final String CFG_DETECTION_OPTION = "detection-option";
+    static final String CFG_DETECTION_OPTION = "detection-option";
 
     /** Config key of the domain policy. */
-    private static final String CFG_DOMAIN_POLICY = "update-domain";
+    static final String CFG_DOMAIN_POLICY = "update-domain";
 
     /** Config key of the quartiles algorithm setting. */
-    private static final String CFG_HEURISTIC = "use-heuristic";
+    static final String CFG_HEURISTIC = "use-heuristic";
 
     /** Default estimation type used to calculate the quartiles. */
-    private static final EstimationType DEFAULT_ESTIMATION_TYPE = EstimationType.R_6;
+    static final EstimationType DEFAULT_ESTIMATION_TYPE = EstimationType.R_6;
 
     /** Default scalar to scale the interquartile range */
-    private static final double DEFAULT_SCALAR = 1.5d;
+    static final double DEFAULT_SCALAR = 1.5d;
 
     /** Default domain policy. */
-    private static final boolean DEFAULT_DOMAIN_POLICY = false;
+    static final boolean DEFAULT_DOMAIN_POLICY = false;
 
     /** Default memory policy */
-    private static final boolean DEFAULT_MEM_POLICY = false;
+    static final boolean DEFAULT_MEM_POLICY = false;
 
     /** Default quartiles algorithm setting. */
-    private static final boolean HEURISTIC_DEFAULT = false;
+    static final boolean HEURISTIC_DEFAULT = false;
 
     /** Settings model of the selected groups. */
     private SettingsModelColumnFilter2 m_groupSettings;
