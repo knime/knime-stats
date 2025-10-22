@@ -1,0 +1,285 @@
+{
+  "data" : {
+    "model" : {
+      "correlationType" : "SPEARMAN",
+      "columnFilter" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : false,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : true
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "includeValidColumnPairs" : false,
+      "pValueAlternative" : "TWO_SIDED"
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "columnFilter" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Correlation columns",
+            "description" : "Select the columns for which correlation values should be computed.\n",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : true
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          },
+          "correlationType" : {
+            "oneOf" : [ {
+              "const" : "SPEARMAN",
+              "title" : "Spearman's Rho"
+            }, {
+              "const" : "KENDALL_A",
+              "title" : "Kendall's Tau A"
+            }, {
+              "const" : "KENDALL_B",
+              "title" : "Kendall's Tau B"
+            }, {
+              "const" : "GAMMA",
+              "title" : "Goodman and Kruskal's Gamma"
+            } ],
+            "title" : "Correlation Type",
+            "description" : "Choose the type of correlation. The coefficient must be in the range from −1 (100% negative association,\nor perfect inversion) to +1 (100% positive association, or perfect agreement). A value of zero indicates the\n absence of association.\n\n<ul>\n<li><b>Spearman&#x27;s Rho</b>: <a href=\"http://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient\"> Spearman's rank\ncorrelation coefficient </a> is a statistical measure of the strength of a monotonic relationship\nbetween paired data. Where the monotonic relationship is characterised by a relationship between\nordered sets that preserves the given order, i.e., either never increases or never decreases as\nits independent variable increases. The value of this measure ranges from -1 (strong negative\ncorrelation) to 1 (strong positive correlation). A perfect Spearman correlation of +1 or −1 occurs when\neach of the variables is a perfect monotone function of the other. For Spearman's rank correlation\ncoefficient the p-value and degrees of freedom are computed. The p-value indicates the probability of an\nuncorrelated system producing a correlation at least as extreme, if the mean of the correlation is zero\nand it follows a t-distribution with <i>df</i> degrees of freedom.\n</li>\n<li><b>Kendall&#x27;s Tau A</b>: <a href=\"http://en.wikipedia.org/wiki/Kendall_tau_rank_correlation_coefficient\">Kendall's tau rank\ncorrelation coefficient</a> is used to measure the strength of association between two measured\nquantities which is based on the number of concordant and discordant pairs and can be considered as\nstandardized form of Gamma. The Tau A statistic does not consider tied values (two or more observations\nhaving the same value) and is mostly suitable for square tables.\n</li>\n<li><b>Kendall&#x27;s Tau B</b>: <a href=\"http://en.wikipedia.org/wiki/Kendall_tau_rank_correlation_coefficient\">Kendall's tau rank\ncorrelation coefficient</a> is used to measure the strength of association between two measured\nquantities which is based on the number of concordant and discordant pairs and can be considered as\nstandardized form of Gamma. The Tau B statistic makes adjustments for tied values (two or more\nobservations having the same value) and is most appropriately used for rectangular tables.\n</li>\n<li><b>Goodman and Kruskal&#x27;s Gamma</b>: <a href=\"http://en.wikipedia.org/wiki/Goodman_and_Kruskal%27s_gamma\"> Goodman and Kruskal's gamma</a>\nis used to measure the strength of association between two measured quantities. It's based on\n the number of concordant and discordant pairs.\n</li>\n</ul>",
+            "default" : "SPEARMAN"
+          },
+          "includeValidColumnPairs" : {
+            "type" : "boolean",
+            "title" : "Include only column pairs with a valid correlation",
+            "description" : "Check this option if only the column pairs where the correlation could be computed should be\nincluded in the output table. Column pairs where the correlation could not be computed are\nthen omitted from the output table.\n",
+            "default" : false
+          },
+          "pValueAlternative" : {
+            "oneOf" : [ {
+              "const" : "TWO_SIDED",
+              "title" : "two-sided"
+            }, {
+              "const" : "GREATER",
+              "title" : "one-sided (right)"
+            }, {
+              "const" : "LESS",
+              "title" : "one-sided (left)"
+            } ],
+            "title" : "p-value",
+            "description" : "Select which p-value should be computed for Spearman's rank correlation coefficient.\n",
+            "default" : "TWO_SIDED"
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/correlationType"
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/columnFilter",
+      "options" : {
+        "format" : "typedStringFilter",
+        "unknownValuesText" : "Any unknown column",
+        "emptyStateLabel" : "No columns in this list."
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/includeValidColumnPairs",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/pValueAlternative",
+      "rule" : {
+        "effect" : "ENABLE",
+        "condition" : {
+          "scope" : "#/properties/model/properties/correlationType",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "SPEARMAN"
+            } ]
+          }
+        }
+      }
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "correlationType" : {
+            "configPaths" : [ [ "corr-measure" ] ]
+          },
+          "columnFilter" : {
+            "configPaths" : [ [ "include-list", "filter-type" ], [ "include-list", "included_names" ], [ "include-list", "excluded_names" ], [ "include-list", "enforce_option" ], [ "include-list", "name_pattern", "pattern" ], [ "include-list", "name_pattern", "type" ], [ "include-list", "name_pattern", "caseSensitive" ], [ "include-list", "name_pattern", "excludeMatching" ] ]
+          },
+          "includeValidColumnPairs" : {
+            "configKey" : "includeValidColumnPairs"
+          },
+          "pValueAlternative" : {
+            "configKey" : "pvalAlternative"
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/columnFilter",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Cluster Membership",
+        "text" : "Cluster Membership",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  } ]
+}

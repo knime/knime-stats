@@ -118,6 +118,18 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
     /** the configuration key for using Goodman and Kruskals Gamma. */
     static final String CFG_KRUSKALAL = "Goodman and Kruskal's Gamma";
 
+    /** Configuration key for the correlation measure selection. */
+    static final String CFG_CORR_MEASURE = "corr-measure";
+
+    /** Configuration key for the column filter. */
+    static final String CFG_INCLUDE_LIST = "include-list";
+
+    /** Configuration key for the p-value alternative. */
+    static final String CFG_PVAL_ALTERNATIVE = "pvalAlternative";
+
+    /** Configuration key for including only valid column pairs. */
+    static final String CFG_INCLUDE_VALID_COLUMN_PAIRS = "includeValidColumnPairs";
+
     /**
      * @return the list of all correlation types
      */
@@ -134,14 +146,14 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
      * @return A new settings object for filtering columns.
      */
     static SettingsModelColumnFilter2 createColumnFilterModel() {
-        return new SettingsModelColumnFilter2("include-list");
+        return new SettingsModelColumnFilter2(CFG_INCLUDE_LIST);
     }
 
     /**
      * @return a new model
      */
     static SettingsModelString createTypeModel() {
-        return new SettingsModelString("corr-measure", CFG_SPEARMAN);
+        return new SettingsModelString(CFG_CORR_MEASURE, CFG_SPEARMAN);
     }
 
     /**
@@ -150,7 +162,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
      * @return A new model.
      */
     static SettingsModelString createPValAlternativeModel() {
-        return new SettingsModelString("pvalAlternative", PValueAlternative.TWO_SIDED.name());
+        return new SettingsModelString(CFG_PVAL_ALTERNATIVE, PValueAlternative.TWO_SIDED.name());
     }
 
     /**
@@ -159,7 +171,7 @@ final class RankCorrelationCompute2NodeModel extends NodeModel implements Buffer
      * @return A new model.
      */
     static SettingsModelBoolean createIncludeColumnPairFilterModel() {
-        return new SettingsModelBoolean("includeValidColumnPairs", false);
+        return new SettingsModelBoolean(CFG_INCLUDE_VALID_COLUMN_PAIRS, false);
     }
 
     private SettingsModelColumnFilter2 m_columnFilterModel;
