@@ -1,0 +1,285 @@
+{
+  "data" : {
+    "model" : {
+      "correlationType" : "SPEARMAN",
+      "columnFilter" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : true,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ "Universe_0_0", "Universe_0_1", "Universe_1_0", "Universe_1_1", "Cluster Membership" ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : true
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "includeValidColumnPairs" : false,
+      "pValueAlternative" : "TWO_SIDED"
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "columnFilter" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Correlation columns",
+            "description" : "Select the columns for which correlation values should be computed.\n",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : true
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          },
+          "correlationType" : {
+            "oneOf" : [ {
+              "const" : "SPEARMAN",
+              "title" : "Spearman's Rho"
+            }, {
+              "const" : "KENDALL_A",
+              "title" : "Kendall's Tau A"
+            }, {
+              "const" : "KENDALL_B",
+              "title" : "Kendall's Tau B"
+            }, {
+              "const" : "GAMMA",
+              "title" : "Goodman and Kruskal's Gamma"
+            } ],
+            "title" : "Correlation Type",
+            "description" : "Choose the type of correlation.\n",
+            "default" : "SPEARMAN"
+          },
+          "includeValidColumnPairs" : {
+            "type" : "boolean",
+            "title" : "Include only column pairs with a valid correlation",
+            "description" : "Check this option if only the column pairs where the correlation could be computed should be\nincluded in the output table. Column pairs where the correlation could not be computed are\nthen omitted from the output table.\n",
+            "default" : false
+          },
+          "pValueAlternative" : {
+            "oneOf" : [ {
+              "const" : "TWO_SIDED",
+              "title" : "two-sided"
+            }, {
+              "const" : "GREATER",
+              "title" : "one-sided (right)"
+            }, {
+              "const" : "LESS",
+              "title" : "one-sided (left)"
+            } ],
+            "title" : "p-value",
+            "description" : "Select which p-value should be computed for Spearman's rank correlation coefficient.\n",
+            "default" : "TWO_SIDED"
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/correlationType"
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/columnFilter",
+      "options" : {
+        "format" : "typedStringFilter",
+        "unknownValuesText" : "Any unknown column",
+        "emptyStateLabel" : "No columns in this list."
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/includeValidColumnPairs",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/pValueAlternative",
+      "rule" : {
+        "effect" : "ENABLE",
+        "condition" : {
+          "scope" : "#/properties/model/properties/correlationType",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "SPEARMAN"
+            } ]
+          }
+        }
+      }
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "correlationType" : {
+            "configPaths" : [ [ "corr-measure" ] ]
+          },
+          "columnFilter" : {
+            "configPaths" : [ [ "include-list", "filter-type" ], [ "include-list", "included_names" ], [ "include-list", "excluded_names" ], [ "include-list", "enforce_option" ], [ "include-list", "name_pattern", "pattern" ], [ "include-list", "name_pattern", "type" ], [ "include-list", "name_pattern", "caseSensitive" ], [ "include-list", "name_pattern", "excludeMatching" ] ]
+          },
+          "includeValidColumnPairs" : {
+            "configKey" : "includeValidColumnPairs"
+          },
+          "pValueAlternative" : {
+            "configKey" : "pvalAlternative"
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/columnFilter",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Cluster Membership",
+        "text" : "Cluster Membership",
+        "type" : {
+          "id" : "org.knime.core.data.StringValue",
+          "text" : "String"
+        }
+      } ]
+    } ]
+  } ]
+}
