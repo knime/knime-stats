@@ -25,6 +25,7 @@
 		<module>org.knime.stats</module>
 		<module>org.knime.stats.tests</module>
 		<module>org.knime.stats2</module>
+		<module>org.knime.stats2.tests</module>
 		<module>org.knime.ext.tsne</module>
 		<module>org.knime.features.stats</module>
 		<module>org.knime.features.stats2</module>
