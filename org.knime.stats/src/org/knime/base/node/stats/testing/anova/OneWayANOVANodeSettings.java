@@ -57,10 +57,12 @@ import org.knime.core.node.util.filter.column.DataTypeColumnFilter;
  * The settings object for the "one-way ANOVA" Node.
  */
 public class OneWayANOVANodeSettings {
-    private static final String TEST_COLUMNS = "testColumns";
-    private static final String GROUPING_COLUMN = "groupingColumn";
-    private static final String CONFIDENCE_INTERVAL_PROB =
+    static final String TEST_COLUMNS = "testColumns";
+    static final String GROUPING_COLUMN = "groupingColumn";
+    static final String CONFIDENCE_INTERVAL_PROB =
         "confidenceIntervalProb";
+
+    static final double DEFAULT_CONFIDENCE_INTERVAL_PROB = 0.95;
 
     private DataColumnSpecFilterConfiguration m_testColumns;
     private String m_groupingColumn;

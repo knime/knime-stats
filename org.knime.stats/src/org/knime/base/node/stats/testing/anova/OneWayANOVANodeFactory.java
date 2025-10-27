@@ -44,18 +44,38 @@
  */
 package org.knime.base.node.stats.testing.anova;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
+import org.knime.node.impl.description.ViewDescription;
 
 /**
  * <code>NodeFactory</code> for the "one-way ANOVA" Node.
  *
  *
  * @author Heiko Hofer
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
+@SuppressWarnings("restriction")
 public class OneWayANOVANodeFactory extends
-    NodeFactory<OneWayANOVANodeModel> {
+    NodeFactory<OneWayANOVANodeModel> implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
     /**
      * {@inheritDoc}
@@ -93,9 +113,70 @@ public class OneWayANOVANodeFactory extends
     /**
      * {@inheritDoc}
      */
+    private static final String NODE_NAME = "One-way ANOVA";
+    private static final String NODE_ICON = "./one_way_anova.png";
+    private static final String SHORT_DESCRIPTION = """
+            The one-way analysis of variance (ANOVA) allows to test if any of several means are different from each
+                other.
+            """;
+    private static final String FULL_DESCRIPTION = """
+            Computes statistics for the one-way analysis of variance (ANOVA). It is designed to compare the means of
+                observations in the same column between several groups. The node allows the testing of equality of
+                variances (Levene's test) and provides the relevant descriptive statistics.
+            """;
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Data Table", """
+                The Input
+                """)
+    );
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort(NODE_NAME, """
+                Statistics for the one-way ANOVA.
+                """),
+            fixedPort("Levene-Test", """
+                Statistics for the Levene-Test.
+                """),
+            fixedPort("Descriptive Statistics", """
+                Descriptive statistics of the input.
+                """)
+    );
+    private static final List<ViewDescription> VIEWS = List.of(
+            new ViewDescription("Test statistics", """
+                Tables with descriptive statistics of the input columns and test statistics of the one-way ANOVA.
+                """)
+    );
+
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new OneWayANOVANodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, OneWayANOVANodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            OneWayANOVANodeParameters.class,
+            VIEWS,
+            NodeType.Manipulator,
+            List.of(),
+            null
+        );
+    }
+
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, OneWayANOVANodeParameters.class));
     }
 
 }
