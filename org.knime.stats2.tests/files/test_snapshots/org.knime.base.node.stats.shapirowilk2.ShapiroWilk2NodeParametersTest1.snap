@@ -32,7 +32,7 @@
             "type" : "number",
             "format" : "double",
             "title" : "Significance level α",
-            "description" : "Significance level at which the null hypothesis can be rejected, 0 &lt; &#945; &lt; 1.\n",
+            "description" : "Significance level at which the null hypothesis H0 (sample comes from a normally distributed population) can\n be rejected. If the p-value of the test is less than the chosen alpha level, then H0 is rejected.\n 0 &lt; &#945; &lt; 1.\n",
             "default" : 0.05
           },
           "shapiroFrancia" : {
@@ -131,7 +131,7 @@
                 }
               }
             },
-            "title" : "Test Columns",
+            "title" : "Test columns",
             "description" : "The columns to test for normality using the Shapiro-Wilk test.\n",
             "default" : {
               "mode" : "MANUAL",

@@ -73,13 +73,15 @@ import org.knime.node.parameters.widget.number.NumberInputWidgetValidation;
 class ShapiroWilk2NodeParameters implements NodeParameters {
 
     @Widget(title = "Significance level α", description = """
-            Significance level at which the null hypothesis can be rejected, 0 &lt; &#945; &lt; 1.
+            Significance level at which the null hypothesis H0 (sample comes from a normally distributed population) can
+             be rejected. If the p-value of the test is less than the chosen alpha level, then H0 is rejected.
+             0 &lt; &#945; &lt; 1.
             """)
     @NumberInputWidget(minValidation = AlphaMinValidation.class, maxValidation = AlphaMaxValidation.class)
     @Persist(configKey = ShapiroWilk2NodeModel.SIGNIFICANCE_ALPHA_CFG)
     double m_alpha = 0.05;
 
-    @Widget(title = "Test Columns", description = """
+    @Widget(title = "Test columns", description = """
             The columns to test for normality using the Shapiro-Wilk test.
             """)
     @ChoicesProvider(NumericColumnsProvider.class)
