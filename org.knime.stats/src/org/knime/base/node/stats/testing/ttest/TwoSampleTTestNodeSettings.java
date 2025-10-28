@@ -57,13 +57,15 @@ import org.knime.core.node.util.filter.column.DataTypeColumnFilter;
  * The settings object for the "Two-Sample T-Test" Node.
  */
 public class TwoSampleTTestNodeSettings {
-    private static final String TEST_COLUMNS = "testColumns";
-    private static final String GROUPING_COLUMN = "groupingColumn";
-    private static final String GROUP_ONE = "groupOne";
-    private static final String GROUP_TWO = "groupTwo";
-    private static final String CONFIDENCE_INTERVAL_PROB =
+    static final String TEST_COLUMNS = "testColumns";
+    static final String GROUPING_COLUMN = "groupingColumn";
+    static final String GROUP_ONE = "groupOne";
+    static final String GROUP_TWO = "groupTwo";
+    static final String CONFIDENCE_INTERVAL_PROB =
         "confidenceIntervalProb";
     private static final String INCLUDE_ALL = "includeAll";
+
+    static final double DEFAULT_CONFIDENCE_INTERVAL_PROB = 0.95;
 
     private DataColumnSpecFilterConfiguration m_testColumns;
     private String m_groupingColumn;
@@ -80,7 +82,7 @@ public class TwoSampleTTestNodeSettings {
 	    m_groupingColumn = null;
 	    m_groupOne = null;
 	    m_groupTwo = null;
-	    m_confidenceIntervalProb = 0.95;
+	    m_confidenceIntervalProb = DEFAULT_CONFIDENCE_INTERVAL_PROB;
 	}
 
 	/** Saves current parameters to settings object.
@@ -119,7 +121,7 @@ public class TwoSampleTTestNodeSettings {
         m_groupOne = settings.getString(GROUP_ONE, null);
         m_groupTwo = settings.getString(GROUP_TWO, null);
         m_confidenceIntervalProb = settings.getDouble(CONFIDENCE_INTERVAL_PROB,
-                0.95);
+            DEFAULT_CONFIDENCE_INTERVAL_PROB);
     }
 
 
