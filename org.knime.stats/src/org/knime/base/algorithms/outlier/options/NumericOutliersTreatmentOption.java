@@ -71,7 +71,7 @@ public enum NumericOutliersTreatmentOption {
         FILTER("Remove outlier rows"),
 
         /** Indicates that only rows containing outliers have to be retained. */
-        @Label(value = "Retain non-outlier rows", description = "Retains only those rows of the input data that "
+        @Label(value = "Remove non-outlier rows", description = "Retains only those rows of the input data that "
             + "contain at least one outlier in any of the selected columns.")
         RETAIN("Remove non-outlier rows");
 

@@ -73,7 +73,7 @@ import org.knime.node.parameters.updates.EffectPredicateProvider;
 import org.knime.node.parameters.updates.ParameterReference;
 import org.knime.node.parameters.updates.ValueReference;
 import org.knime.node.parameters.widget.choices.Label;
-import org.knime.node.parameters.widget.choices.RadioButtonsWidget;
+import org.knime.node.parameters.widget.choices.ValueSwitchWidget;
 import org.knime.node.parameters.widget.choices.filter.ColumnFilter;
 import org.knime.node.parameters.widget.choices.filter.ColumnFilterWidget;
 import org.knime.node.parameters.widget.choices.util.AllColumnsProvider;
@@ -143,7 +143,7 @@ class NumericOutliersNodeParameters implements NodeParameters {
     @Layout(GeneralSettingsSection.class)
     @Widget(title = "Quartile calculation", description = "Allows to specify how the quartiles are computed.")
     @ValueReference(QuartileCalculationRef.class)
-    @RadioButtonsWidget
+    @ValueSwitchWidget
     @Persistor(HeuristicPersistor.class)
     QuartileCalculationMethod m_quartileCalculation = QuartileCalculationMethod.HEURISTIC;
 
@@ -357,11 +357,6 @@ class NumericOutliersNodeParameters implements NodeParameters {
     }
 
     enum QuartileCalculationMethod {
-        @Label(value = "Use heuristic (memory friendly)", description = "This option ensure that the quartiles are "
-            + "calculated using a heuristical approach. This choice is recommended for large data sets due to its low "
-            + "memory requirements. However, for small data sets the results of this approach can be quite far away "
-            + "from the accurate results.")
-        HEURISTIC,
         @Label(value = "Full data estimate", description = """
                 This option typically creates more accurate results than its counterpart, but also requires far more
                 additional memory. Therefore, we recommend this option for smaller data sets. <br/>
@@ -370,7 +365,12 @@ class NumericOutliersNodeParameters implements NodeParameters {
                 (LEGACY, R_1, ..., R_9). A detailed explanation of the different types can be found
                 <a href="https://en.wikipedia.org/wiki/Quantile#Estimating_quantiles_from_a_sample">here</a>.
                 """)
-        FULL_DATA
+        FULL_DATA, //
+        @Label(value = "Use heuristic", description = "This option ensure that the quartiles are "
+            + "calculated using a heuristical approach. This choice is recommended for large data sets due to its low "
+            + "memory requirements. However, for small data sets the results of this approach can be quite far away "
+            + "from the accurate results.")
+        HEURISTIC;
     }
 
 }

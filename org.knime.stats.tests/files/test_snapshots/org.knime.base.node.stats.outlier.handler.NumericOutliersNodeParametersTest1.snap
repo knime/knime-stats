@@ -338,14 +338,14 @@
           },
           "quartileCalculation" : {
             "oneOf" : [ {
-              "const" : "HEURISTIC",
-              "title" : "Use heuristic (memory friendly)"
-            }, {
               "const" : "FULL_DATA",
               "title" : "Full data estimate"
+            }, {
+              "const" : "HEURISTIC",
+              "title" : "Use heuristic"
             } ],
             "title" : "Quartile calculation",
-            "description" : "Allows to specify how the quartiles are computed.\n<ul>\n<li><b>Use heuristic (memory friendly)</b>: This option ensure that the quartiles are calculated using a heuristical approach. This choice is recommended for large data sets due to its low memory requirements. However, for small data sets the results of this approach can be quite far away from the accurate results.</li>\n<li><b>Full data estimate</b>: This option typically creates more accurate results than its counterpart, but also requires far more\nadditional memory. Therefore, we recommend this option for smaller data sets. <br/>\nSince the value of the quartiles often lies between two observations, this option additionally allows\nto specify how the actual value is computed, which is encoded by the various estimation types\n(LEGACY, R_1, ..., R_9). A detailed explanation of the different types can be found\n<a href=\"https://en.wikipedia.org/wiki/Quantile#Estimating_quantiles_from_a_sample\">here</a>.\n</li>\n</ul>",
+            "description" : "Allows to specify how the quartiles are computed.\n<ul>\n<li><b>Full data estimate</b>: This option typically creates more accurate results than its counterpart, but also requires far more\nadditional memory. Therefore, we recommend this option for smaller data sets. <br/>\nSince the value of the quartiles often lies between two observations, this option additionally allows\nto specify how the actual value is computed, which is encoded by the various estimation types\n(LEGACY, R_1, ..., R_9). A detailed explanation of the different types can be found\n<a href=\"https://en.wikipedia.org/wiki/Quantile#Estimating_quantiles_from_a_sample\">here</a>.\n</li>\n<li><b>Use heuristic</b>: This option ensure that the quartiles are calculated using a heuristical approach. This choice is recommended for large data sets due to its low memory requirements. However, for small data sets the results of this approach can be quite far away from the accurate results.</li>\n</ul>",
             "default" : "HEURISTIC"
           },
           "replacementStrategy" : {
@@ -369,10 +369,10 @@
               "title" : "Remove outlier rows"
             }, {
               "const" : "RETAIN",
-              "title" : "Retain non-outlier rows"
+              "title" : "Remove non-outlier rows"
             } ],
             "title" : "Treatment option",
-            "description" : "Defines three different strategies to treat outliers:\n<ul>\n<li><b>Replace outlier values</b>: Allows to replace outliers based on the selected \"Replacement strategy\".</li>\n<li><b>Remove outlier rows</b>: Removes all rows from the input data that contain in any of the selected columns at least one outlier.</li>\n<li><b>Retain non-outlier rows</b>: Retains only those rows of the input data that contain at least one outlier in any of the selected columns.</li>\n</ul>",
+            "description" : "Defines three different strategies to treat outliers:\n<ul>\n<li><b>Replace outlier values</b>: Allows to replace outliers based on the selected \"Replacement strategy\".</li>\n<li><b>Remove outlier rows</b>: Removes all rows from the input data that contain in any of the selected columns at least one outlier.</li>\n<li><b>Remove non-outlier rows</b>: Retains only those rows of the input data that contain at least one outlier in any of the selected columns.</li>\n</ul>",
             "default" : "REPLACE"
           },
           "updateDomain" : {
@@ -423,8 +423,7 @@
         "type" : "Control",
         "scope" : "#/properties/model/properties/quartileCalculation",
         "options" : {
-          "format" : "radio",
-          "radioLayout" : "vertical"
+          "format" : "valueSwitch"
         }
       }, {
         "type" : "Control",
