@@ -2,7 +2,7 @@
  * ------------------------------------------------------------------------
  *
  *  Copyright by KNIME AG, Zurich, Switzerland
- *  Website: http://www.knime.org; Email: contact@knime.org
+ *  Website: http://www.knime.com; Email: contact@knime.com
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -44,57 +44,71 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 28, 2019 (Mark Ortmann, KNIME GmbH, Berlin, Germany): created
+ *   Nov 3, 2025 (magnus): created
  */
-package org.knime.base.node.stats.transformation.lda2.settings;
+package org.knime.base.node.stats.transformation.lda2;
 
-import org.knime.base.node.mine.transformation.settings.TransformationComputeSettings;
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
-import org.knime.core.node.defaultnodesettings.SettingsModelString;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Supplier;
+
+import org.knime.core.data.DataColumnSpec;
+import org.knime.core.data.DataValue;
+import org.knime.core.data.DoubleValue;
+import org.knime.node.parameters.NodeParametersInput;
+import org.knime.node.parameters.updates.ParameterReference;
+import org.knime.node.parameters.widget.choices.ColumnChoicesProvider;
 
 /**
- * Class storing the LDA compute settings.
+ * Provides the input columns for LDA nodes, excluding the class column and filtering for compatible types.
  *
- * @author Mark Ortmann, KNIME GmbH, Berlin, Germany
+ * @author Magnus Gohm, KNIME AG, Konstanz, Germany
  */
-public final class LDAComputeSettings extends TransformationComputeSettings {
+public abstract class LDAInputColumnsChoicesProvider implements ColumnChoicesProvider {
 
-    /** The configuration key for the class column. */
-    public static final String CLASS_COL_CFG = "class_column";
+    private Supplier<String> m_classColumnSupplier;
 
-    /**
-     * Settings model for the class column. Must have a calculated domain and contain at least two distinct classes to
-     * make the LDA function properly.
-     */
-    private final SettingsModelString m_classCol = new SettingsModelString(CLASS_COL_CFG, null);
+    private Class<? extends ParameterReference<String>> m_classColumnRef;
 
     /**
-     * Returns the model storing the selected class column
+     * Creates a new LDA input columns choices provider.
      *
-     * @return model storing the class column
+     * @param classColumnRef the parameter reference for the class column
      */
-    public SettingsModelString getClassModel() {
-        return m_classCol;
+    protected LDAInputColumnsChoicesProvider(final Class<? extends ParameterReference<String>> classColumnRef) {
+       m_classColumnRef = classColumnRef;
     }
 
     @Override
-    public void validateSettings(final NodeSettingsRO settings) throws InvalidSettingsException {
-        super.validateSettings(settings);
-        m_classCol.validateSettings(settings);
+    public void init(final StateProviderInitializer initializer) {
+        initializer.computeBeforeOpenDialog();
+        initializer.computeOnValueChange(m_classColumnRef);
+        m_classColumnSupplier = initializer.getValueSupplier(m_classColumnRef);
     }
 
     @Override
-    public void loadValidatedSettingsFrom(final NodeSettingsRO settings) throws InvalidSettingsException {
-        super.loadValidatedSettingsFrom(settings);
-        m_classCol.loadSettingsFrom(settings);
+    public List<DataColumnSpec> columnChoices(final NodeParametersInput context) {
+        String classCol = m_classColumnSupplier.get();
+        if (classCol == null || classCol.isEmpty()) {
+            return List.of();
+        }
+
+        final var specOpt = context.getInTableSpec(0);
+        if (specOpt.isEmpty()) {
+            return List.of();
+        }
+
+        return specOpt.get().stream().filter(col -> !col.getName().equals(classCol))
+                .filter(this::isIncluded).toList();
     }
 
-    @Override
-    public void saveSettingsTo(final NodeSettingsWO settings) {
-        super.saveSettingsTo(settings);
-        m_classCol.saveSettingsTo(settings);
+    private boolean isIncluded(final DataColumnSpec col) {
+        return hasCompatibleType(col, List.of(DoubleValue.class));
+    }
+
+    private static boolean hasCompatibleType(final DataColumnSpec col,
+        final Collection<Class<? extends DataValue>> valueClasses) {
+        return valueClasses.stream().anyMatch(valueClass -> col.getType().isCompatible(valueClass));
     }
 
 }
