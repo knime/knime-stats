@@ -62,7 +62,7 @@ import org.knime.core.node.defaultnodesettings.SettingsModelString;
 public final class LDAComputeSettings extends TransformationComputeSettings {
 
     /** The configuration key for the class column. */
-    private static final String CLASS_COL_CFG = "class_column";
+    public static final String CLASS_COL_CFG = "class_column";
 
     /**
      * Settings model for the class column. Must have a calculated domain and contain at least two distinct classes to
