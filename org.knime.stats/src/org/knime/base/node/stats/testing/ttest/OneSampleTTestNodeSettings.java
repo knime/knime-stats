@@ -57,10 +57,11 @@ import org.knime.core.node.util.filter.column.DataTypeColumnFilter;
  * The settings object for the "One-Sample T-Test" Node.
  */
 public class OneSampleTTestNodeSettings {
-    private static final String TEST_COLUMNS = "testColumns";
-    private static final String TEST_VALUE = "testValue";
-    private static final String CONFIDENCE_INTERVAL_PROB =
+    static final String TEST_COLUMNS = "testColumns";
+    static final String TEST_VALUE = "testValue";
+    static final String CONFIDENCE_INTERVAL_PROB =
         "confidenceIntervalProb";
+    static final double DEFAULT_CONFIDENCE_INTERVAL_PROB = 0.95;
 
     private DataColumnSpecFilterConfiguration m_testColumns;
     private double m_testValue;
@@ -72,7 +73,7 @@ public class OneSampleTTestNodeSettings {
 	public OneSampleTTestNodeSettings() {
 	    m_testColumns = null;
 	    m_testValue = 0;
-	    m_confidenceIntervalProb = 0.95;
+	    m_confidenceIntervalProb = DEFAULT_CONFIDENCE_INTERVAL_PROB;
 	    m_testColumns = new DataColumnSpecFilterConfiguration(TEST_COLUMNS,
                 new DataTypeColumnFilter(DoubleValue.class));
 	}
@@ -107,7 +108,7 @@ public class OneSampleTTestNodeSettings {
         m_testColumns.loadConfigurationInDialog(settings, spec);
         m_testValue = settings.getDouble(TEST_VALUE, 0);
         m_confidenceIntervalProb = settings.getDouble(CONFIDENCE_INTERVAL_PROB,
-                0.95);
+                DEFAULT_CONFIDENCE_INTERVAL_PROB);
     }
 
 

@@ -44,58 +44,137 @@
  */
 package org.knime.base.node.stats.testing.ttest;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
+import org.knime.node.impl.description.ViewDescription;
 
 /**
  * <code>NodeFactory</code> for the "One-Sample T-Test" Node.
  *
- *
  * @author Heiko Hofer
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
+@SuppressWarnings("restriction")
 public class OneSampleTTestNodeFactory extends
-    NodeFactory<OneSampleTTestNodeModel> {
+    NodeFactory<OneSampleTTestNodeModel> implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public OneSampleTTestNodeModel createNodeModel() {
         return new OneSampleTTestNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 1;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<OneSampleTTestNodeModel> createNodeView(final int viewIndex,
             final OneSampleTTestNodeModel nodeModel) {
     	return new OneSampleTTestNodeView(nodeModel);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasDialog() {
         return true;
     }
 
+    private static final String NODE_NAME = "Single sample t-test";
+    private static final String NODE_ICON = "./onesample_ttest.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            The single sample t-test tests the null hypothesis that the population mean is equal to a given number.
+            """;
+
+    private static final String FULL_DESCRIPTION = """
+            Computes statistics for the single sample t-test, also know as one sample t-test. The single sample
+                t-test tests the null hypothesis that the population mean is equal to a given number.
+            """;
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Data Table", """
+                The Input
+                """)
+    );
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("Single Sample T-Test", """
+                Statistics for the single sample t-test.
+                """),
+            fixedPort("Descriptive Statistics", """
+                Descriptive statistics of the input.
+                """)
+    );
+
+    private static final List<ViewDescription> VIEWS = List.of(
+            new ViewDescription("Test statistics", """
+                Tables with descriptive statistics of the input columns and test statistics of the single sample t-test.
+                """)
+    );
+
+    private static final List<String> KEYWORDS = List.of( //
+		"ttest", //
+		"t test" //
+    );
+
     /**
-     * {@inheritDoc}
+     * @since 5.9
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new OneSampleTTestNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, OneSampleTTestNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            OneSampleTTestNodeParameters.class,
+            VIEWS,
+            NodeType.Manipulator,
+            KEYWORDS,
+            null
+        );
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, OneSampleTTestNodeParameters.class));
     }
 
 }
