@@ -56,6 +56,7 @@ import org.knime.base.node.mine.transformation.settings.TransformationReverseSet
 import org.knime.base.node.stats.transformation.lda2.LDAInputColumnsChoicesProvider;
 import org.knime.base.node.stats.transformation.lda2.settings.LDAComputeSettings;
 import org.knime.base.node.stats.transformation.lda2.util.LDAUtils;
+import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.NominalValue;
 import org.knime.core.webui.node.dialog.defaultdialog.internal.widget.TypedStringFilterWidgetInternal;
 import org.knime.core.webui.node.dialog.defaultdialog.util.updates.StateComputationFailureException;
@@ -114,6 +115,9 @@ final class LDA2NodeParameters implements NodeParameters {
     @ValueReference(InputColumnsRef.class)
     ColumnFilter m_inputColumns = new ColumnFilter();
 
+    @TextMessage(TargetDimensionError.class)
+    Void m_targetDimensionError;
+
     @Widget(title = "Remove original data columns", description = """
             If checked, the columns containing the input data are removed from the output table.
             """)
@@ -126,9 +130,6 @@ final class LDA2NodeParameters implements NodeParameters {
             """)
     @Persist(configKey = TransformationApplySettings.FAIL_ON_MISSING_CFG)
     boolean m_failOnMissingValues;
-
-    @TextMessage(TargetDimensionError.class)
-    Void m_targetDimensionError;
 
     static final class TargetDimensionRef implements ParameterReference<Integer> {
     }
@@ -182,23 +183,13 @@ final class LDA2NodeParameters implements NodeParameters {
         public Optional<Message> computeState(final NodeParametersInput parametersInput)
             throws StateComputationFailureException {
             final var targetDimension = m_targetDimensionSupplier.get();
-            if (targetDimension == null) {
-                return Optional.empty();
-            }
-
             final var classCol = m_classColumnSupplier.get();
-            if (classCol == null || classCol.isEmpty()) {
-                return Optional.empty();
-            }
 
-            final var specOpt = parametersInput.getInTableSpec(0);
+            final var specOpt = checkInputValues(targetDimension, classCol, parametersInput);
             if (specOpt.isEmpty()) {
                 return Optional.empty();
             }
             final var spec = specOpt.get();
-
-            final var selectedColumns = m_inputColumnsSupplier.get().filterFromFullSpec(spec);
-            final var numberOfSelectedColumns = selectedColumns == null ? 0 : selectedColumns.length;
 
             final var domainOpt = Optional.ofNullable(spec.getColumnSpec(classCol));
             if (domainOpt.isEmpty()) {
@@ -211,6 +202,8 @@ final class LDA2NodeParameters implements NodeParameters {
                 selectedClasses = domain.getValues().size();
             }
 
+            final var selectedColumns = m_inputColumnsSupplier.get().filterFromFullSpec(spec);
+            final var numberOfSelectedColumns = selectedColumns == null ? 0 : selectedColumns.length;
             final var maximumDim = Math.min(selectedClasses - 1, numberOfSelectedColumns);
             if (maximumDim <= 0) {
                 return Optional.of(new TextMessage.Message("Maximum dimension is zero",
@@ -224,6 +217,19 @@ final class LDA2NodeParameters implements NodeParameters {
             }
 
             return Optional.empty();
+        }
+
+        private static Optional<DataTableSpec> checkInputValues(final Integer targetDimension,
+            final String classCol, final NodeParametersInput parametersInput) {
+            if (targetDimension == null) {
+                return Optional.empty();
+            }
+
+            if (classCol == null || classCol.isEmpty()) {
+                return Optional.empty();
+            }
+
+            return parametersInput.getInTableSpec(0);
         }
 
     }

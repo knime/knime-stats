@@ -211,6 +211,13 @@
       "providedOptions" : [ "possibleValues" ]
     }, {
       "type" : "Control",
+      "id" : "#/properties/model/properties/targetDimensionError",
+      "options" : {
+        "format" : "textMessage"
+      },
+      "providedOptions" : [ "message" ]
+    }, {
+      "type" : "Control",
       "scope" : "#/properties/model/properties/removeOriginalColumns",
       "options" : {
         "format" : "checkbox"
@@ -221,13 +228,6 @@
       "options" : {
         "format" : "checkbox"
       }
-    }, {
-      "type" : "Control",
-      "id" : "#/properties/model/properties/targetDimensionError",
-      "options" : {
-        "format" : "textMessage"
-      },
-      "providedOptions" : [ "message" ]
     } ]
   },
   "persist" : {
@@ -245,13 +245,13 @@
           "inputColumns" : {
             "configPaths" : [ [ "used_columns", "filter-type" ], [ "used_columns", "included_names" ], [ "used_columns", "excluded_names" ], [ "used_columns", "enforce_option" ], [ "used_columns", "name_pattern", "pattern" ], [ "used_columns", "name_pattern", "type" ], [ "used_columns", "name_pattern", "caseSensitive" ], [ "used_columns", "name_pattern", "excludeMatching" ] ]
           },
+          "targetDimensionError" : { },
           "removeOriginalColumns" : {
             "configKey" : "remove_used_columns"
           },
           "failOnMissingValues" : {
             "configKey" : "fail_on_missings"
-          },
-          "targetDimensionError" : { }
+          }
         }
       }
     }

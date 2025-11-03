@@ -46,13 +46,11 @@
 
 package org.knime.base.node.stats.transformation.lda2.apply;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.knime.base.node.mine.transformation.port.TransformationPortObjectSpec;
 import org.knime.base.node.mine.transformation.settings.TransformationApplySettings;
 import org.knime.base.node.mine.transformation.settings.TransformationReverseSettings;
-import org.knime.base.node.stats.transformation.lda2.util.LDAUtils;
 import org.knime.core.webui.node.dialog.defaultdialog.util.updates.StateComputationFailureException;
 import org.knime.node.parameters.NodeParameters;
 import org.knime.node.parameters.NodeParametersInput;
@@ -62,9 +60,8 @@ import org.knime.node.parameters.persistence.Persist;
 import org.knime.node.parameters.updates.ParameterReference;
 import org.knime.node.parameters.updates.StateProvider;
 import org.knime.node.parameters.updates.ValueReference;
-import org.knime.node.parameters.widget.message.TextMessage;
-import org.knime.node.parameters.widget.message.TextMessage.Message;
 import org.knime.node.parameters.widget.number.NumberInputWidget;
+import org.knime.node.parameters.widget.number.NumberInputWidgetValidation.MaxValidation;
 import org.knime.node.parameters.widget.number.NumberInputWidgetValidation.MinValidation.IsPositiveIntegerValidation;
 
 /**
@@ -81,7 +78,8 @@ final class LDAApplyNodeParameters implements NodeParameters {
             Number of dimensions to reduce the input data to. This cannot exceed the number of classes minus
             one or the number of selected columns, depending on which one is smaller.
             """)
-    @NumberInputWidget(minValidation = IsPositiveIntegerValidation.class)
+    @NumberInputWidget(minValidation = IsPositiveIntegerValidation.class,
+        maxValidationProvider = TargetDimensionMaxValidation.class)
     @ValueReference(TargetDimensionRef.class)
     @Persist(configKey = TransformationApplySettings.K_CFG)
     int m_targetDimensions = 1;
@@ -99,13 +97,10 @@ final class LDAApplyNodeParameters implements NodeParameters {
     @Persist(configKey = TransformationApplySettings.FAIL_ON_MISSING_CFG)
     boolean m_failOnMissingValues;
 
-    @TextMessage(TargetDimensionError.class)
-    Void m_targetDimensionError;
-
     static final class TargetDimensionRef implements ParameterReference<Integer> {
     }
 
-    static final class TargetDimensionError implements StateProvider<Optional<TextMessage.Message>> {
+    static final class TargetDimensionMaxValidation implements StateProvider<MaxValidation> {
 
         Supplier<Integer> m_targetDimensionSupplier;
 
@@ -117,33 +112,35 @@ final class LDAApplyNodeParameters implements NodeParameters {
         }
 
         @Override
-        public Optional<Message> computeState(final NodeParametersInput parametersInput)
+        public MaxValidation computeState(final NodeParametersInput parametersInput)
             throws StateComputationFailureException {
             final var targetDimension = m_targetDimensionSupplier.get();
             if (targetDimension == null) {
-                return Optional.empty();
+                return null;
             }
 
             final var modelSpecOpt = parametersInput.getInPortSpec(LDAApplyNodeModel.MODEL_IN_PORT);
             if (modelSpecOpt.isEmpty()) {
-                return Optional.empty();
+                return null;
             }
 
             final var modelSpec = modelSpecOpt.get();
             if (!(modelSpec instanceof TransformationPortObjectSpec)) {
-                return Optional.empty();
+                return null;
             }
 
             final var transformationSpec = (TransformationPortObjectSpec) modelSpec;
             final var maxDimToReduceTo = transformationSpec.getMaxDimToReduceTo();
 
-            if (targetDimension > maxDimToReduceTo) {
-                return Optional.of(new TextMessage.Message("Target dimension too high",
-                    LDAUtils.createTooHighDimBaseWarning(targetDimension, maxDimToReduceTo),
-                    TextMessage.MessageType.ERROR));
-            }
+            return new MaxValidation() {
 
-            return Optional.empty();
+                @Override
+                protected double getMax() {
+                    return maxDimToReduceTo;
+                }
+
+            };
+
         }
 
     }

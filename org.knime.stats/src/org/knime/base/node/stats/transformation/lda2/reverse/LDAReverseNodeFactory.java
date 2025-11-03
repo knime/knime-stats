@@ -48,13 +48,108 @@
  */
 package org.knime.base.node.stats.transformation.lda2.reverse;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
 import org.knime.base.node.mine.transformation.pca.reverse.PCA2ReverseNodeFactory;
+import org.knime.core.node.NodeDescription;
+import org.knime.core.node.NodeDialogPane;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  * <code>NodeFactory</code> for the "Linear Discriminant Analysis Invert" node.
  *
  * @author Mark Ortmann, KNIME GmbH, Berlin, Germany
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public final class LDAReverseNodeFactory extends PCA2ReverseNodeFactory {
+@SuppressWarnings("restriction")
+public final class LDAReverseNodeFactory extends PCA2ReverseNodeFactory
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
+
+    private static final String NODE_NAME = "Linear Discriminant Analysis Inversion";
+
+    private static final String NODE_ICON = "./lda_inverse.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            This node inverts a linear discriminant analysis transformation.
+            """;
+
+    private static final String FULL_DESCRIPTION = """
+            This node inverts the transformation applied by the <i>Linear Discriminant Analysis Apply</i> node. Data
+                in the space resulting from the <a
+                href="http://en.wikipedia.org/wiki/Linear_discriminant_analysis">Linear Discriminant Analysis (LDA)</a>
+                are transformed back to the original space. Information that was lost by the LDA transformation cannot
+                be recovered.
+            """;
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Transformation model", """
+                The original model that was used to transform the data.
+                """),
+            fixedPort("Table to transform", """
+                Input table containing transformed data.
+                """)
+    );
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("Data in original space", """
+                The reconstructed data from inverting the LDA transformation, and possibly the input data depending on
+                the configuration.
+                """)
+    );
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialogPane createNodeDialogPane() {
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, LDAReverseNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            LDAReverseNodeParameters.class,
+            null,
+            NodeType.Manipulator,
+            List.of(),
+            null
+        );
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, LDAReverseNodeParameters.class));
+    }
 
 }

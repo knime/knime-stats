@@ -76,7 +76,7 @@ public abstract class LDAInputColumnsChoicesProvider implements ColumnChoicesPro
      * @param classColumnRef the parameter reference for the class column
      */
     protected LDAInputColumnsChoicesProvider(final Class<? extends ParameterReference<String>> classColumnRef) {
-       m_classColumnRef = classColumnRef;
+        m_classColumnRef = classColumnRef;
     }
 
     @Override
@@ -99,10 +99,10 @@ public abstract class LDAInputColumnsChoicesProvider implements ColumnChoicesPro
         }
 
         return specOpt.get().stream().filter(col -> !col.getName().equals(classCol))
-                .filter(this::isIncluded).toList();
+                .filter(LDAInputColumnsChoicesProvider::isIncluded).toList();
     }
 
-    private boolean isIncluded(final DataColumnSpec col) {
+    private static boolean isIncluded(final DataColumnSpec col) {
         return hasCompatibleType(col, List.of(DoubleValue.class));
     }
 

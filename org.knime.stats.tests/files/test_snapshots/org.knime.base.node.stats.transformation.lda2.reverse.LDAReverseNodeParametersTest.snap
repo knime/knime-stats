@@ -1,27 +1,25 @@
 {
   "data" : {
     "model" : {
-      "targetDimensions" : 1,
-      "classColumn" : "Cluster Membership",
-      "inputColumns" : {
+      "columnFilter" : {
         "mode" : "MANUAL",
         "patternFilter" : {
           "pattern" : "",
-          "isCaseSensitive" : true,
+          "isCaseSensitive" : false,
           "isInverted" : false
         },
         "manualFilter" : {
-          "manuallySelected" : [ "Universe_0_0", "Universe_0_1", "Universe_1_0", "Universe_1_1" ],
+          "manuallySelected" : [ ],
           "manuallyDeselected" : [ ],
-          "includeUnknownColumns" : true
+          "includeUnknownColumns" : false
         },
         "typeFilter" : {
           "selectedTypes" : [ ],
           "typeDisplays" : [ ]
         }
       },
-      "removeOriginalColumns" : false,
-      "failOnMissingValues" : false
+      "removeSelectedColumns" : false,
+      "failOnMissings" : false
     }
   },
   "schema" : {
@@ -30,18 +28,7 @@
       "model" : {
         "type" : "object",
         "properties" : {
-          "classColumn" : {
-            "type" : "string",
-            "title" : "Class column",
-            "description" : "Column containing class information.\n"
-          },
-          "failOnMissingValues" : {
-            "type" : "boolean",
-            "title" : "Fail if missing values are encountered",
-            "description" : "If checked, execution fails when the selected columns contain missing values. Otherwise, rows\ncontaining missing values are ignored during computation.\n",
-            "default" : false
-          },
-          "inputColumns" : {
+          "columnFilter" : {
             "type" : "object",
             "properties" : {
               "manualFilter" : {
@@ -131,8 +118,8 @@
                 }
               }
             },
-            "title" : "Column selection",
-            "description" : "Columns containing the input data.\n",
+            "title" : "Columns",
+            "description" : "Select <b>all</b> columns containing the projected data.\n",
             "default" : {
               "mode" : "MANUAL",
               "patternFilter" : {
@@ -151,21 +138,17 @@
               }
             }
           },
-          "removeOriginalColumns" : {
+          "failOnMissings" : {
             "type" : "boolean",
-            "title" : "Remove original data columns",
-            "description" : "If checked, the columns containing the input data are removed from the output table.\n",
+            "title" : "Fail if missing values are encountered",
+            "description" : "If checked, execution fails when the selected columns contain missing values. Otherwise, rows\ncontaining missing values are ignored during computation.\n",
             "default" : false
           },
-          "targetDimensionError" : {
-            "type" : "object"
-          },
-          "targetDimensions" : {
-            "type" : "integer",
-            "format" : "int32",
-            "title" : "Target dimensions",
-            "description" : "Number of dimensions to reduce the input data to. This cannot exceed the number of classes minus\none or the number of selected columns, depending on which one is smaller.\n",
-            "default" : 1
+          "removeSelectedColumns" : {
+            "type" : "boolean",
+            "title" : "Remove selected columns",
+            "description" : "If checked, the selected columns are removed in the output table.\n",
+            "default" : false
           }
         }
       }
@@ -174,35 +157,7 @@
   "ui_schema" : {
     "elements" : [ {
       "type" : "Control",
-      "scope" : "#/properties/model/properties/targetDimensions",
-      "options" : {
-        "validation" : {
-          "max" : {
-            "errorMessage" : "The value must not exceed 2147483647.",
-            "parameters" : {
-              "isExclusive" : false,
-              "max" : 2.147483647E9
-            }
-          },
-          "min" : {
-            "errorMessage" : "The value must be at least 1.",
-            "parameters" : {
-              "isExclusive" : false,
-              "min" : 1.0
-            }
-          }
-        }
-      }
-    }, {
-      "type" : "Control",
-      "scope" : "#/properties/model/properties/classColumn",
-      "options" : {
-        "format" : "dropDown"
-      },
-      "providedOptions" : [ "possibleValues" ]
-    }, {
-      "type" : "Control",
-      "scope" : "#/properties/model/properties/inputColumns",
+      "scope" : "#/properties/model/properties/columnFilter",
       "options" : {
         "format" : "typedStringFilter",
         "unknownValuesText" : "Any unknown column",
@@ -212,20 +167,13 @@
       "providedOptions" : [ "possibleValues" ]
     }, {
       "type" : "Control",
-      "id" : "#/properties/model/properties/targetDimensionError",
-      "options" : {
-        "format" : "textMessage"
-      },
-      "providedOptions" : [ "message" ]
-    }, {
-      "type" : "Control",
-      "scope" : "#/properties/model/properties/removeOriginalColumns",
+      "scope" : "#/properties/model/properties/removeSelectedColumns",
       "options" : {
         "format" : "checkbox"
       }
     }, {
       "type" : "Control",
-      "scope" : "#/properties/model/properties/failOnMissingValues",
+      "scope" : "#/properties/model/properties/failOnMissings",
       "options" : {
         "format" : "checkbox"
       }
@@ -237,20 +185,13 @@
       "model" : {
         "type" : "object",
         "properties" : {
-          "targetDimensions" : {
-            "configKey" : "number_of_dimensions"
-          },
-          "classColumn" : {
-            "configKey" : "class_column"
-          },
-          "inputColumns" : {
+          "columnFilter" : {
             "configPaths" : [ [ "used_columns", "filter-type" ], [ "used_columns", "included_names" ], [ "used_columns", "excluded_names" ], [ "used_columns", "enforce_option" ], [ "used_columns", "name_pattern", "pattern" ], [ "used_columns", "name_pattern", "type" ], [ "used_columns", "name_pattern", "caseSensitive" ], [ "used_columns", "name_pattern", "excludeMatching" ] ]
           },
-          "targetDimensionError" : { },
-          "removeOriginalColumns" : {
+          "removeSelectedColumns" : {
             "configKey" : "remove_used_columns"
           },
-          "failOnMissingValues" : {
+          "failOnMissings" : {
             "configKey" : "fail_on_missings"
           }
         }
@@ -258,21 +199,7 @@
     }
   },
   "initialUpdates" : [ {
-    "scope" : "#/properties/model/properties/classColumn",
-    "providedOptionName" : "possibleValues",
-    "values" : [ {
-      "indices" : [ ],
-      "value" : [ {
-        "id" : "Cluster Membership",
-        "text" : "Cluster Membership",
-        "type" : {
-          "id" : "org.knime.core.data.StringValue",
-          "text" : "String"
-        }
-      } ]
-    } ]
-  }, {
-    "scope" : "#/properties/model/properties/inputColumns",
+    "scope" : "#/properties/model/properties/columnFilter",
     "providedOptionName" : "possibleValues",
     "values" : [ {
       "indices" : [ ],
@@ -306,28 +233,5 @@
         }
       } ]
     } ]
-  }, {
-    "id" : "#/properties/model/properties/targetDimensionError",
-    "providedOptionName" : "message",
-    "values" : [ {
-      "indices" : [ ],
-      "value" : null
-    } ]
-  } ],
-  "globalUpdates" : [ {
-    "trigger" : {
-      "scope" : "#/properties/model/properties/classColumn"
-    },
-    "dependencies" : [ "#/properties/model/properties/classColumn", "#/properties/model/properties/inputColumns", "#/properties/model/properties/targetDimensions" ]
-  }, {
-    "trigger" : {
-      "scope" : "#/properties/model/properties/inputColumns"
-    },
-    "dependencies" : [ "#/properties/model/properties/classColumn", "#/properties/model/properties/inputColumns", "#/properties/model/properties/targetDimensions" ]
-  }, {
-    "trigger" : {
-      "scope" : "#/properties/model/properties/targetDimensions"
-    },
-    "dependencies" : [ "#/properties/model/properties/classColumn", "#/properties/model/properties/inputColumns", "#/properties/model/properties/targetDimensions" ]
   } ]
 }
