@@ -175,7 +175,7 @@
               "title" : "one-sided (left)"
             } ],
             "title" : "p-value",
-            "description" : "Select which p-value should be computed for Spearman's rank correlation coefficient.\n",
+            "description" : "Select which p-value should be computed for Spearman's rank correlation coefficient.\n\n<ul>\n<li><b>two-sided</b>: Corresponds to the probability of obtaining a correlation value that is at least as extreme as the\nobserved correlation.\n</li>\n<li><b>one-sided (right)</b>: Corresponds to the probability of obtaining a correlation value that shows even greater <b>positive</b>\nassociation.\n</li>\n<li><b>one-sided (left)</b>: Corresponds to the probability of obtaining a correlation value that shows even greater <b>negative</b>\nassociation.\n</li>\n</ul>",
             "default" : "TWO_SIDED"
           }
         }
