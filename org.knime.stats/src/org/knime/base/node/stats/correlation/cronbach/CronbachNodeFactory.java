@@ -44,54 +44,131 @@
  */
 package org.knime.base.node.stats.correlation.cronbach;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
+ * Factory for the Cronbach Alpha Node.
  *
  * @author Bernd Wiswedel, University of Konstanz
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public class CronbachNodeFactory extends NodeFactory<CronbachNodeModel> {
+@SuppressWarnings("restriction")
+public class CronbachNodeFactory extends NodeFactory<CronbachNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected NodeDialogPane createNodeDialogPane() {
-        return new CronbachNodeDialogPane();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public CronbachNodeModel createNodeModel() {
         return new CronbachNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<CronbachNodeModel> createNodeView(final int viewIndex, final CronbachNodeModel nodeModel) {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected int getNrNodeViews() {
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected boolean hasDialog() {
         return true;
+    }
+    private static final String NODE_NAME = "Cronbach Alpha";
+
+    private static final String NODE_ICON = "correlation.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            Computes the Cronbach Alpha for all numerical columns based on their variance.
+            """;
+
+    private static final String FULL_DESCRIPTION = """
+            Computes the <a href="http://en.wikipedia.org/wiki/Cronbach%27s_alpha">Cronbach Alpha</a> for all
+                numerical columns based on their variance. Cronbach's Alpha compares the variance of the individual
+                columns with the variance of the sum of all columns. It typically serves as an estimate of the
+                reliability of a psychometric test. Cronbach Alpha is known as an internal consistency estimate of
+                reliability of test scores since it will generally increase as the intercorrelations among test items
+                increase. The theoretical value of alpha varies from zero to 1. However, depending on the estimation
+                procedure used, estimates of alpha can take on any value less than or equal to 1. If Missing Values are
+                encountered the node will fail.
+            """;
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Numeric input data", """
+                Numeric input data to evaluate.
+                """)
+    );
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("Cronbach alpha", """
+                The Cronbach Alpha in a data table with one row/column.
+                """)
+    );
+
+    private static final List<String> KEYWORDS = List.of( //
+        "reliability" //
+    );
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialogPane createNodeDialogPane() {
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, CronbachNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            CronbachNodeParameters.class,
+            null,
+            NodeType.Manipulator,
+            KEYWORDS,
+            null
+        );
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, CronbachNodeParameters.class));
     }
 
 }

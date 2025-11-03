@@ -82,6 +82,8 @@ final class CronbachNodeModel extends NodeModel {
 
 //    private static final NodeLogger LOGGER = NodeLogger.getLogger(CorrelationComputeNodeModel.class);
 
+    static final String CFGKEY_INCLUDE_LIST = "include-list";
+
     private SettingsModelColumnFilter2 m_columnFilterModel;
     /** One input, one output.
      */
@@ -252,7 +254,7 @@ final class CronbachNodeModel extends NodeModel {
      */
     @SuppressWarnings("unchecked")
     static SettingsModelColumnFilter2 createColumnFilterModel() {
-        return new SettingsModelColumnFilter2("include-list", DoubleValue.class);
+        return new SettingsModelColumnFilter2(CFGKEY_INCLUDE_LIST, DoubleValue.class);
     }
 
 }
