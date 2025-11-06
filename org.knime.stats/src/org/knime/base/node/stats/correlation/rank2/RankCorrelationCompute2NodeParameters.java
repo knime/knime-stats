@@ -81,7 +81,7 @@ import org.knime.node.parameters.widget.choices.util.AllColumnsProvider;
 @SuppressWarnings("restriction")
 class RankCorrelationCompute2NodeParameters implements NodeParameters {
 
-    @Widget(title = "Correlation Type", description = """
+    @Widget(title = "Correlation type", description = """
             Choose the type of correlation. The coefficient must be in the range from −1 (100% negative association,
             or perfect inversion) to +1 (100% positive association, or perfect agreement). A value of zero indicates the
              absence of association.
