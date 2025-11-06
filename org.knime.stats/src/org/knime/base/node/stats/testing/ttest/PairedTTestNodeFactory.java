@@ -44,58 +44,139 @@
  */
 package org.knime.base.node.stats.testing.ttest;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
+import org.knime.node.impl.description.ViewDescription;
 
 /**
  * <code>NodeFactory</code> for the "Paired T-Test" Node.
  *
- *
  * @author Heiko Hofer
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
+@SuppressWarnings("restriction")
 public class PairedTTestNodeFactory extends
-    NodeFactory<PairedTTestNodeModel> {
+    NodeFactory<PairedTTestNodeModel> implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public PairedTTestNodeModel createNodeModel() {
         return new PairedTTestNodeModel();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getNrNodeViews() {
         return 1;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public NodeView<PairedTTestNodeModel> createNodeView(final int viewIndex,
             final PairedTTestNodeModel nodeModel) {
     	return new PairedTTestNodeView(nodeModel);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasDialog() {
         return true;
     }
 
+    private static final String NODE_NAME = "Paired t-test";
+
+    private static final String NODE_ICON = "./paired_ttest.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            A paired (or "dependent") t-test is used to compare the means of observations that are not independent
+                of one another.
+            """;
+
+    private static final String FULL_DESCRIPTION = """
+            Computes statistics for the paired sample t-test. It is designed to compare the means of observations
+                that are not independent of one another.
+            """;
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Data Table", """
+                The Input
+                """)
+    );
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("Paired T-Test", """
+                Statistics for the paired t-test.
+                """),
+            fixedPort("Descriptive Statistics", """
+                Descriptive statistics of the input.
+                """)
+    );
+
+    private static final List<ViewDescription> VIEWS = List.of(
+            new ViewDescription("Test statistics", """
+                Tables with descriptive statistics of the input columns and test statistics of the paired t-test.
+                """)
+    );
+
+    private static final List<String> KEYWORDS = List.of( //
+		"ttest", //
+		"t test" //
+    );
+
     /**
-     * {@inheritDoc}
+     * @since 5.9
      */
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new PairedTTestNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, PairedTTestNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            PairedTTestNodeParameters.class,
+            VIEWS,
+            NodeType.Manipulator,
+            KEYWORDS,
+            null
+        );
+    }
+
+    /**
+     * @since 5.9
+     */
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, PairedTTestNodeParameters.class));
     }
 
 }

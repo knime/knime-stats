@@ -1,0 +1,202 @@
+{
+  "data" : {
+    "model" : {
+      "columnPairs" : [ ],
+      "confidenceIntervalProb" : 95.0
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "columnPairs" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "leftColumn" : {
+                  "type" : "string",
+                  "title" : "Left column",
+                  "description" : "Select the left column for this pair."
+                },
+                "rightColumn" : {
+                  "type" : "string",
+                  "title" : "Right column",
+                  "description" : "Select the right column for this pair."
+                }
+              }
+            },
+            "title" : "Test column pairs",
+            "description" : "Define the test column pairs here. Every pair is used to perform a paired t-test separately.\n",
+            "default" : [ ]
+          },
+          "confidenceIntervalProb" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Confidence interval (%)",
+            "description" : "The limits for the confidence interval are computed using this number. The default is 95 which means that\nyou can be 95% confident that the true value of the parameter is in the confidence interval.\n",
+            "default" : 95.0
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/columnPairs",
+      "options" : {
+        "detail" : [ {
+          "type" : "HorizontalLayout",
+          "elements" : [ {
+            "type" : "Control",
+            "scope" : "#/properties/leftColumn",
+            "options" : {
+              "format" : "dropDown"
+            },
+            "providedOptions" : [ "possibleValues" ]
+          }, {
+            "type" : "Control",
+            "scope" : "#/properties/rightColumn",
+            "options" : {
+              "format" : "dropDown"
+            },
+            "providedOptions" : [ "possibleValues" ]
+          } ]
+        } ],
+        "addButtonText" : "Add test column pair",
+        "elementLayout" : "HORIZONTAL_SINGLE_LINE"
+      },
+      "providedOptions" : [ "elementDefaultValue" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/confidenceIntervalProb",
+      "options" : {
+        "validation" : {
+          "max" : {
+            "errorMessage" : "The value must not exceed 99.",
+            "parameters" : {
+              "isExclusive" : false,
+              "max" : 99.0
+            }
+          },
+          "min" : {
+            "errorMessage" : "The value must be at least 1.",
+            "parameters" : {
+              "isExclusive" : false,
+              "min" : 1.0
+            }
+          }
+        }
+      }
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "columnPairs" : {
+            "configPaths" : [ [ "leftColumns" ], [ "rightColumns" ] ]
+          },
+          "confidenceIntervalProb" : {
+            "configPaths" : [ [ "confidenceIntervalProb" ] ]
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/columnPairs",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "leftColumn" : "Universe_0_0",
+        "rightColumn" : "Universe_0_0"
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/columnPairs/items/properties/leftColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/columnPairs/items/properties/rightColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/columnPairs",
+    "providedOptionName" : "elementDefaultValue",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : {
+        "leftColumn" : "Universe_0_0",
+        "rightColumn" : "Universe_0_0"
+      }
+    } ]
+  } ]
+}

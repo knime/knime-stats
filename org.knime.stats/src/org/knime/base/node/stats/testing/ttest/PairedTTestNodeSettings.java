@@ -53,9 +53,9 @@ import org.knime.core.node.NodeSettingsWO;
  * The settings object for the "Paired T-Test" Node.
  */
 public class PairedTTestNodeSettings {
-    private static final String LEFT_COLUMNS = "leftColumns";
-    private static final String RIGHT_COLUMNS = "rightColumns";
-    private static final String CONFIDENCE_INTERVAL_PROB =
+    static final String LEFT_COLUMNS = "leftColumns";
+    static final String RIGHT_COLUMNS = "rightColumns";
+    static final String CONFIDENCE_INTERVAL_PROB =
         "confidenceIntervalProb";
 
     private String[] m_leftColumns;
