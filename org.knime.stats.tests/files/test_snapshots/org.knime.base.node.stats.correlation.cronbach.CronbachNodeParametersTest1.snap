@@ -116,7 +116,7 @@
                 }
               }
             },
-            "title" : "Column Selection",
+            "title" : "Column selection",
             "description" : "Select columns to be included in the Cronbach Alpha calculation.\nOnly numeric columns are available for selection.\n",
             "default" : {
               "mode" : "MANUAL",

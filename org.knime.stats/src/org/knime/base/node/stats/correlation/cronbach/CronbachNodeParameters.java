@@ -66,7 +66,7 @@ import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider.D
 @SuppressWarnings("restriction")
 final class CronbachNodeParameters implements NodeParameters {
 
-    @Widget(title = "Column Selection", description = """
+    @Widget(title = "Column selection", description = """
             Select columns to be included in the Cronbach Alpha calculation.
             Only numeric columns are available for selection.
             """)
