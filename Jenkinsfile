@@ -38,7 +38,6 @@ try {
                 'knime-python-legacy',
                 'knime-r',
                 'knime-stats',
-                'knime-scripting-editor',
                 'knime-xml'
             ],
             ius: ['org.knime.features.browser.cef.feature.group']
