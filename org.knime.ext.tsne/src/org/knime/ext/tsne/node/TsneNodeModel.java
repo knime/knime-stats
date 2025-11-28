@@ -101,43 +101,56 @@ final class TsneNodeModel extends NodeModel {
 
     private static final int DATA_IN_PORT = 0;
 
+    // Configuration keys
+    static final String CFG_THETA = "theta";
+    static final String CFG_OUTPUT_DIMENSIONS = "outputDimensions";
+    static final String CFG_PERPLEXITY = "perplexity";
+    static final String CFG_ITERATIONS = "iterations";
+    static final String CFG_SEED = "seed";
+    static final String CFG_NUMBER_OF_THREADS = "numberOfThreads";
+    static final String CFG_FEATURES = "features";
+    static final String CFG_REMOVE_ORIGINAL_COLUMNS = "removeOriginalColumns";
+    static final String CFG_FAIL_ON_MISSING_VALUES = "failOnMissingValues";
+
+    static final Long DEFAULT_SEED = 1764577116286L;
+
     static SettingsModelDoubleBounded createThetaModel() {
-        return new SettingsModelDoubleBounded("theta", 0.5, 0, 1);
+        return new SettingsModelDoubleBounded(CFG_THETA, 0.5, 0, 1);
     }
 
     static SettingsModelIntegerBounded createOutputDimensionsModel() {
-        return new SettingsModelIntegerBounded("outputDimensions", 2, 1, Integer.MAX_VALUE);
+        return new SettingsModelIntegerBounded(CFG_OUTPUT_DIMENSIONS, 2, 1, Integer.MAX_VALUE);
     }
 
     static SettingsModelDoubleBounded createPerplexityModel() {
-        return new SettingsModelDoubleBounded("perplexity", 30, 1e-5, Double.MAX_VALUE);
+        return new SettingsModelDoubleBounded(CFG_PERPLEXITY, 30, 1e-5, Double.MAX_VALUE);
     }
 
     static SettingsModelIntegerBounded createIterationsModel() {
-        return new SettingsModelIntegerBounded("iterations", 1000, 1, Integer.MAX_VALUE);
+        return new SettingsModelIntegerBounded(CFG_ITERATIONS, 1000, 1, Integer.MAX_VALUE);
     }
 
     static SettingsModelSeed createSeedModel() {
-        return new SettingsModelSeed("seed", System.currentTimeMillis(), false);
+        return new SettingsModelSeed(CFG_SEED, DEFAULT_SEED, false);
     }
 
     static SettingsModelIntegerBounded createNumberOfThreadsModel() {
-        return new SettingsModelIntegerBounded("numberOfThreads", Runtime.getRuntime().availableProcessors(), 1,
+        return new SettingsModelIntegerBounded(CFG_NUMBER_OF_THREADS, Runtime.getRuntime().availableProcessors(), 1,
             Integer.MAX_VALUE);
     }
 
     @SuppressWarnings("unchecked")
     static SettingsModelColumnFilter2 createFeaturesModel() {
         // TODO support more data types
-        return new SettingsModelColumnFilter2("features", DoubleValue.class);
+        return new SettingsModelColumnFilter2(CFG_FEATURES, DoubleValue.class);
     }
 
     static SettingsModelBoolean createRemoveOriginalColumnsModel() {
-        return new SettingsModelBoolean("removeOriginalColumns", false);
+        return new SettingsModelBoolean(CFG_REMOVE_ORIGINAL_COLUMNS, false);
     }
 
     static SettingsModelBoolean createFailOnMissingValuesModel() {
-        return new SettingsModelBoolean("failOnMissingValues", false);
+        return new SettingsModelBoolean(CFG_FAIL_ON_MISSING_VALUES, false);
     }
 
     private final SettingsModelDoubleBounded m_theta = createThetaModel();

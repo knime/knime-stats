@@ -14,7 +14,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>5.9.0</revision>
+		<revision>5.10.0</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
 		<feature-branch-extension.appendArtifactoryProperties>false</feature-branch-extension.appendArtifactoryProperties>
@@ -27,6 +27,7 @@
 		<module>org.knime.stats2</module>
 		<module>org.knime.stats2.tests</module>
 		<module>org.knime.ext.tsne</module>
+	    <module>org.knime.ext.tsne.tests</module>
 		<module>org.knime.features.stats</module>
 		<module>org.knime.features.stats2</module>
 		<module>org.knime.update.stats</module>

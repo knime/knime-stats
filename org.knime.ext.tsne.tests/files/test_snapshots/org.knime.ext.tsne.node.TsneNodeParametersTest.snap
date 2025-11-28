@@ -1,0 +1,466 @@
+{
+  "data" : {
+    "model" : {
+      "features" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : false,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : false
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "outputDimensions" : 2,
+      "iterations" : 1000,
+      "theta" : 0.5,
+      "perplexity" : 30.0,
+      "numberOfThreads" : 8,
+      "removeOriginalColumns" : false,
+      "failOnMissingValues" : false,
+      "useSeed" : false,
+      "seed" : "1764577116286"
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "drawSeed" : {
+            "type" : "object",
+            "title" : "Draw seed",
+            "description" : "Generate a random seed and set it in the seed input above for reproducible runs.\n"
+          },
+          "failOnMissingValues" : {
+            "type" : "boolean",
+            "title" : "Fail if missing values are encountered",
+            "description" : "If this box is checked, the node fails if it encounters a missing value in one of the columns\nused for learning. Otherwise, rows containing missing values in the learning columns will be\nignored during learning and the corresponding embedding consists of missing values.\n",
+            "default" : false
+          },
+          "features" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Columns",
+            "description" : "Select the columns that are included by t-SNE i.e. the original features. Note that currently\nonly numerical columns are supported.\n",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          },
+          "iterations" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Iterations",
+            "description" : "The number of learning iterations to be performed. Too few iterations might result in a bad\nembedding, while too many iterations take a long time to train.\n",
+            "default" : 1000
+          },
+          "numberOfThreads" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Number of threads",
+            "description" : "Number of threads used for parallel computation. The default is set to the number of cores your\ncomputer has and usually doesn't require tuning. Note that no parallelization is used if theta is\nzero because the exact t-SNE algorithm isn't parallelizable.\n",
+            "default" : 8
+          },
+          "outputDimensions" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Dimension(s) to reduce to",
+            "description" : "The number of dimension of the target embedding (for visualization typically 2 or 3).\n",
+            "default" : 2
+          },
+          "perplexity" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Perplexity",
+            "description" : "Informally, the perplexity is the number of neighbors for each datapoint. Small perplexities\nfocus more on local structure while larger perplexities take more global relationships into\naccount. In most cases values in range [5,50] are sufficient. Note: The perplexity must be\nless than or equal to (Number of rows - 1) / 3.\n",
+            "default" : 30.0
+          },
+          "removeOriginalColumns" : {
+            "type" : "boolean",
+            "title" : "Remove original data columns",
+            "description" : "Check this box if you want to remove the columns used to learn the embedding.\n",
+            "default" : false
+          },
+          "seed" : {
+            "type" : "string",
+            "title" : "Seed value",
+            "description" : "The seed value used for random number generation. Use the same seed to get identical results\nacross multiple executions. You can enter a custom value or use the random seed generation\nbutton below.\n",
+            "default" : "1764577116286"
+          },
+          "theta" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Theta",
+            "description" : "Controls the tradeoff between runtime and accuracy of the Barnes-Hut approximation algorithm for\nt-SNE. Lower values result in a more accurate approximation at the cost of higher runtimes and\nmemory demands. A theta of zero results in the originally proposed t-SNE algorithm. However, for\nmost datasets a theta of 0.5 does not result in a perceivable loss of quality.\n",
+            "default" : 0.5
+          },
+          "useSeed" : {
+            "type" : "boolean",
+            "title" : "Use seed",
+            "description" : "When enabled, the t-SNE algorithm will use a fixed seed value, making the results reproducible\nacross multiple executions. When disabled, each execution will produce different random results.\n",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/features",
+      "options" : {
+        "format" : "typedStringFilter",
+        "unknownValuesText" : "Any unknown column",
+        "emptyStateLabel" : "No columns in this list.",
+        "hideTypeFilter" : true
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/outputDimensions",
+      "options" : {
+        "validation" : {
+          "max" : {
+            "errorMessage" : "The value must not exceed 2147483647.",
+            "parameters" : {
+              "isExclusive" : false,
+              "max" : 2.147483647E9
+            }
+          },
+          "min" : {
+            "errorMessage" : "The value must be at least 1.",
+            "parameters" : {
+              "isExclusive" : false,
+              "min" : 1.0
+            }
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/iterations",
+      "options" : {
+        "validation" : {
+          "max" : {
+            "errorMessage" : "The value must not exceed 2147483647.",
+            "parameters" : {
+              "isExclusive" : false,
+              "max" : 2.147483647E9
+            }
+          },
+          "min" : {
+            "errorMessage" : "The value must be at least 1.",
+            "parameters" : {
+              "isExclusive" : false,
+              "min" : 1.0
+            }
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/theta",
+      "options" : {
+        "validation" : {
+          "min" : {
+            "errorMessage" : "The value must be greater than 0.",
+            "parameters" : {
+              "isExclusive" : true,
+              "min" : 0.0
+            }
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/perplexity",
+      "options" : {
+        "validation" : {
+          "min" : {
+            "errorMessage" : "The value must be greater than 0.",
+            "parameters" : {
+              "isExclusive" : true,
+              "min" : 0.0
+            }
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/numberOfThreads",
+      "options" : {
+        "validation" : {
+          "max" : {
+            "errorMessage" : "The value must not exceed 2147483647.",
+            "parameters" : {
+              "isExclusive" : false,
+              "max" : 2.147483647E9
+            }
+          },
+          "min" : {
+            "errorMessage" : "The value must be at least 1.",
+            "parameters" : {
+              "isExclusive" : false,
+              "min" : 1.0
+            }
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/removeOriginalColumns",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/failOnMissingValues",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/useSeed",
+      "options" : {
+        "format" : "checkbox"
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/seed",
+      "options" : {
+        "validation" : {
+          "pattern" : {
+            "errorMessage" : "Please enter a valid integer number between -9223372036854775808 to 9223372036854775807.",
+            "parameters" : {
+              "pattern" : "[+-]?(0|[1-9][0-9]{0,18})"
+            }
+          }
+        }
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/useSeed",
+          "schema" : {
+            "const" : true
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/drawSeed",
+      "options" : {
+        "format" : "simpleButton",
+        "triggerId" : "org.knime.ext.tsne.node.TsneNodeParameters$DrawSeedButtonRef"
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/useSeed",
+          "schema" : {
+            "const" : true
+          }
+        }
+      }
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "features" : {
+            "configPaths" : [ [ "features", "filter-type" ], [ "features", "included_names" ], [ "features", "excluded_names" ], [ "features", "enforce_option" ], [ "features", "name_pattern", "pattern" ], [ "features", "name_pattern", "type" ], [ "features", "name_pattern", "caseSensitive" ], [ "features", "name_pattern", "excludeMatching" ] ]
+          },
+          "outputDimensions" : {
+            "configKey" : "outputDimensions"
+          },
+          "iterations" : {
+            "configKey" : "iterations"
+          },
+          "theta" : {
+            "configKey" : "theta"
+          },
+          "perplexity" : {
+            "configKey" : "perplexity"
+          },
+          "numberOfThreads" : {
+            "configKey" : "numberOfThreads"
+          },
+          "removeOriginalColumns" : {
+            "configKey" : "removeOriginalColumns"
+          },
+          "failOnMissingValues" : {
+            "configKey" : "failOnMissingValues"
+          },
+          "useSeed" : {
+            "configKey" : "seed_BOOL"
+          },
+          "seed" : {
+            "configPaths" : [ [ "seed" ] ]
+          },
+          "drawSeed" : { }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/features",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "other_column",
+        "text" : "other_column",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      } ]
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "org.knime.ext.tsne.node.TsneNodeParameters$DrawSeedButtonRef"
+    },
+    "dependencies" : [ ]
+  } ]
+}

@@ -46,15 +46,36 @@
  */
 package org.knime.ext.tsne.node;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
+ * {@link NodeFactory} for the t-SNE node.
  *
  * @author Adrian Nembach, KNIME, GmbH, Konstanz, Germany
+ * @author Magnus Gohm, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public final class TsneNodeFactory extends NodeFactory<TsneNodeModel> {
+@SuppressWarnings("restriction")
+public final class TsneNodeFactory extends NodeFactory<TsneNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
     /**
      * {@inheritDoc}
@@ -91,9 +112,71 @@ public final class TsneNodeFactory extends NodeFactory<TsneNodeModel> {
     /**
      * {@inheritDoc}
      */
+    private static final String NODE_NAME = "t-SNE (L. Jonsson)";
+    private static final String NODE_ICON = "./icon.png";
+    private static final String SHORT_DESCRIPTION = """
+            t-SNE is a manifold learning technique, which learns low dimensional embeddings for high dimensional
+                data.
+            """;
+    private static final String FULL_DESCRIPTION = """
+            t-SNE is a manifold learning technique, which learns low dimensional embeddings for high dimensional
+                data. It is most often used for visualization purposes because it exploits the local relationships
+                between datapoints and can subsequently capture nonlinear structures in the data. Unlike other dimension
+                reduction techniques like PCA, a learned t-SNE model can't be applied to new data. The t-SNE algorithm
+                can be roughly summarized as two steps: <ol> <li>Create a probability distribution capturing the
+                relationships between points in the high dimensional space </li> <li>Find a low dimensional space that
+                resembles the probability dimension as well as possible </li> </ol> For further details check out this
+                <a href="https://erdem.pl/2020/04/t-sne-clearly-explained/">blog post</a> or the original <a
+                href="http://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf">paper</a> . The
+                implementation of this node is based on <a href="https://github.com/lejon/T-SNE-Java">T-SNE-Java</a> by
+                Leif Jonsson. <h4>Disclaimer:</h4> Depending on the size of the input table, the computation of t-SNE
+                can be very expensive both in terms of runtime as well as memory. If you experience problems with
+                memory, try to reduce the size of your data by e.g. using the Row Sampling node. If you have very
+                high-dimensional data, it is also advisable to first reduce the number of dimensions to around 50 using
+                e.g. a PCA.
+            """;
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Data", """
+                Input port for the data for which a low dimensional embedding should be learned
+                """)
+    );
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("Embedded Data", """
+                The low dimensional embedding
+                """)
+    );
+
     @Override
-    protected NodeDialogPane createNodeDialogPane() {
-        return new TsneNodeDialog();
+    public NodeDialogPane createNodeDialogPane() {
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, TsneNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            TsneNodeParameters.class,
+            null,
+            NodeType.Manipulator,
+            List.of(),
+            null
+        );
+    }
+
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, TsneNodeParameters.class));
     }
 
 }
