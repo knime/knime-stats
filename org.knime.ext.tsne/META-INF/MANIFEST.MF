@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: KNIME t-SNE node based on TSNE-Java
 Bundle-SymbolicName: org.knime.ext.tsne;singleton:=true
-Bundle-Version: 5.9.0.qualifier
+Bundle-Version: 5.10.0.qualifier
 Bundle-ClassPath: org-knime-ext-tsne.jar,
  lib/tsne-2.5.0.jar,
  lib/core-0.26.jar,
@@ -11,7 +11,8 @@ Bundle-Vendor: KNIME AG, Zurich, Switzerland
 Require-Bundle: org.knime.core;bundle-version="[5.9.0,6.0.0)",
  org.knime.base;bundle-version="[5.9.0,6.0.0)",
  org.knime.workbench.repository;bundle-version="[5.9.0,6.0.0)",
- gov.nist.math.jama;bundle-version="1.0.3"
+ gov.nist.math.jama;bundle-version="1.0.3",
+ org.knime.core.ui;bundle-version="[5.10.0,6.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.knime.ext.tsne
 Eclipse-BundleShape: dir
