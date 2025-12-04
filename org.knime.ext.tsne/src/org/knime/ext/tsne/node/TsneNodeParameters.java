@@ -46,8 +46,11 @@
 
 package org.knime.ext.tsne.node;
 
+import java.util.function.Supplier;
+
 import org.knime.core.webui.node.dialog.defaultdialog.internal.button.SimpleButtonWidget;
 import org.knime.core.webui.node.dialog.defaultdialog.internal.widget.TypedStringFilterWidgetInternal;
+import org.knime.core.webui.node.dialog.defaultdialog.util.updates.StateComputationFailureException;
 import org.knime.node.parameters.NodeParameters;
 import org.knime.node.parameters.NodeParametersInput;
 import org.knime.node.parameters.Widget;
@@ -61,14 +64,17 @@ import org.knime.node.parameters.updates.Effect;
 import org.knime.node.parameters.updates.Effect.EffectType;
 import org.knime.node.parameters.updates.EffectPredicate;
 import org.knime.node.parameters.updates.EffectPredicateProvider;
+import org.knime.node.parameters.updates.ParameterReference;
 import org.knime.node.parameters.updates.StateProvider;
 import org.knime.node.parameters.updates.ValueProvider;
 import org.knime.node.parameters.updates.ValueReference;
 import org.knime.node.parameters.updates.util.BooleanReference;
 import org.knime.node.parameters.widget.choices.ChoicesProvider;
 import org.knime.node.parameters.widget.choices.filter.ColumnFilter;
+import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
 import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider.DoubleColumnsProvider;
 import org.knime.node.parameters.widget.number.NumberInputWidget;
+import org.knime.node.parameters.widget.number.NumberInputWidgetValidation.MaxValidation;
 import org.knime.node.parameters.widget.number.NumberInputWidgetValidation.MinValidation.IsPositiveDoubleValidation;
 import org.knime.node.parameters.widget.number.NumberInputWidgetValidation.MinValidation.IsPositiveIntegerValidation;
 import org.knime.node.parameters.widget.text.TextInputWidget;
@@ -90,13 +96,15 @@ final class TsneNodeParameters implements NodeParameters {
             """)
     @ChoicesProvider(DoubleColumnsProvider.class)
     @TypedStringFilterWidgetInternal(hideTypeFilter = true)
+    @ValueReference(FeaturesRef.class)
     ColumnFilter m_features = new ColumnFilter();
 
     @Persist(configKey = TsneNodeModel.CFG_OUTPUT_DIMENSIONS)
     @Widget(title = "Dimension(s) to reduce to", description = """
             The number of dimension of the target embedding (for visualization typically 2 or 3).
             """)
-    @NumberInputWidget(minValidation = IsPositiveIntegerValidation.class)
+    @NumberInputWidget(minValidation = IsPositiveIntegerValidation.class,
+        maxValidationProvider = MaxOutputDimensionsValidationProvider.class)
     int m_outputDimensions = 2;
 
     @Persist(configKey = TsneNodeModel.CFG_ITERATIONS)
@@ -176,6 +184,9 @@ final class TsneNodeParameters implements NodeParameters {
     @Effect(predicate = UseSeedPredicate.class, type = EffectType.SHOW)
     Void m_drawSeed;
 
+    static final class FeaturesRef implements ParameterReference<ColumnFilter> {
+    }
+
     static final class UseSeedRef implements BooleanReference {
     }
 
@@ -187,6 +198,49 @@ final class TsneNodeParameters implements NodeParameters {
         @Override
         public EffectPredicate init(final PredicateInitializer i) {
             return i.getPredicate(UseSeedRef.class);
+        }
+
+    }
+
+    static final class MaxOutputDimensionsValidationProvider implements StateProvider<MaxValidation> {
+
+        private static final String DIM_ERROR_TEMPLATE =
+                "The value must not exceed the number of selected input dimensions (%s).";
+
+        Supplier<ColumnFilter> m_featuresSupplier;
+
+        @Override
+        public void init(final StateProviderInitializer initializer) {
+            initializer.computeBeforeOpenDialog();
+            m_featuresSupplier = initializer.computeFromValueSupplier(FeaturesRef.class);
+        }
+
+        @Override
+        public MaxValidation computeState(final NodeParametersInput parametersInput)
+            throws StateComputationFailureException {
+            final var inSpecOpt = parametersInput.getInTableSpec(0);
+            if (inSpecOpt.isEmpty()) {
+                throw new StateComputationFailureException();
+            }
+            final var inSpec = inSpecOpt.get();
+
+            final ColumnFilter features = m_featuresSupplier.get();
+            final var inputDimensionality = features.filter(ColumnSelectionUtil.getDoubleColumns(inSpec)).length;
+
+            return new MaxValidation() {
+
+                @Override
+                public double getMax() {
+                    return inputDimensionality;
+                }
+
+                @Override
+                public String getErrorMessage() {
+                    return String.format(DIM_ERROR_TEMPLATE, inputDimensionality);
+                }
+
+            };
+
         }
 
     }

@@ -244,7 +244,8 @@
             }
           }
         }
-      }
+      },
+      "providedOptions" : [ "validation.max" ]
     }, {
       "type" : "Control",
       "scope" : "#/properties/model/properties/iterations",
@@ -456,11 +457,29 @@
         }
       } ]
     } ]
+  }, {
+    "scope" : "#/properties/model/properties/outputDimensions",
+    "providedOptionName" : "validation.max",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : {
+        "parameters" : {
+          "max" : 5.0,
+          "isExclusive" : false
+        },
+        "errorMessage" : "The value must not exceed the number of selected input dimensions (5)."
+      }
+    } ]
   } ],
   "globalUpdates" : [ {
     "trigger" : {
       "id" : "org.knime.ext.tsne.node.TsneNodeParameters$DrawSeedButtonRef"
     },
     "dependencies" : [ ]
+  }, {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/features"
+    },
+    "dependencies" : [ "#/properties/model/properties/features" ]
   } ]
 }
