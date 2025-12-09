@@ -1,0 +1,432 @@
+{
+  "data" : {
+    "model" : {
+      "alpha" : 0.05,
+      "usedColumns" : {
+        "mode" : "MANUAL",
+        "patternFilter" : {
+          "pattern" : "",
+          "isCaseSensitive" : false,
+          "isInverted" : false
+        },
+        "manualFilter" : {
+          "manuallySelected" : [ ],
+          "manuallyDeselected" : [ ],
+          "includeUnknownColumns" : false
+        },
+        "typeFilter" : {
+          "selectedTypes" : [ ],
+          "typeDisplays" : [ ]
+        }
+      },
+      "missingValuesStrategy" : "FAILED",
+      "tiesStrategy" : "AVERAGE",
+      "useRandomSeed" : false,
+      "seed" : "1234567890123"
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "alpha" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Significance level α",
+            "description" : "The significance level for the hypothesis test. A difference in the samples is assumed\nbased on this value, where 0 &le; α &le; 1. Commonly used values are 0.05 or 0.01.\n",
+            "default" : 0.05
+          },
+          "drawSeed" : {
+            "type" : "object",
+            "title" : "New seed",
+            "description" : "Generate a random seed and set it in the Seed input above for reproducible runs."
+          },
+          "missingValuesStrategy" : {
+            "oneOf" : [ {
+              "const" : "MINIMAL",
+              "title" : "Minimal"
+            }, {
+              "const" : "MAXIMAL",
+              "title" : "Maximal"
+            }, {
+              "const" : "FIXED",
+              "title" : "Fixed"
+            }, {
+              "const" : "FAILED",
+              "title" : "Failed"
+            } ],
+            "title" : "Missing Values Strategy",
+            "description" : "Specifies how missing values are handled when ranking is done.\n\n<ul>\n<li><b>Minimal</b>: Missing values are considered minimal in the ordering</li>\n<li><b>Maximal</b>: Missing values are considered maximal in the ordering</li>\n<li><b>Fixed</b>: Missing values are left in place</li>\n<li><b>Failed</b>: Missing values result in node failure</li>\n</ul>",
+            "default" : "FAILED"
+          },
+          "seed" : {
+            "type" : "string",
+            "title" : "Seed",
+            "description" : "The seed value for the random number generator used when randomizing tied ranks.",
+            "default" : "1234567890123"
+          },
+          "tiesStrategy" : {
+            "oneOf" : [ {
+              "const" : "SEQUENTIAL",
+              "title" : "Sequential"
+            }, {
+              "const" : "MINIMUM",
+              "title" : "Minimum"
+            }, {
+              "const" : "MAXIMUM",
+              "title" : "Maximum"
+            }, {
+              "const" : "AVERAGE",
+              "title" : "Average"
+            }, {
+              "const" : "RANDOM",
+              "title" : "Random"
+            } ],
+            "title" : "Ties Strategy",
+            "description" : "Specifies how ties in each block are handled when ranking is done.\n\n<ul>\n<li><b>Sequential</b>: Ties assigned sequential ranks in order of occurrence</li>\n<li><b>Minimum</b>: Ties get the minimum applicable rank</li>\n<li><b>Maximum</b>: Ties get the maximum applicable rank</li>\n<li><b>Average</b>: Ties get the average of applicable ranks</li>\n<li><b>Random</b>: Ties get a random integral value from among applicable ranks</li>\n</ul>",
+            "default" : "AVERAGE"
+          },
+          "tooFewColumnsMessage" : {
+            "type" : "object"
+          },
+          "useRandomSeed" : {
+            "type" : "boolean",
+            "title" : "Use Random Seed",
+            "description" : "Enable to use a custom seed for the random number generator when the Ties Strategy\nis set to Random. If disabled, a random seed will be used.\n",
+            "default" : false
+          },
+          "usedColumns" : {
+            "type" : "object",
+            "properties" : {
+              "manualFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "includeUnknownColumns" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "manuallyDeselected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "manuallySelected" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "manuallySelected" : [ ],
+                  "manuallyDeselected" : [ ],
+                  "includeUnknownColumns" : false
+                }
+              },
+              "mode" : {
+                "oneOf" : [ {
+                  "const" : "MANUAL",
+                  "title" : "Manual"
+                }, {
+                  "const" : "REGEX",
+                  "title" : "Regex"
+                }, {
+                  "const" : "WILDCARD",
+                  "title" : "Wildcard"
+                }, {
+                  "const" : "TYPE",
+                  "title" : "Type"
+                } ],
+                "default" : "MANUAL"
+              },
+              "patternFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "isCaseSensitive" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "isInverted" : {
+                    "type" : "boolean",
+                    "default" : false
+                  },
+                  "pattern" : {
+                    "type" : "string",
+                    "default" : ""
+                  }
+                },
+                "default" : {
+                  "pattern" : "",
+                  "isCaseSensitive" : false,
+                  "isInverted" : false
+                }
+              },
+              "selected" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "string"
+                }
+              },
+              "typeFilter" : {
+                "type" : "object",
+                "properties" : {
+                  "selectedTypes" : {
+                    "default" : [ ],
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "default" : {
+                  "selectedTypes" : [ ],
+                  "typeDisplays" : [ ]
+                }
+              }
+            },
+            "title" : "Distributions",
+            "description" : "Select the columns (samples/distributions) to be included in the Friedman test.\nEach column represents a treatment or condition, and each row represents a block or subject.\nAt least 3 columns must be selected.\n",
+            "default" : {
+              "mode" : "MANUAL",
+              "patternFilter" : {
+                "pattern" : "",
+                "isCaseSensitive" : false,
+                "isInverted" : false
+              },
+              "manualFilter" : {
+                "manuallySelected" : [ ],
+                "manuallyDeselected" : [ ],
+                "includeUnknownColumns" : false
+              },
+              "typeFilter" : {
+                "selectedTypes" : [ ],
+                "typeDisplays" : [ ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/alpha",
+      "options" : {
+        "validation" : {
+          "max" : {
+            "errorMessage" : "The value must not exceed 1.",
+            "parameters" : {
+              "isExclusive" : false,
+              "max" : 1.0
+            }
+          },
+          "min" : {
+            "errorMessage" : "The value must be at least 0.",
+            "parameters" : {
+              "isExclusive" : false,
+              "min" : 0.0
+            }
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/usedColumns",
+      "options" : {
+        "format" : "typedStringFilter",
+        "unknownValuesText" : "Any unknown column",
+        "emptyStateLabel" : "No columns in this list."
+      },
+      "providedOptions" : [ "possibleValues" ]
+    }, {
+      "type" : "Control",
+      "id" : "#/properties/model/properties/tooFewColumnsMessage",
+      "options" : {
+        "format" : "textMessage"
+      },
+      "providedOptions" : [ "message" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/missingValuesStrategy",
+      "options" : {
+        "isAdvanced" : true
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/tiesStrategy",
+      "options" : {
+        "isAdvanced" : true
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/useRandomSeed",
+      "options" : {
+        "format" : "checkbox",
+        "isAdvanced" : true
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "scope" : "#/properties/model/properties/tiesStrategy",
+          "schema" : {
+            "oneOf" : [ {
+              "const" : "RANDOM"
+            } ]
+          }
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/seed",
+      "options" : {
+        "validation" : {
+          "pattern" : {
+            "errorMessage" : "Please enter a valid integer number between -9223372036854775808 to 9223372036854775807.",
+            "parameters" : {
+              "pattern" : "[+-]?(0|[1-9][0-9]{0,18})"
+            }
+          }
+        },
+        "isAdvanced" : true
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "type" : "AND",
+          "conditions" : [ {
+            "scope" : "#/properties/model/properties/tiesStrategy",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "RANDOM"
+              } ]
+            }
+          }, {
+            "scope" : "#/properties/model/properties/useRandomSeed",
+            "schema" : {
+              "const" : true
+            }
+          } ]
+        }
+      }
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/drawSeed",
+      "options" : {
+        "isAdvanced" : true,
+        "format" : "simpleButton",
+        "triggerId" : "org.knime.base.node.stats.testing.friedman.FriedmanTestNodeParameters$NewSeedButtonRef"
+      },
+      "rule" : {
+        "effect" : "SHOW",
+        "condition" : {
+          "type" : "AND",
+          "conditions" : [ {
+            "scope" : "#/properties/model/properties/tiesStrategy",
+            "schema" : {
+              "oneOf" : [ {
+                "const" : "RANDOM"
+              } ]
+            }
+          }, {
+            "scope" : "#/properties/model/properties/useRandomSeed",
+            "schema" : {
+              "const" : true
+            }
+          } ]
+        }
+      }
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "alpha" : {
+            "configKey" : "Alpha"
+          },
+          "usedColumns" : {
+            "configPaths" : [ [ "Used columns", "filter-type" ], [ "Used columns", "included_names" ], [ "Used columns", "excluded_names" ], [ "Used columns", "enforce_option" ], [ "Used columns", "name_pattern", "pattern" ], [ "Used columns", "name_pattern", "type" ], [ "Used columns", "name_pattern", "caseSensitive" ], [ "Used columns", "name_pattern", "excludeMatching" ] ]
+          },
+          "tooFewColumnsMessage" : { },
+          "missingValuesStrategy" : {
+            "configPaths" : [ [ "NaN-Strategy" ] ]
+          },
+          "tiesStrategy" : {
+            "configPaths" : [ [ "Tie-Strategy" ] ]
+          },
+          "useRandomSeed" : {
+            "configKey" : "Use Random Seed?"
+          },
+          "seed" : {
+            "configPaths" : [ [ "Seed" ] ]
+          },
+          "drawSeed" : { }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/usedColumns",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "Universe_0_0",
+        "text" : "Universe_0_0",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "Universe_0_1",
+        "text" : "Universe_0_1",
+        "type" : {
+          "id" : "org.knime.core.data.IntValue",
+          "text" : "Number (Integer)"
+        }
+      }, {
+        "id" : "Universe_1_0",
+        "text" : "Universe_1_0",
+        "type" : {
+          "id" : "org.knime.core.data.LongValue",
+          "text" : "Number (Long Integer)"
+        }
+      }, {
+        "id" : "Universe_1_1",
+        "text" : "Universe_1_1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      } ]
+    } ]
+  }, {
+    "id" : "#/properties/model/properties/tooFewColumnsMessage",
+    "providedOptionName" : "message",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : {
+        "title" : "Not enough data columns chosen (0), please choose more than 2.",
+        "description" : "",
+        "type" : "ERROR"
+      }
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "org.knime.base.node.stats.testing.friedman.FriedmanTestNodeParameters$NewSeedButtonRef"
+    },
+    "dependencies" : [ ]
+  }, {
+    "trigger" : {
+      "scope" : "#/properties/model/properties/usedColumns"
+    },
+    "dependencies" : [ "#/properties/model/properties/usedColumns" ]
+  } ]
+}
