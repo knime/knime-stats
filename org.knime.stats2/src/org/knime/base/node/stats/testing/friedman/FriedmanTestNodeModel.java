@@ -396,7 +396,7 @@ public class FriedmanTestNodeModel extends NodeModel {
      */
     static SettingsModelLong createSettingsModelSeed(final SettingsModelBoolean useSeed,
         final SettingsModelString tiesStrategy) {
-        final SettingsModelLong seed = new SettingsModelLong("Seed", System.currentTimeMillis());
+        final SettingsModelLong seed = new SettingsModelLong("Seed", 1234567890123L);
         seed.setEnabled(
             tiesStrategy.getStringValue().equals(TiesStrategy.RANDOM.toString()) && useSeed.getBooleanValue());
         return seed;

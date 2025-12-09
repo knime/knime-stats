@@ -4,3 +4,4 @@
 */*.jar
 **/.flattened-pom.xml
 **/CHANGELOG.md
+**/.polyglot.META-INF
