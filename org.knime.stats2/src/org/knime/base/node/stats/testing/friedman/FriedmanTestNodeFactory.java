@@ -48,15 +48,33 @@ package org.knime.base.node.stats.testing.friedman;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.node.NodeFactory.NodeType;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.core.node.NodeDescription;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import java.util.Map;
+import org.knime.node.impl.description.PortDescription;
+import java.util.List;
+import static org.knime.node.impl.description.PortDescription.fixedPort;
 
 /**
  * <code>NodeFactory</code> for the "FriedmanTest" Node.
  *
  *
  * @author Lukas Siedentop, University of Konstanz
+ * @author Leonard Wörteler, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
+@SuppressWarnings("restriction")
 public class FriedmanTestNodeFactory
-extends NodeFactory<FriedmanTestNodeModel> {
+extends NodeFactory<FriedmanTestNodeModel> implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
     @Override
     public FriedmanTestNodeModel createNodeModel() {
@@ -78,11 +96,69 @@ extends NodeFactory<FriedmanTestNodeModel> {
     public boolean hasDialog() {
         return true;
     }
+    private static final String NODE_NAME = "Friedman Test";
+    private static final String NODE_ICON = "./friedman_test.png";
+    private static final String SHORT_DESCRIPTION = """
+            States whether three or more samples show significant statistical difference in their location
+                parameters
+            """;
+    private static final String FULL_DESCRIPTION = """
+            <p>The Friedman test is used to detect any difference between subjects under test measured variously
+                multiple times. More precisely, this non-parametric test states whether there is a significant
+                difference in the location parameters of <i>k</i> statistical samples (&gt;= 3, <i>columns</i>
+                <i>candidates</i>, <i>treatments</i>, <i>subject</i>), measured <i>n</i> times (<i>rows</i>,
+                <i>blocks</i>, <i>participants</i>, <i>measures</i>), or not. The data in each row is ranked, based on
+                which a resulting test statistic <i>Q</i> is calculated.</p> <p>If <i>n</i> &gt; 15 or <i>k</i> &gt; 4,
+                the test statistic <i>Q</i> can be approximated to be Χ<sup>2</sup> distributed. With the given
+                significance level α, a corresponding <i>p</i>-value (null hypothesis H<sub>0</sub>: there is no
+                difference of the location parameters in the samples, alternative hypothesis H<sub>A</sub>: the samples
+                in the columns have different location parameters) can be given.</p> <p>Please refer also to the <a
+                href="https://en.wikipedia.org/wiki/Friedman_test">Wikipedia description of the Friedman Test</a>.</p>
+            """;
+    private static final List<PortDescription> INPUT_PORTS = List.of(
+            fixedPort("Input data", """
+                The table from which to test samples
+                """)
+    );
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(
+            fixedPort("Evaluation", """
+                Friedman test evaluation
+                """)
+    );
 
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new FriedmanTestNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
     }
+
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, FriedmanTestNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription(
+            NODE_NAME,
+            NODE_ICON,
+            INPUT_PORTS,
+            OUTPUT_PORTS,
+            SHORT_DESCRIPTION,
+            FULL_DESCRIPTION,
+            List.of(),
+            FriedmanTestNodeParameters.class,
+            null,
+            NodeType.Manipulator,
+            List.of(),
+            null
+        );
+    }
+
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, FriedmanTestNodeParameters.class));
+    }
+
 
 }
 
