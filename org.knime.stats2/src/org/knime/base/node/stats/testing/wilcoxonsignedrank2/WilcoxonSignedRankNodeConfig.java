@@ -9,9 +9,9 @@ import org.knime.core.node.NodeSettingsWO;
  */
 class WilcoxonSignedRankNodeConfig {
 
-    private static final String FIRST_COLUMNS_CFG = "firstColumns";
+    static final String FIRST_COLUMNS_CFG = "firstColumns";
 
-    private static final String SECOND_COLUMNS_CFG = "secondColumns";
+    static final String SECOND_COLUMNS_CFG = "secondColumns";
 
     static final String ENABLE_COMPUTE_MEDIAN_CFG = "Calculate median values (computationally expensive)";
 
