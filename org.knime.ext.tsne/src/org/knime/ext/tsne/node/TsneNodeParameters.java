@@ -142,7 +142,12 @@ final class TsneNodeParameters implements NodeParameters {
             zero because the exact t-SNE algorithm isn't parallelizable.
             """)
     @NumberInputWidget(minValidation = IsPositiveIntegerValidation.class)
-    int m_numberOfThreads = Runtime.getRuntime().availableProcessors();
+    int m_numberOfThreads = getDefaultNumberOfThreads();
+
+    // for mocking in tests
+    static int getDefaultNumberOfThreads() {
+        return Runtime.getRuntime().availableProcessors();
+    }
 
     @Persist(configKey = TsneNodeModel.CFG_REMOVE_ORIGINAL_COLUMNS)
     @Widget(title = "Remove original data columns", description = """

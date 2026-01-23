@@ -168,7 +168,7 @@
             "format" : "int32",
             "title" : "Number of threads",
             "description" : "Number of threads used for parallel computation. The default is set to the number of cores your\ncomputer has and usually doesn't require tuning. Note that no parallelization is used if theta is\nzero because the exact t-SNE algorithm isn't parallelizable.\n",
-            "default" : 8
+            "default" : 42
           },
           "outputDimensions" : {
             "type" : "integer",
