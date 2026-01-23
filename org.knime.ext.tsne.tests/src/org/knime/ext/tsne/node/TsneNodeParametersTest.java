@@ -48,6 +48,8 @@ package org.knime.ext.tsne.node;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.knime.core.data.DataTableSpec;
 import org.knime.core.data.DataType;
 import org.knime.core.data.def.DoubleCell;
@@ -58,6 +60,8 @@ import org.knime.core.webui.node.dialog.SettingsType;
 import org.knime.core.webui.node.dialog.defaultdialog.NodeParametersUtil;
 import org.knime.testing.node.dialog.DefaultNodeSettingsSnapshotTest;
 import org.knime.testing.node.dialog.SnapshotTestConfiguration;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 /**
  * Snapshot tests for {@link TsneNodeParameters}.
@@ -67,10 +71,22 @@ import org.knime.testing.node.dialog.SnapshotTestConfiguration;
 @SuppressWarnings("restriction")
 final class TsneNodeParametersTest extends DefaultNodeSettingsSnapshotTest {
 
+    private MockedStatic<TsneNodeParameters> m_numberOfThreadsMock;
+
     TsneNodeParametersTest() {
-        // The default for the number of threads node parameter depends on Runtime.getRuntime().availableProcessors()
-        // Which is currently 8 in the jenkins pipeline, which means that the snapshot got adjusted manually to that.
         super(getConfig());
+    }
+
+    @BeforeEach
+    void setupMock() {
+        final var mock = Mockito.mockStatic(TsneNodeParameters.class, Mockito.CALLS_REAL_METHODS);
+        mock.when(TsneNodeParameters::getDefaultNumberOfThreads).thenReturn(42);
+        m_numberOfThreadsMock = mock;
+    }
+
+    @AfterEach
+    void closeMock() {
+        m_numberOfThreadsMock.close();
     }
 
     private static SnapshotTestConfiguration getConfig() {
