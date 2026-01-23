@@ -47,14 +47,34 @@
  */
 package org.knime.base.node.stats.testing.wilcoxonsignedrank2;
 
+import static org.knime.node.impl.description.PortDescription.fixedPort;
+
+import java.util.List;
+import java.util.Map;
+
+import org.knime.core.node.NodeDescription;
 import org.knime.core.node.NodeDialogPane;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeView;
+import org.knime.core.webui.node.dialog.NodeDialog;
+import org.knime.core.webui.node.dialog.NodeDialogFactory;
+import org.knime.core.webui.node.dialog.NodeDialogManager;
+import org.knime.core.webui.node.dialog.SettingsType;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultKaiNodeInterface;
+import org.knime.core.webui.node.dialog.defaultdialog.DefaultNodeDialog;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterface;
+import org.knime.core.webui.node.dialog.kai.KaiNodeInterfaceFactory;
+import org.knime.node.impl.description.DefaultNodeDescriptionUtil;
+import org.knime.node.impl.description.PortDescription;
 
 /**
  * @author Patrick Winter, University of Konstanz
+ * @author Robin Gerling, KNIME GmbH, Konstanz, Germany
+ * @author AI Migration Pipeline v1.2
  */
-public class WilcoxonSignedRankNodeFactory extends NodeFactory<WilcoxonSignedRankNodeModel> {
+@SuppressWarnings("restriction")
+public class WilcoxonSignedRankNodeFactory extends NodeFactory<WilcoxonSignedRankNodeModel>
+    implements NodeDialogFactory, KaiNodeInterfaceFactory {
 
     /**
      * {@inheritDoc}
@@ -89,12 +109,64 @@ public class WilcoxonSignedRankNodeFactory extends NodeFactory<WilcoxonSignedRan
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    private static final String NODE_NAME = "Wilcoxon Signed-Rank";
+
+    private static final String NODE_ICON = "./wilcoxonsignedrank.png";
+
+    private static final String SHORT_DESCRIPTION = """
+            Calculates Wilcoxon signed-rank statistics for dependent groups.
+            """;
+
+    private static final String FULL_DESCRIPTION = """
+            Calculates the Wilcoxon signed-rank statistics for dependent groups. The statistic w is calculated by
+                building the difference between the two values of a pair and ranking them. The output will be the sum of
+                ranks of positive differences (w+) and the sum of ranks of negative differences (w-) and the measures
+                derived from that.
+            """;
+
+    private static final List<PortDescription> INPUT_PORTS = List.of(fixedPort("Table", """
+            The input data.
+            """));
+
+    private static final List<PortDescription> OUTPUT_PORTS = List.of(fixedPort("Test results", """
+            A row for each test.
+            """), fixedPort("Column statistics", """
+            Statistics of the selected columns.
+            """), fixedPort("Ranks", """
+            Information about the calculated ranks.
+            """));
+
     @Override
     public NodeDialogPane createNodeDialogPane() {
-        return new WilcoxonSignedRankNodeDialog();
+        return NodeDialogManager.createLegacyFlowVariableNodeDialog(createNodeDialog());
+    }
+
+    @Override
+    public NodeDialog createNodeDialog() {
+        return new DefaultNodeDialog(SettingsType.MODEL, WilcoxonSignedRankNodeParameters.class);
+    }
+
+    @Override
+    public NodeDescription createNodeDescription() {
+        return DefaultNodeDescriptionUtil.createNodeDescription( //
+            NODE_NAME, //
+            NODE_ICON, //
+            INPUT_PORTS, //
+            OUTPUT_PORTS, //
+            SHORT_DESCRIPTION, //
+            FULL_DESCRIPTION, //
+            List.of(), //
+            WilcoxonSignedRankNodeParameters.class, //
+            null, //
+            NodeType.Manipulator, //
+            List.of(), //
+            null //
+        );
+    }
+
+    @Override
+    public KaiNodeInterface createKaiNodeInterface() {
+        return new DefaultKaiNodeInterface(Map.of(SettingsType.MODEL, WilcoxonSignedRankNodeParameters.class));
     }
 
 }

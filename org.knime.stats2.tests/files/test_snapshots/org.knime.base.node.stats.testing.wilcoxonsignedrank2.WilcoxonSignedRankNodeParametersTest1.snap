@@ -1,0 +1,203 @@
+{
+  "data" : {
+    "model" : {
+      "columnPairs" : [ {
+        "leftColumn" : "Universe_0_0",
+        "rightColumn" : "Universe_1_1"
+      }, {
+        "leftColumn" : "Universe_1_1",
+        "rightColumn" : "Universe_0_1"
+      }, {
+        "leftColumn" : "Universe_0_0",
+        "rightColumn" : "Universe_0_1"
+      } ],
+      "computeMedian" : false
+    }
+  },
+  "schema" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "columnPairs" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "leftColumn" : {
+                  "type" : "string",
+                  "title" : "Left column",
+                  "description" : "Select the left column of the pair for comparison."
+                },
+                "rightColumn" : {
+                  "type" : "string",
+                  "title" : "Right column",
+                  "description" : "Select the right column of the pair for comparison."
+                }
+              }
+            },
+            "title" : "Column pairs",
+            "description" : "Define the test column pairs here. Each pair is used to perform a Wilcoxon signed-rank test separately. The Wilcoxon signed-rank test compares two related samples by calculating the differences between paired values, ranking them, and determining whether the differences are statistically significant.\n",
+            "default" : [ ]
+          },
+          "computeMedian" : {
+            "type" : "boolean",
+            "title" : "Calculate median values",
+            "description" : "Calculate the median values for each column in the column pairs. This option is computationally expensive for large datasets as it requires sorting the data.\n",
+            "default" : false
+          }
+        }
+      }
+    }
+  },
+  "ui_schema" : {
+    "elements" : [ {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/columnPairs",
+      "options" : {
+        "detail" : [ {
+          "type" : "Control",
+          "scope" : "#/properties/leftColumn",
+          "options" : {
+            "format" : "dropDown"
+          },
+          "providedOptions" : [ "possibleValues" ]
+        }, {
+          "type" : "Control",
+          "scope" : "#/properties/rightColumn",
+          "options" : {
+            "format" : "dropDown"
+          },
+          "providedOptions" : [ "possibleValues" ]
+        } ],
+        "addButtonText" : "Add column pair",
+        "arrayElementTitle" : "Pair"
+      },
+      "providedOptions" : [ "elementDefaultValue" ]
+    }, {
+      "type" : "Control",
+      "scope" : "#/properties/model/properties/computeMedian",
+      "options" : {
+        "format" : "checkbox"
+      }
+    } ]
+  },
+  "persist" : {
+    "type" : "object",
+    "properties" : {
+      "model" : {
+        "type" : "object",
+        "properties" : {
+          "columnPairs" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "leftColumn" : {
+                  "route" : [ "..", ".." ],
+                  "configPaths" : [ [ "firstColumns" ] ]
+                },
+                "rightColumn" : {
+                  "route" : [ "..", ".." ],
+                  "configPaths" : [ [ "secondColumns" ] ]
+                }
+              }
+            }
+          },
+          "computeMedian" : {
+            "configKey" : "Calculate median values (computationally expensive)"
+          }
+        }
+      }
+    }
+  },
+  "initialUpdates" : [ {
+    "scope" : "#/properties/model/properties/columnPairs/items/properties/leftColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "IntColumn1",
+        "text" : "IntColumn1",
+        "type" : {
+          "id" : "org.knime.core.data.IntValue",
+          "text" : "Number (Integer)"
+        }
+      }, {
+        "id" : "IntColumn2",
+        "text" : "IntColumn2",
+        "type" : {
+          "id" : "org.knime.core.data.IntValue",
+          "text" : "Number (Integer)"
+        }
+      }, {
+        "id" : "DoubleColumn1",
+        "text" : "DoubleColumn1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "LongColumn1",
+        "text" : "LongColumn1",
+        "type" : {
+          "id" : "org.knime.core.data.LongValue",
+          "text" : "Number (Long Integer)"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/columnPairs/items/properties/rightColumn",
+    "providedOptionName" : "possibleValues",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : [ {
+        "id" : "IntColumn1",
+        "text" : "IntColumn1",
+        "type" : {
+          "id" : "org.knime.core.data.IntValue",
+          "text" : "Number (Integer)"
+        }
+      }, {
+        "id" : "IntColumn2",
+        "text" : "IntColumn2",
+        "type" : {
+          "id" : "org.knime.core.data.IntValue",
+          "text" : "Number (Integer)"
+        }
+      }, {
+        "id" : "DoubleColumn1",
+        "text" : "DoubleColumn1",
+        "type" : {
+          "id" : "org.knime.core.data.DoubleValue",
+          "text" : "Number (Float)"
+        }
+      }, {
+        "id" : "LongColumn1",
+        "text" : "LongColumn1",
+        "type" : {
+          "id" : "org.knime.core.data.LongValue",
+          "text" : "Number (Long Integer)"
+        }
+      } ]
+    } ]
+  }, {
+    "scope" : "#/properties/model/properties/columnPairs",
+    "providedOptionName" : "elementDefaultValue",
+    "values" : [ {
+      "indices" : [ ],
+      "value" : {
+        "leftColumn" : "IntColumn1",
+        "rightColumn" : "IntColumn1"
+      }
+    } ]
+  } ],
+  "globalUpdates" : [ {
+    "trigger" : {
+      "id" : "after-open-dialog"
+    },
+    "triggerInitially" : true,
+    "dependencies" : [ "#/properties/model/properties/columnPairs/items/properties/leftColumn", "#/properties/model/properties/columnPairs/items/properties/rightColumn" ]
+  } ]
+}

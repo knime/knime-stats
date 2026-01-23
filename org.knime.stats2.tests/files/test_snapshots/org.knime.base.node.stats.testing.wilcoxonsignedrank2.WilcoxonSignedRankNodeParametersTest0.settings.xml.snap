@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="test">
+    <config key="firstColumns">
+        <entry key="array-size" type="xint" value="3"/>
+        <entry key="0" type="xstring" value="Universe_0_0"/>
+        <entry key="1" type="xstring" value="Universe_1_1"/>
+        <entry key="2" type="xstring" value="Universe_0_0"/>
+    </config>
+    <config key="secondColumns">
+        <entry key="array-size" type="xint" value="3"/>
+        <entry key="0" type="xstring" value="Universe_1_1"/>
+        <entry key="1" type="xstring" value="Universe_0_1"/>
+        <entry key="2" type="xstring" value="Universe_0_1"/>
+    </config>
+    <entry key="Calculate median values (computationally expensive)" type="xboolean" value="false"/>
+</config>
