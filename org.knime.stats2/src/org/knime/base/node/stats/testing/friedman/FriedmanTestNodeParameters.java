@@ -129,7 +129,8 @@ final class FriedmanTestNodeParameters implements NodeParameters {
             The significance level for the hypothesis test. A difference in the samples is assumed
             based on this value, where 0 ≤ α ≤ 1. Commonly used values are 0.05 or 0.01.
             """)
-    @NumberInputWidget(minValidation = IsNonNegativeValidation.class, maxValidation = IsAtMostOneValidation.class)
+    @NumberInputWidget(minValidation = IsNonNegativeValidation.class, maxValidation = IsAtMostOneValidation.class,
+        stepSize = 0.01)
     @Persist(configKey = ALPHA_KEY)
     double m_alpha = 0.05;
 
@@ -228,7 +229,7 @@ final class FriedmanTestNodeParameters implements NodeParameters {
         }
     }
 
-    @Widget(title = "Missing Values Strategy", description = """
+    @Widget(title = "Missing values strategy", description = """
             Specifies how missing values are handled when ranking is done.
             """, advanced = true)
     @Persistor(MissingValuesStrategyPersistor.class)
@@ -270,7 +271,7 @@ final class FriedmanTestNodeParameters implements NodeParameters {
         }
     }
 
-    @Widget(title = "Ties Strategy", description = """
+    @Widget(title = "Ties strategy", description = """
             Specifies how ties in each block are handled when ranking is done.
             """, advanced = true)
     @Persistor(TiesStrategyPersistor.class)
@@ -292,7 +293,7 @@ final class FriedmanTestNodeParameters implements NodeParameters {
     static final class UseRandomSeedRef implements BooleanReference {
     }
 
-    @Widget(title = "Use Random Seed", description = """
+    @Widget(title = "Use random seed", description = """
             Enable to use a custom seed for the random number generator when the Ties Strategy
             is set to Random. If disabled, a random seed will be used.
             """, advanced = true)
