@@ -35,7 +35,7 @@
             "type" : "number",
             "format" : "double",
             "title" : "Significance level α",
-            "description" : "The significance level for the hypothesis test. A difference in the samples is assumed\nbased on this value, where 0 &le; α &le; 1. Commonly used values are 0.05 or 0.01.\n",
+            "description" : "The significance level for the hypothesis test. A difference in the samples is assumed\nbased on this value, where 0 ≤ α ≤ 1. Commonly used values are 0.05 or 0.01.\n",
             "default" : 0.05
           },
           "drawSeed" : {
@@ -57,7 +57,7 @@
               "const" : "FAILED",
               "title" : "Failed"
             } ],
-            "title" : "Missing Values Strategy",
+            "title" : "Missing values strategy",
             "description" : "Specifies how missing values are handled when ranking is done.\n\n<ul>\n<li><b>Minimal</b>: Missing values are considered minimal in the ordering</li>\n<li><b>Maximal</b>: Missing values are considered maximal in the ordering</li>\n<li><b>Fixed</b>: Missing values are left in place</li>\n<li><b>Failed</b>: Missing values result in node failure</li>\n</ul>",
             "default" : "FAILED"
           },
@@ -84,7 +84,7 @@
               "const" : "RANDOM",
               "title" : "Random"
             } ],
-            "title" : "Ties Strategy",
+            "title" : "Ties strategy",
             "description" : "Specifies how ties in each block are handled when ranking is done.\n\n<ul>\n<li><b>Sequential</b>: Ties assigned sequential ranks in order of occurrence</li>\n<li><b>Minimum</b>: Ties get the minimum applicable rank</li>\n<li><b>Maximum</b>: Ties get the maximum applicable rank</li>\n<li><b>Average</b>: Ties get the average of applicable ranks</li>\n<li><b>Random</b>: Ties get a random integral value from among applicable ranks</li>\n</ul>",
             "default" : "AVERAGE"
           },
@@ -93,7 +93,7 @@
           },
           "useRandomSeed" : {
             "type" : "boolean",
-            "title" : "Use Random Seed",
+            "title" : "Use random seed",
             "description" : "Enable to use a custom seed for the random number generator when the Ties Strategy\nis set to Random. If disabled, a random seed will be used.\n",
             "default" : false
           },
@@ -216,6 +216,7 @@
       "type" : "Control",
       "scope" : "#/properties/model/properties/alpha",
       "options" : {
+        "stepSize" : 0.01,
         "validation" : {
           "max" : {
             "errorMessage" : "The value must not exceed 1.",
@@ -355,10 +356,10 @@
           },
           "tooFewColumnsMessage" : { },
           "missingValuesStrategy" : {
-            "configPaths" : [ [ "NaN-Strategy" ] ]
+            "configKey" : "NaN-Strategy"
           },
           "tiesStrategy" : {
-            "configPaths" : [ [ "Tie-Strategy" ] ]
+            "configKey" : "Tie-Strategy"
           },
           "useRandomSeed" : {
             "configKey" : "Use Random Seed?"

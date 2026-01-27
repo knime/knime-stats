@@ -54,17 +54,12 @@ import org.knime.core.data.DataValue;
 import org.knime.core.data.DoubleValue;
 import org.knime.core.data.IntValue;
 import org.knime.core.data.LongValue;
-import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.NodeSettingsRO;
-import org.knime.core.node.NodeSettingsWO;
 import org.knime.core.webui.node.dialog.defaultdialog.internal.button.SimpleButtonWidget;
-import org.knime.core.webui.node.dialog.defaultdialog.persistence.impl.defaultfield.EnumFieldPersistor;
 import org.knime.core.webui.node.dialog.defaultdialog.util.updates.StateComputationFailureException;
 import org.knime.node.parameters.NodeParameters;
 import org.knime.node.parameters.NodeParametersInput;
 import org.knime.node.parameters.Widget;
 import org.knime.node.parameters.migration.LoadDefaultsForAbsentFields;
-import org.knime.node.parameters.persistence.NodeParametersPersistor;
 import org.knime.node.parameters.persistence.Persist;
 import org.knime.node.parameters.persistence.Persistor;
 import org.knime.node.parameters.persistence.legacy.LegacyColumnFilterPersistor;
@@ -129,7 +124,8 @@ final class FriedmanTestNodeParameters implements NodeParameters {
             The significance level for the hypothesis test. A difference in the samples is assumed
             based on this value, where 0 ≤ α ≤ 1. Commonly used values are 0.05 or 0.01.
             """)
-    @NumberInputWidget(minValidation = IsNonNegativeValidation.class, maxValidation = IsAtMostOneValidation.class)
+    @NumberInputWidget(minValidation = IsNonNegativeValidation.class, maxValidation = IsAtMostOneValidation.class,
+        stepSize = 0.01)
     @Persist(configKey = ALPHA_KEY)
     double m_alpha = 0.05;
 
@@ -206,32 +202,10 @@ final class FriedmanTestNodeParameters implements NodeParameters {
         FAILED;
     }
 
-    private static final class MissingValuesStrategyPersistor
-            implements NodeParametersPersistor<MissingValuesStrategy> {
-
-        private static final EnumFieldPersistor<MissingValuesStrategy> INSTANCE =
-                new EnumFieldPersistor<>(NAN_STRATEGY_KEY, MissingValuesStrategy.class, false);
-
-        @Override
-        public MissingValuesStrategy load(final NodeSettingsRO nodeSettings) throws InvalidSettingsException {
-            return INSTANCE.load(nodeSettings);
-        }
-
-        @Override
-        public void save(final MissingValuesStrategy operator, final NodeSettingsWO nodeSettings) {
-            INSTANCE.save(operator, nodeSettings);
-        }
-
-        @Override
-        public String[][] getConfigPaths() {
-            return new String[][] { {NAN_STRATEGY_KEY} };
-        }
-    }
-
-    @Widget(title = "Missing Values Strategy", description = """
+    @Widget(title = "Missing values strategy", description = """
             Specifies how missing values are handled when ranking is done.
             """, advanced = true)
-    @Persistor(MissingValuesStrategyPersistor.class)
+    @Persist(configKey = NAN_STRATEGY_KEY)
     MissingValuesStrategy m_missingValuesStrategy = MissingValuesStrategy.FAILED;
 
     // ====== Ties Strategy
@@ -249,31 +223,10 @@ final class FriedmanTestNodeParameters implements NodeParameters {
         RANDOM;
     }
 
-    private static final class TiesStrategyPersistor implements NodeParametersPersistor<TiesStrategy> {
-
-        private static final EnumFieldPersistor<TiesStrategy> INSTANCE =
-                new EnumFieldPersistor<>(TIE_STRATEGY_KEY, TiesStrategy.class, false);
-
-        @Override
-        public TiesStrategy load(final NodeSettingsRO nodeSettings) throws InvalidSettingsException {
-            return INSTANCE.load(nodeSettings);
-        }
-
-        @Override
-        public void save(final TiesStrategy operator, final NodeSettingsWO nodeSettings) {
-            INSTANCE.save(operator, nodeSettings);
-        }
-
-        @Override
-        public String[][] getConfigPaths() {
-            return new String[][] { {TIE_STRATEGY_KEY} };
-        }
-    }
-
-    @Widget(title = "Ties Strategy", description = """
+    @Widget(title = "Ties strategy", description = """
             Specifies how ties in each block are handled when ranking is done.
             """, advanced = true)
-    @Persistor(TiesStrategyPersistor.class)
+    @Persist(configKey = TIE_STRATEGY_KEY)
     @ValueReference(TiesStrategyRef.class)
     TiesStrategy m_tiesStrategy = TiesStrategy.AVERAGE;
 
@@ -292,14 +245,14 @@ final class FriedmanTestNodeParameters implements NodeParameters {
     static final class UseRandomSeedRef implements BooleanReference {
     }
 
-    @Widget(title = "Use Random Seed", description = """
+    @Widget(title = "Use random seed", description = """
             Enable to use a custom seed for the random number generator when the Ties Strategy
             is set to Random. If disabled, a random seed will be used.
             """, advanced = true)
     @ValueReference(UseRandomSeedRef.class)
     @Persist(configKey = USE_RANDOM_SEED_KEY)
     @Effect(predicate = IsTiesStrategyRandom.class, type = EffectType.SHOW)
-    boolean m_useRandomSeed = false;
+    boolean m_useRandomSeed;
 
     private static final class UseRandomSeedPredicate implements EffectPredicateProvider {
         @Override
