@@ -2,7 +2,7 @@
 <feature
       id="org.knime.features.stats2"
       label="KNIME Statistics Nodes (Labs)"
-      version="5.10.0.qualifier"
+      version="5.11.0.qualifier"
       provider-name="KNIME AG, Zurich, Switzerland"
       plugin="org.knime.stats2">
 
