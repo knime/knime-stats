@@ -192,12 +192,5 @@
         "rightColumn" : "IntColumn1"
       }
     } ]
-  } ],
-  "globalUpdates" : [ {
-    "trigger" : {
-      "id" : "after-open-dialog"
-    },
-    "triggerInitially" : true,
-    "dependencies" : [ "#/properties/model/properties/columnPairs/items/properties/leftColumn", "#/properties/model/properties/columnPairs/items/properties/rightColumn" ]
   } ]
 }
