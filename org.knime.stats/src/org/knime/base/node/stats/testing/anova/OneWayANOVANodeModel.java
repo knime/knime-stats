@@ -55,8 +55,11 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.knime.base.node.stats.testing.levene.LeveneTest;
 import org.knime.base.node.stats.testing.levene.LeveneTestStatistics;
 import org.knime.core.data.DataCell;
+import org.knime.core.data.DataColumnSpec;
 import org.knime.core.data.DataRow;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DoubleValue;
+import org.knime.core.data.NominalValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.node.BufferedDataContainer;
@@ -98,6 +101,15 @@ public class OneWayANOVANodeModel extends NodeModel
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
             throws InvalidSettingsException {
         DataTableSpec spec = inSpecs[0];
+
+        // Auto-guess: last column compatible with grouping column types (mirrors GroupColumnDefaultProvider)
+        if (m_settings.getGroupingColumn() == null) {
+            spec.stream()
+                .filter(c -> c.getType().isCompatible(NominalValue.class) || c.getType().isCompatible(DoubleValue.class))
+                .reduce((first, second) -> second)
+                .map(DataColumnSpec::getName)
+                .ifPresent(m_settings::setGroupingColumn);
+        }
 
         if (m_settings.getGroupingColumn() == null
                 || !spec.containsName(m_settings.getGroupingColumn())) {
