@@ -1,7 +1,7 @@
 # KNIME® Statistics
 
 [![Jenkins](https://jenkins.knime.com/buildStatus/icon?job=knime-stats%2Fmaster)](https://jenkins.knime.com/job/knime-stats/job/master/)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=KNIME_knime-stats&metric=alert_status&token=55129ac721eacd76417f57921368ed587ad8339d)](https://sonarcloud.io/summary/new_code?id=KNIME_knime-stats)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=knime_knime-stats&metric=alert_status&token=55129ac721eacd76417f57921368ed587ad8339d)](https://sonarcloud.io/summary/new_code?id=knime_knime-stats)
 
 This repository is maintained by the [KNIME Team Rakete](mailto:team-rakete@knime.com).
 
