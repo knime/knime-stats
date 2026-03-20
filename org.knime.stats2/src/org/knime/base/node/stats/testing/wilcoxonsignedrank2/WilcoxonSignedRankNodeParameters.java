@@ -65,11 +65,7 @@ import org.knime.node.parameters.Widget;
 import org.knime.node.parameters.array.ArrayWidget;
 import org.knime.node.parameters.migration.LoadDefaultsForAbsentFields;
 import org.knime.node.parameters.persistence.Persist;
-import org.knime.node.parameters.updates.ParameterReference;
 import org.knime.node.parameters.updates.StateProvider;
-import org.knime.node.parameters.updates.ValueProvider;
-import org.knime.node.parameters.updates.ValueReference;
-import org.knime.node.parameters.updates.legacy.ColumnNameAutoGuessValueProvider;
 import org.knime.node.parameters.widget.choices.ChoicesProvider;
 import org.knime.node.parameters.widget.choices.util.ColumnSelectionUtil;
 import org.knime.node.parameters.widget.choices.util.CompatibleColumnsProvider.DoubleColumnsProvider;
@@ -113,49 +109,13 @@ final class WilcoxonSignedRankNodeParameters implements NodeParameters {
 
         @Widget(title = "Left column", description = "Select the left column of the pair for comparison.")
         @ChoicesProvider(DoubleColumnsProvider.class)
-        @ValueReference(LeftColumnReference.class)
-        @ValueProvider(LeftColumnValueProvider.class)
         @PersistArrayElement(LeftColumnPersistor.class)
         String m_leftColumn;
 
         @Widget(title = "Right column", description = "Select the right column of the pair for comparison.")
         @ChoicesProvider(DoubleColumnsProvider.class)
-        @ValueReference(RightColumnReference.class)
-        @ValueProvider(RightColumnValueProvider.class)
         @PersistArrayElement(RightColumnPersistor.class)
         String m_rightColumn;
-
-        private static final class LeftColumnReference implements ParameterReference<String> {
-        }
-
-        private static final class RightColumnReference implements ParameterReference<String> {
-        }
-
-        private static final class LeftColumnValueProvider extends ColumnNameAutoGuessValueProvider {
-
-            LeftColumnValueProvider() {
-                super(LeftColumnReference.class);
-            }
-
-            @Override
-            protected Optional<DataColumnSpec> autoGuessColumn(final NodeParametersInput parametersInput) {
-                return ColumnSelectionUtil.getFirstCompatibleColumnOfFirstPort(parametersInput, DoubleValue.class);
-            }
-
-        }
-
-        private static final class RightColumnValueProvider extends ColumnNameAutoGuessValueProvider {
-
-            RightColumnValueProvider() {
-                super(RightColumnReference.class);
-            }
-
-            @Override
-            protected Optional<DataColumnSpec> autoGuessColumn(final NodeParametersInput parametersInput) {
-                return ColumnSelectionUtil.getFirstCompatibleColumnOfFirstPort(parametersInput, DoubleValue.class);
-            }
-
-        }
 
         static final class ColumnPairDefaultProvider implements StateProvider<ColumnPair> {
 
