@@ -110,15 +110,6 @@
     }
   },
   "initialUpdates" : [ {
-    "scope" : "#/properties/model/properties/columnPairs",
-    "values" : [ {
-      "indices" : [ ],
-      "value" : [ {
-        "leftColumn" : "Universe_0_0",
-        "rightColumn" : "Universe_0_0"
-      } ]
-    } ]
-  }, {
     "scope" : "#/properties/model/properties/columnPairs/items/properties/leftColumn",
     "providedOptionName" : "possibleValues",
     "values" : [ {

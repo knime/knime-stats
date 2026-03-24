@@ -50,6 +50,7 @@ import java.util.List;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataTableSpec;
+import org.knime.core.data.DoubleValue;
 import org.knime.core.data.RowKey;
 import org.knime.core.data.def.DefaultRow;
 import org.knime.core.node.BufferedDataContainer;
@@ -88,6 +89,18 @@ public class PairedTTestNodeModel extends NodeModel
     @Override
     protected DataTableSpec[] configure(final DataTableSpec[] inSpecs)
             throws InvalidSettingsException {
+        // Auto-guess: first DoubleValue column as a single pair (mirrors ColumnPairsProvider)
+        if (m_settings.getLeftColumns() == null || m_settings.getLeftColumns().length == 0) {
+            inSpecs[0].stream()
+                .filter(c -> c.getType().isCompatible(DoubleValue.class))
+                .findFirst()
+                .map(c -> c.getName())
+                .ifPresent(name -> {
+                    m_settings.setLeftColumns(new String[]{name});
+                    m_settings.setRightColumns(new String[]{name});
+                });
+        }
+
         if (m_settings.getLeftColumns() == null
                 || m_settings.getLeftColumns().length == 0) {
             throw new InvalidSettingsException(
